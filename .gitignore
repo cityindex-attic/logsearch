@@ -5,3 +5,7 @@
 *.war
 *.ear
 .vagrant/
+
+app/elasticsearch/
+app/kibana/
+app/logstash.jar

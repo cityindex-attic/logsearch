@@ -1,5 +1,13 @@
 #!/bin/bash
 
+set -e
+
+if [ ! -e /home/vagrant/current ] ; then
+    ln -s /vagrant /home/vagrant/current
+fi
+
+cd /home/vagrant/current
+
 if [[ ! "$(locale)" =~ "en_US.utf8" ]]; then
   echo "Setting perl:locale to en_US.UTF8"
   export LANGUAGE=en_US.UTF-8
@@ -69,6 +77,84 @@ if [ ! -f /usr/bin/stackato ]; then
     sudo rm -rf /tmp/stackato*
 fi
 echo "stackato:$(stackato --version)"
+
+
+#
+# java
+#
+
+if ! (which java 1>/dev/null 2>&1) ; then
+    echo "Installing java..."
+
+    sudo apt-get install -y openjdk-7-jre-headless
+fi
+
+echo "java:$(java -version 2>&1 | awk -F '\\"' '/version/ { print $2 }')"
+
+
+#
+# nginx
+#
+
+if ! (which nginx 1>/dev/null 2>&1) ; then
+    echo "Installing nginx..."
+
+    sudo apt-get install -y nginx
+fi
+
+echo "nginx:$(nginx -v 2>&1 | awk -F '/' '/nginx/ { print $2 }')"
+
+
+#
+# elasticsearch
+#
+
+if [ ! -e app/elasticsearch ] ; then
+    echo "Downloading elasticsearch-0.90.1..."
+
+    pushd app/
+    curl --location -o elasticsearch-0.90.1.tar.gz https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.1.tar.gz
+    tar -xzf elasticsearch-0.90.1.tar.gz
+    mv elasticsearch-0.90.1 elasticsearch
+    rm elasticsearch-0.90.1.tar.gz
+    popd
+fi
+
+echo "elasticsearch:$(app/elasticsearch/bin/elasticsearch -v | awk -F ':|,' '/Version/ { print $2 }')"
+
+
+#
+# logstash
+#
+
+if [ ! -e app/logstash.jar ] ; then
+    echo "Downloading logstash-1.1.13..."
+
+    curl --location -o app/logstash.jar https://logstash.objects.dreamhost.com/release/logstash-1.1.13-flatjar.jar
+fi
+
+echo "logstash:$(java -jar app/logstash.jar -v | awk -F ' ' '/logstash/ { print $2 }')"
+
+
+#
+# kibana
+#
+
+if [ ! -e app/kibana ] ; then
+    KIBANA_VERSION="050ee74c10851ae9178d471e71d752c5d76986fc"
+    echo "Download kibana-dev-$KIBANA_VERSION..."
+
+    pushd app/
+    curl --location -o kibana.zip "https://github.com/elasticsearch/kibana/archive/$KIBANA_VERSION.zip"
+    unzip -q kibana
+    mv "kibana-$KIBANA_VERSION" kibana
+    echo "$KIBANA_VERSION" > kibana/VERSION_DEV
+    rm kibana.zip
+    popd
+fi
+
+echo "kibana:dev-$(cat app/kibana/VERSION_DEV)"
+    
 
 echo "Configuring build dependancies"
 pushd /vagrant
