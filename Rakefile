@@ -35,6 +35,8 @@ end
 
 def process_erb(input, output, args = nil)
     @args=args
+  output_directory = File.dirname(output)
+  Dir.mkdir(output_directory) unless File.exists?(output_directory)
   f = File.new(output,'w')
   f.puts(ERB.new(File.read(File.expand_path(input))).result())
   f.close
