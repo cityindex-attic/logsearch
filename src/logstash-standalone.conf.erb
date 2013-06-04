@@ -5,9 +5,29 @@ input {
             "<%= Dir.getwd %>/var/log/elasticsearch/elasticsearch.log"
         ]
     }
+
+    file {
+        type => "nginx"
+        path => "<%= Dir.getwd %>/var/log/nginx-access.log"
+    }
+}
+
+filter {
+    grok {
+        type => "nginx"
+        pattern => "%{IPORHOST:remote_addr} - %{USERNAME:remote_user} \[%{HTTPDATE:time_local}\] %{QS:request} %{INT:status} %{INT:body_bytes_sent} %{QS:http_referer} %{QS:http_user_agent}"
+    }
+
+    date {
+        type => "nginx"
+        locale => "en"
+        match => [ "time_local", "dd/MMM/YYYY:HH:mm:ss Z" ]
+    }
 }
 
 output {
     #stdout { debug => true debug_format => "json"}
-    elasticsearch { }
+    elasticsearch_http {
+        flush_size => 5
+    }
 }
