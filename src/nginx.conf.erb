@@ -12,8 +12,13 @@ http {
 
     access_log <%= Dir.getwd %>/var/log/nginx-access.log;
 
+    client_body_temp_path <%= Dir.getwd %>/var/tmp/nginx-client-body-temp;
+
+    # unused
+    fastcgi_cache_path /dev/null keys_zone=none:1m;
+
     proxy_read_timeout 90;
-    proxy_temp_path /tmp/nginx-proxy;
+    proxy_temp_path <%= Dir.getwd %>/var/tmp/nginx-proxy-temp;
 
     server {
         listen *:8080;

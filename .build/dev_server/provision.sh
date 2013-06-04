@@ -9,6 +9,7 @@ fi
 mkdir -p /home/vagrant/shared/app
 mkdir -p /home/vagrant/shared/var/log
 mkdir -p /home/vagrant/shared/var/run
+mkdir -p /home/vagrant/shared/var/tmp
 
 if [ ! -e /home/vagrant/current/app ] ; then
     ln -s /home/vagrant/shared/app /home/vagrant/current/app
