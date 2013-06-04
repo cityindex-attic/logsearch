@@ -9,17 +9,13 @@ end
 
 desc "Run ElasticSearch & Kibana"
 task :run do
-  puts "Building..."
+  puts "==> Building..."
   process_erb("src/nginx.conf.erb", "etc/nginx.conf")
   process_erb("src/elasticsearch-standalone.json.erb", "etc/elasticsearch.json")
   process_erb("src/logstash-standalone.conf.erb", "etc/logstash.conf")
 
-  puts "TODO"
-
-  puts "Starting..."
-  puts "TODO"
-
-  puts "Console showing runtime output"
+  puts "==> Starting..."
+  sh "foreman start"
 end
 
 def process_erb(input, output)
