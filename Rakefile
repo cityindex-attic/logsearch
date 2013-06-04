@@ -19,8 +19,23 @@ task :run do
   sh "foreman start"
 end
 
-def process_erb(input, output)
+desc "Import existing data"
+namespace :import do
+
+  desc "Import existing data from a file"
+  task :file, :logstash_type, :path do |t, args|
+    puts "==> Make sure elasticsearch is already running!"
+    puts "==> Importing data from file..."
+
+    process_erb("src/logstash-import-file.conf.erb", "var/tmp/import-file.conf", args)
+        sh "cat #{args[:path]} | java -jar '#{Dir.getwd}/app/logstash.jar' agent -f '#{Dir.getwd}/var/tmp/import-file.conf'"
+    end
+
+end
+
+def process_erb(input, output, args = nil)
+    @args=args
   f = File.new(output,'w')
-  f.puts(ERB.new(IO.readlines(input).to_s).result())
+  f.puts(ERB.new(File.read(File.expand_path(input))).result())
   f.close
 end

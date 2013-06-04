@@ -1,0 +1,22 @@
+filter {
+    grok {
+        type => "nginx"
+        pattern => "%{IPORHOST:remote_addr} - %{USERNAME:remote_user} \[%{HTTPDATE:time_local}\] %{QS:request} %{INT:status} %{INT:body_bytes_sent} %{QS:http_referer} %{QS:http_user_agent}"
+    }
+
+    grok {
+        type => "apache"
+        pattern => "%{COMBINEDAPACHELOG}"
+    }
+
+    date {
+        type => "nginx"
+        locale => "en"
+        match => [ "time_local", "dd/MMM/YYYY:HH:mm:ss Z" ]
+    }
+
+    date {
+        type => "apache"
+        match => [ "timestamp", "dd/MMM/yyyy:HH:mm:ss Z" ]
+    }
+}
