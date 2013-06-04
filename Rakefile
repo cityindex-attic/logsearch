@@ -11,6 +11,7 @@ desc "Run ElasticSearch & Kibana"
 task :run do
   puts "Building..."
   process_erb("src/nginx.conf.erb", "etc/nginx.conf")
+  process_erb("src/elasticsearch-standalone.json.erb", "etc/elasticsearch.json")
 
   puts "TODO"
 
