@@ -6,6 +6,6 @@
 *.ear
 .vagrant/
 
-app/elasticsearch/
-app/kibana/
-app/logstash.jar
+app
+etc
+var
