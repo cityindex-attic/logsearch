@@ -177,6 +177,9 @@ popd
 
 chown -R vagrant:vagrant /home/vagrant/shared
 
+# a custom fastcgi_cache_path doesn't seem to be respected in nginx.conf; this is a hack workaround
+chown -R vagrant:vagrant /var/lib/nginx
+
 
 echo "=-=-=-=-=-=-=-=-=-=-=-="
 echo "Provisioning completed!"
