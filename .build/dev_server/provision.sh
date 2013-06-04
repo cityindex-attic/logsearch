@@ -6,6 +6,18 @@ if [ ! -e /home/vagrant/current ] ; then
     ln -s /vagrant /home/vagrant/current
 fi
 
+mkdir -p /home/vagrant/shared/app
+mkdir -p /home/vagrant/shared/var/log
+mkdir -p /home/vagrant/shared/var/run
+
+if [ ! -e /home/vagrant/current/app ] ; then
+    ln -s /home/vagrant/shared/app /home/vagrant/current/app
+fi
+
+if [ ! -e /home/vagrant/current/var ] ; then
+    ln -s /home/vagrant/shared/var /home/vagrant/current/var
+fi
+
 cd /home/vagrant/current
 
 if [[ ! "$(locale)" =~ "en_US.utf8" ]]; then
@@ -160,6 +172,10 @@ echo "Configuring build dependancies"
 pushd /vagrant
 bundle install
 popd
+
+
+chown -R vagrant:vagrant /home/vagrant/shared
+
 
 echo "=-=-=-=-=-=-=-=-=-=-=-="
 echo "Provisioning completed!"
