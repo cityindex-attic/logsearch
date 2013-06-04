@@ -13,6 +13,7 @@ task :run do
   process_erb("src/nginx.conf.erb", "etc/nginx.conf")
   process_erb("src/elasticsearch-standalone.json.erb", "etc/elasticsearch.json")
   process_erb("src/logstash-standalone.conf.erb", "etc/logstash.conf")
+  process_erb("src/kibana.js.erb", "app/kibana/config.js")
 
   puts "==> Starting..."
   sh "foreman start"
