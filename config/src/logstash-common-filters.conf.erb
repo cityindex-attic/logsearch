@@ -2,21 +2,39 @@ filter {
     grok {
         type => "nginx_combined"
         pattern => "%{IPORHOST:remote_addr} - (?:%{USER:remote_user}|-) \[%{HTTPDATE:time_local}\] \"(?:%{WORD:request_method} %{URIPATHPARAM:request_uri}(?: HTTP/%{NUMBER:request_httpversion})?|-)\" %{INT:status} (?:%{INT:body_bytes_sent}|-) \"(?:%{URI:http_referer}|-)\" %{QS:http_user_agent}"
+        add_tag => 'nginx'
     }
 
     grok {
         type => "apache_combined"
         pattern => "%{COMBINEDAPACHELOG}"
+        add_tag => 'apache'
+    }
+
+    grok {
+        type => "iis_default"
+        pattern => "%{DATESTAMP:datetime} %{HOST:s_sitename} %{HOST:s_computername} %{IP:s_ip} %{WORD:cs_method} %{URIPATHPARAM:cs_uri_stem} (?:%{NOTSPACE:cs_uri_query}|-) %{POSINT:s_port} (?:%{USER:cs_username}|-) %{IP:c_ip} (?:HTTP/%{NUMBER:cs_version}|-) (?:%{NOTSPACE:cs_user_agent}|-) (?:%{NOTSPACE:cs_cookie}|-) (?:%{URI:cs_referer}|-) (?:%{IPORHOST:cs_host}|-) %{POSINT:sc_status} %{INT:sc_substatus} %{INT:win32_status} %{POSINT:sc_bytes} %{POSINT:cs_bytes} %{POSINT:time_taken}"
+        add_tag => 'iis'
+    }
+
+    grep {
+        match => ["@message", "^#"]
+        negate => true
+        tags => [ 'iis' ]
     }
 
     date {
-        type => "nginx"
-        locale => "en"
-        match => [ "time_local", "dd/MMM/YYYY:HH:mm:ss Z" ]
+        type => "nginx_combined"
+        match => [ "request_time", "dd/MMM/YYYY:HH:mm:ss Z" ]
     }
 
     date {
-        type => "apache"
+        type => "apache_combined"
         match => [ "timestamp", "dd/MMM/yyyy:HH:mm:ss Z" ]
+    }
+
+    date {
+        type => "iis_default"
+        match => [ "datetime", "yyyy-MM-dd HH:mm:ss" ]
     }
 }

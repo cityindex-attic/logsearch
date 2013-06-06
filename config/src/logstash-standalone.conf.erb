@@ -15,7 +15,7 @@ input {
 }
 
 output {
-    stdout { debug => true debug_format => "json"}
+    #stdout { debug => true debug_format => "json"}
     elasticsearch_http {
         flush_size => 1
     }
