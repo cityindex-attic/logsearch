@@ -1,11 +1,11 @@
 filter {
     grok {
-        type => "nginx"
-        pattern => "%{IPORHOST:remote_addr} - %{USERNAME:remote_user} \[%{HTTPDATE:time_local}\] %{QS:request} %{INT:status} %{INT:body_bytes_sent} %{QS:http_referer} %{QS:http_user_agent}"
+        type => "nginx_combined"
+        pattern => "%{IPORHOST:remote_addr} - (?:%{USER:remote_user}|-) \[%{HTTPDATE:time_local}\] \"(?:%{WORD:request_method} %{URIPATHPARAM:request_uri}(?: HTTP/%{NUMBER:request_httpversion})?|-)\" %{INT:status} (?:%{INT:body_bytes_sent}|-) \"(?:%{URI:http_referer}|-)\" %{QS:http_user_agent}"
     }
 
     grok {
-        type => "apache"
+        type => "apache_combined"
         pattern => "%{COMBINEDAPACHELOG}"
     }
 
