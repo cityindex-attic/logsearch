@@ -118,6 +118,9 @@ echo "pv:$(pv -V | head -n1 | awk -F ' ' '/pv/ { print $2 }')"
 
 chown vagrant:vagrant /app
 
+echo 'vagrant soft nofile 32000' > /etc/security/limits.d/vagrant.conf
+echo 'vagrant hard nofile 64000' > /etc/security/limits.d/vagrant.conf
+
 echo -n '' > /app/.env
 echo 'export APP_ROOT_DIR=/app' >> /app/.env
 echo 'export APP_APP_DIR=/app/app' >> /app/.env
