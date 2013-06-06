@@ -6,6 +6,5 @@
 *.ear
 .vagrant/
 
-app
-etc
-var
+config/*
+!config/src

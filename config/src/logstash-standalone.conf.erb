@@ -1,16 +1,16 @@
-<%= ERB.new(File.read(File.expand_path('src/logstash-common-filters.conf.erb'))).result(binding) %>
+<%= ERB.new(File.read("#{ENV['APP_APP_DIR']}/config/src/logstash-common-filters.conf.erb")).result(binding) %>
 
 input {
     file {
         type => "elasticsearch"
         path => [
-            "<%= Dir.getwd %>/var/log/elasticsearch/elasticsearch.log"
+            "<%= ENV['APP_LOG_DIR'] %>/elasticsearch/elasticsearch.log"
         ]
     }
 
     file {
         type => "nginx"
-        path => "<%= Dir.getwd %>/var/log/nginx-access.log"
+        path => "<%= ENV['APP_LOG_DIR'] %>/nginx-access.log"
     }
 }
 

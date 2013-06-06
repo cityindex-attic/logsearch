@@ -1,7 +1,7 @@
 {
     "path" : {
-        "logs" : "<%= Dir.getwd %>/var/log/elasticsearch",
-        "data" : "<%= Dir.getwd %>/var/data"
+        "logs" : "<%= ENV['APP_LOG_DIR'] %>/elasticsearch",
+        "data" : "<%= ENV['APP_DATA_DIR'] %>"
     },
     "network" : {
         "host" : "127.0.0.1"

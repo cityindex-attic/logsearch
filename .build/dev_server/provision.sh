@@ -2,25 +2,6 @@
 
 set -e
 
-if [ ! -e /home/vagrant/current ] ; then
-    ln -s /vagrant /home/vagrant/current
-fi
-
-mkdir -p /home/vagrant/shared/app
-mkdir -p /home/vagrant/shared/var/log
-mkdir -p /home/vagrant/shared/var/run
-mkdir -p /home/vagrant/shared/var/tmp
-
-if [ ! -e /home/vagrant/current/app ] ; then
-    ln -s /home/vagrant/shared/app /home/vagrant/current/app
-fi
-
-if [ ! -e /home/vagrant/current/var ] ; then
-    ln -s /home/vagrant/shared/var /home/vagrant/current/var
-fi
-
-cd /home/vagrant/current
-
 if [[ ! "$(locale)" =~ "en_US.utf8" ]]; then
   echo "Setting perl:locale to en_US.UTF8"
   export LANGUAGE=en_US.UTF-8
@@ -93,7 +74,7 @@ echo "stackato:$(stackato --version)"
 
 
 #
-# java
+# system: java
 #
 
 if ! (which java 1>/dev/null 2>&1) ; then
@@ -106,7 +87,7 @@ echo "java:$(java -version 2>&1 | awk -F '\\"' '/version/ { print $2 }')"
 
 
 #
-# nginx
+# system: nginx
 #
 
 if ! (which nginx 1>/dev/null 2>&1) ; then
@@ -119,63 +100,28 @@ echo "nginx:$(nginx -v 2>&1 | awk -F '/' '/nginx/ { print $2 }')"
 
 
 #
-# elasticsearch
+# app
 #
 
-if [ ! -e app/elasticsearch ] ; then
-    echo "Downloading elasticsearch-0.90.1..."
+chown vagrant:vagrant /app
 
-    pushd app/
-    curl --location -o elasticsearch-0.90.1.tar.gz https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.1.tar.gz
-    tar -xzf elasticsearch-0.90.1.tar.gz
-    mv elasticsearch-0.90.1 elasticsearch
-    rm elasticsearch-0.90.1.tar.gz
-    popd
-fi
+echo -n '' > /app/.env
+echo 'export APP_ROOT_DIR=/app' >> /app/.env
+echo 'export APP_APP_DIR=/app/app' >> /app/.env
+echo 'export APP_VENDOR_DIR="/app/vendor"' >> /app/.env
+echo 'export APP_LOG_DIR="/app/var/log"' >> /app/.env
+echo 'export APP_RUN_DIR="/app/var/run"' >> /app/.env
+echo 'export APP_TMP_DIR="/app/tmp"' >> /app/.env
+echo 'export APP_DATA_DIR="/app/data"' >> /app/.env
+chmod +x /app/.env
 
-echo "elasticsearch:$(app/elasticsearch/bin/elasticsearch -v | awk -F ':|,' '/Version/ { print $2 }')"
-
-
-#
-# logstash
-#
-
-if [ ! -e app/logstash.jar ] ; then
-    echo "Downloading logstash-1.1.13..."
-
-    curl --location -o app/logstash.jar https://logstash.objects.dreamhost.com/release/logstash-1.1.13-flatjar.jar
-fi
-
-echo "logstash:$(java -jar app/logstash.jar -v | awk -F ' ' '/logstash/ { print $2 }')"
+cd /app/
+sudo -H -u vagrant ./app/bin/provision.sh
 
 
 #
-# kibana
+# vagrant hacks
 #
-
-if [ ! -e app/kibana ] ; then
-    KIBANA_VERSION="050ee74c10851ae9178d471e71d752c5d76986fc"
-    echo "Download kibana-dev-$KIBANA_VERSION..."
-
-    pushd app/
-    curl --location -o kibana.zip "https://github.com/elasticsearch/kibana/archive/$KIBANA_VERSION.zip"
-    unzip -q kibana
-    mv "kibana-$KIBANA_VERSION" kibana
-    echo "$KIBANA_VERSION" > kibana/VERSION_DEV
-    rm kibana.zip
-    popd
-fi
-
-echo "kibana:dev-$(cat app/kibana/VERSION_DEV)"
-    
-
-echo "Configuring build dependancies"
-pushd /vagrant
-bundle install
-popd
-
-
-chown -R vagrant:vagrant /home/vagrant/shared
 
 # a custom fastcgi_cache_path doesn't seem to be respected in nginx.conf; this is a hack workaround
 chown -R vagrant:vagrant /var/lib/nginx

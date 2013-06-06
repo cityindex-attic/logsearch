@@ -9,5 +9,6 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provision :shell, :path => ".build/dev_server/provision.sh"
+  config.vm.synced_folder ".", "/app/app"
 end
 

@@ -1,7 +1,7 @@
 # see https://github.com/elasticsearch/kibana/blob/master/sample/nginx.conf
 daemon off;
-error_log <%= Dir.getwd %>/var/log/nginx-access.log;
-pid <%= Dir.getwd %>/var/run/nginx.pid;
+error_log <%= ENV['APP_LOG_DIR'] %>/nginx-access.log;
+pid <%= ENV['APP_RUN_DIR'] %>/nginx.pid;
 
 events {
     worker_connections 4096;
@@ -10,12 +10,12 @@ events {
 http {
     include /etc/nginx/mime.types;
 
-    access_log <%= Dir.getwd %>/var/log/nginx-access.log;
+    access_log <%= ENV['APP_LOG_DIR'] %>/nginx-access.log;
 
-    client_body_temp_path <%= Dir.getwd %>/var/tmp/nginx-client-body-temp;
+    client_body_temp_path <%= ENV['APP_TMP_DIR'] %>/nginx-client-body-temp;
 
     proxy_read_timeout 90;
-    proxy_temp_path <%= Dir.getwd %>/var/tmp/nginx-proxy-temp;
+    proxy_temp_path <%= ENV['APP_TMP_DIR'] %>/nginx-proxy-temp;
 
     server {
         listen *:8080;
@@ -30,7 +30,7 @@ http {
         }
 
         location / {
-            root <%= Dir.getwd %>/app/kibana;
+            root <%= ENV['APP_VENDOR_DIR'] %>/kibana;
             index index.html;
         }
     }
