@@ -100,6 +100,19 @@ echo "nginx:$(nginx -v 2>&1 | awk -F '/' '/nginx/ { print $2 }')"
 
 
 #
+# system: pv
+#
+
+if ! (which pv 1>/dev/null 2>&1) ; then
+    echo "Installing pv..."
+
+    sudo apt-get install -y pv
+fi
+
+echo "pv:$(pv -V | head -n1 | awk -F ' ' '/pv/ { print $2 }')"
+
+
+#
 # app
 #
 

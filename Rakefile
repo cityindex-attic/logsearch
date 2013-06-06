@@ -31,7 +31,7 @@ namespace :import do
     puts "==> Importing data from file..."
 
     process_erb("#{ENV['APP_APP_DIR']}/config/src/logstash-import-file.conf.erb", "#{ENV['APP_TMP_DIR']}/import-file.conf", args)
-        sh "cat #{args[:path]} | pv | java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_TMP_DIR']}/import-file.conf'"
+        sh "pv -ept #{args[:path]} | java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_TMP_DIR']}/import-file.conf'"
     end
 
 end
