@@ -139,6 +139,10 @@ sudo -H -u vagrant ./app/bin/provision.sh
 # vagrant hacks
 #
 
+# workaround to avoid the alert about it not being writable - http://wiki.nginx.org/CoreModule#error_log
+touch /var/log/nginx/error.log
+chown vagrant /var/log/nginx/error.log
+
 # a custom fastcgi_cache_path doesn't seem to be respected in nginx.conf; this is a hack workaround
 chown -R vagrant:vagrant /var/lib/nginx
 
