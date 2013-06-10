@@ -1,9 +1,7 @@
 filter {
-    grok {
-        type => "nginx_combined"
-        pattern => "%{IPORHOST:remote_addr} - (?:%{USER:remote_user}|-) \[%{HTTPDATE:time_local}\] \"(?:%{WORD:request_method} %{URIPATHPARAM:request_uri}(?: HTTP/%{NUMBER:request_httpversion})?|-)\" %{INT:status} (?:%{INT:body_bytes_sent}|-) \"(?:%{URI:http_referer}|-)\" %{QS:http_user_agent}"
-        add_tag => "nginx"
-    }
+    #
+    # the various log types that we're interested in
+    #
 
     grok {
         type => "apache_combined"
@@ -17,16 +15,32 @@ filter {
         add_tag => "iis"
     }
 
+    grok {
+        type => "nginx_combined"
+        pattern => "%{IPORHOST:remote_addr} - (?:%{USER:remote_user}|-) \[%{HTTPDATE:time_local}\] \"(?:%{WORD:request_method} %{URIPATHPARAM:request_uri}(?: HTTP/%{NUMBER:request_httpversion})?|-)\" %{INT:status} (?:%{INT:body_bytes_sent}|-) \"(?:%{URI:http_referer}|-)\" %{QS:http_user_agent}"
+        add_tag => "nginx"
+    }
+
+    grok {
+        type => "stackato_default"
+        pattern => "%{DATESTAMP:datetime} %{LOGLEVEL:severity} -- %{GREEDYDATA:desc}"
+        pattern => "%{GREEDYDATA:desc}"
+        add_tag => "stackato_default"
+    }
+
+    #
+    # for ignore particularly useless lines
+    #
+
     grep {
         match => ["@message", "^#"]
         negate => true
         tags => [ "iis" ]
     }
 
-    date {
-        type => "nginx_combined"
-        match => [ "time_local", "dd/MMM/YYYY:HH:mm:ss Z" ]
-    }
+    #
+    # specify the date field names for various types
+    #
 
     date {
         type => "apache_combined"
@@ -37,6 +51,20 @@ filter {
         type => "iis_default"
         match => [ "datetime", "yyyy-MM-dd HH:mm:ss" ]
     }
+
+    date {
+        type => "nginx_combined"
+        match => [ "time_local", "dd/MMM/YYYY:HH:mm:ss Z" ]
+    }
+
+    date {
+        type => "stackato_default"
+        match => [ "datetime", "yyyy/MM/dd HH:mm:ss" ]
+    }
+
+    #
+    # type-casting for more advanced searches
+    #
 
     mutate {
         convert => [ "status", "integer" ]
