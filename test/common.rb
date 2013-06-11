@@ -15,3 +15,20 @@ def eslog_search(path, data)
 
   return res_data
 end
+
+def eslog_simple_search(index, query = '*')
+  eslog_search(
+    (index ? (index + '/') : '') + '_search',
+    {
+      "query" => {
+        "filtered" => {
+          "query" => {
+            "query_string" => {
+              "query" => query
+            }
+          }
+        }
+      }
+    }
+  )
+end

@@ -1,5 +1,15 @@
 filter {
     #
+    # for ignore particularly useless lines
+    #
+
+    grep {
+        type => "iis_default"
+        match => ["@message", "^#"]
+        negate => true
+    }
+
+    #
     # the various log types that we're interested in
     #
 
@@ -19,23 +29,6 @@ filter {
         type => "nginx_combined"
         pattern => "%{IPORHOST:remote_addr} - (?:%{USER:remote_user}|-) \[%{HTTPDATE:time_local}\] \"(?:%{WORD:request_method} %{URIPATHPARAM:request_uri}(?: HTTP/%{NUMBER:request_httpversion})?|-)\" %{INT:status} (?:%{INT:body_bytes_sent}|-) \"(?:%{URI:http_referer}|-)\" %{QS:http_user_agent}"
         add_tag => "nginx"
-    }
-
-    grok {
-        type => "stackato_default"
-        pattern => "%{DATESTAMP:datetime} %{LOGLEVEL:severity} -- %{GREEDYDATA:desc}"
-        pattern => "%{GREEDYDATA:desc}"
-        add_tag => "stackato_default"
-    }
-
-    #
-    # for ignore particularly useless lines
-    #
-
-    grep {
-        match => ["@message", "^#"]
-        negate => true
-        tags => [ "iis" ]
     }
 
     #
@@ -58,8 +51,8 @@ filter {
     }
 
     date {
-        type => "stackato_default"
-        match => [ "datetime", "yyyy/MM/dd HH:mm:ss" ]
+        type => "stackato_apptail"
+        match => [ "HumanTime", "ISO8601" ]
     }
 
     #
@@ -80,6 +73,7 @@ filter {
         convert => [ "sc_bytes", "integer" ]
         convert => [ "cs_bytes", "integer" ]
         convert => [ "time_taken", "integer" ]
+        gsub => [ "cs_referer", "\\+", " " ]
         tags => [ "iis" ]
     }
 }

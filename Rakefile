@@ -34,13 +34,22 @@ end
 desc "Import existing data"
 namespace :import do
 
-  desc "Import existing data from a file"
+  desc "Import existing data from a plain file"
   task :file, :logstash_type, :path do |t, args|
-    puts "==> Importing data from file..."
+    do_import(args)
+  end
 
-    process_erb("#{ENV['APP_APP_DIR']}/config/src/logstash-import-file.conf.erb", "#{ENV['APP_TMP_DIR']}/import-file.conf", args)
-        sh "pv -ept #{args[:path]} | java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_TMP_DIR']}/import-file.conf'"
-    end
+  desc "Import existing data from a json file"
+  task :json, :logstash_type, :path do |t, args|
+    do_import(args.to_hash.merge({ :logstash_format => "json" }))
+  end
+
+  # use only when you want super, super inefficient imports (only used by the tests)
+  task :slow, :subcall, :logstash_type, :path do |t, args|
+    $bug_679_flush_size = 1
+
+    Rake::Task["import:#{args[:subcall]}"].invoke(args[:logstash_type], args[:path])
+  end
 
 end
 
@@ -48,13 +57,28 @@ namespace :test do
     desc "Run all available integration tests"
     task :end2end do
         puts "==> Running nginx tests"
-        Rake::Task["test:type:nginx"].invoke
+
+        Rake::Task["test:type:nginx_combined"].invoke
+        Rake::Task["test:type:iis_default"].invoke
+        Rake::Task["test:type:stackato_apptail"].invoke
+
+        puts "==> All tests completed successfully"
     end
 
     namespace :type do
-        desc "Run nginx tests"
-        task :nginx => [ :erase ] do
-            run_integration_test("nginx_combined", "nginx")
+        desc "Run nginx_combined tests"
+        task :nginx_combined => [ :erase ] do
+            run_integration_test("nginx_combined", "file")
+        end
+
+        desc "Run iis_default tests"
+        task :iis_default => [ :erase ] do
+            run_integration_test("iis_default", "file")
+        end
+
+        desc "Run stackato_apptail tests"
+        task :stackato_apptail => [ :erase ] do
+            run_integration_test("stackato_apptail", "json")
         end
     end
 end
@@ -66,6 +90,13 @@ task :erase do
     sh "rm -fr #{ENV['APP_DATA_DIR']}/*"
 end
 
+def do_import(args)
+  puts "==> Importing data from file..."
+
+  process_erb("#{ENV['APP_APP_DIR']}/config/src/logstash-import-file.conf.erb", "#{ENV['APP_TMP_DIR']}/import-file.conf", args)
+  sh "pv -ept #{args[:path]} | java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_TMP_DIR']}/import-file.conf'"
+end
+
 def process_erb(input, output, args = nil)
   @args=args
 
@@ -74,7 +105,7 @@ def process_erb(input, output, args = nil)
   f.close
 end
 
-def run_integration_test(type, name)
+def run_integration_test(type, task = "file")
     pid = fork do
         exec "rake run:elasticsearch > /dev/null"
         Kernel.exit!
@@ -90,10 +121,10 @@ def run_integration_test(type, name)
 
         # then we can start importing our test data
         puts "==> Importing test data..."
-        sh "ruby test/do-import.rb #{type} test/#{name}.log > /dev/null"
+        sh "ruby test/do-import.rb #{task} #{type} test/#{type}.log > /dev/null"
 
         # and run our test queries
-        sh "ruby test/#{name}.rb"
+        sh "ruby test/#{type}.rb"
     ensure
         Process.kill("TERM", File.read("#{ENV['APP_RUN_DIR']}/elasticsearch.pid").to_i)
         Process.waitpid(pid)
