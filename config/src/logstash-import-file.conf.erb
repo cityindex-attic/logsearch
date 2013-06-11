@@ -7,10 +7,13 @@ input {
 }
 
 output {
+    # uncomment for debugging
     #stdout { debug => true debug_format => "json"}
+
     elasticsearch_http {
-        # https://logstash.jira.com/browse/LOGSTASH-679
-        # currently events are ignored if exiting when the buffer is not full; supposedly almost fixed?
-        flush_size => 1
+        # this will lose #({events-in-log} % {flush_size}) events due to unflushed buffer on exit
+        # https://logstash.jira.com/browse/LOGSTASH-679 - supposedly almost fixed?
+        # once fixed, this hack and its references should be removed in favor of a static number
+        flush_size => <%= $bug_679_flush_size ? $bug_679_flush_size : 100 %>
     }
 }

@@ -39,8 +39,15 @@ namespace :import do
     puts "==> Importing data from file..."
 
     process_erb("#{ENV['APP_APP_DIR']}/config/src/logstash-import-file.conf.erb", "#{ENV['APP_TMP_DIR']}/import-file.conf", args)
-        sh "pv -ept #{args[:path]} | java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_TMP_DIR']}/import-file.conf'"
-    end
+    sh "pv -ept #{args[:path]} | java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_TMP_DIR']}/import-file.conf'"
+  end
+
+  # use only when you want super, super inefficient imports (only used by the tests)
+  task :fileslow, :logstash_type, :path do |t, args|
+    $bug_679_flush_size = 1
+
+    Rake::Task["import:file"].invoke(args[:logstash_type], args[:path])
+  end
 
 end
 
@@ -48,13 +55,20 @@ namespace :test do
     desc "Run all available integration tests"
     task :end2end do
         puts "==> Running nginx tests"
-        Rake::Task["test:type:nginx"].invoke
+        Rake::Task["test:type:nginx_combined"].invoke
+        Rake::Task["test:type:iis_default"].invoke
+        puts "==> All tests completed successfully"
     end
 
     namespace :type do
-        desc "Run nginx tests"
-        task :nginx => [ :erase ] do
-            run_integration_test("nginx_combined", "nginx")
+        desc "Run nginx_combined tests"
+        task :nginx_combined => [ :erase ] do
+            run_integration_test("nginx_combined", "nginx_combined")
+        end
+
+        desc "Run iis_default tests"
+        task :iis_default => [ :erase ] do
+            run_integration_test("iis_default", "iis_default")
         end
     end
 end
