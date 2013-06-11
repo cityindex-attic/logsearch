@@ -1,5 +1,15 @@
 filter {
     #
+    # for ignore particularly useless lines
+    #
+
+    grep {
+        type => "iis_default"
+        match => ["@message", "^#"]
+        negate => true
+    }
+
+    #
     # the various log types that we're interested in
     #
 
@@ -26,16 +36,6 @@ filter {
         pattern => "%{DATESTAMP:datetime} %{LOGLEVEL:severity} -- %{GREEDYDATA:desc}"
         pattern => "%{GREEDYDATA:desc}"
         add_tag => "stackato_default"
-    }
-
-    #
-    # for ignore particularly useless lines
-    #
-
-    grep {
-        match => ["@message", "^#"]
-        negate => true
-        tags => [ "iis" ]
     }
 
     #
@@ -80,6 +80,7 @@ filter {
         convert => [ "sc_bytes", "integer" ]
         convert => [ "cs_bytes", "integer" ]
         convert => [ "time_taken", "integer" ]
+        gsub => [ "cs_referer", "\\+", " " ]
         tags => [ "iis" ]
     }
 }
