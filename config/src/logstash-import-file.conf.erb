@@ -3,6 +3,7 @@
 input {
     stdin {
         type => "<%= @args[:logstash_type] %>"
+        format => "<%= @args[:logstash_format] || 'plain' %>"
     }
 }
 

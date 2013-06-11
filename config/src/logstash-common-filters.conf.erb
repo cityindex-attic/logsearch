@@ -31,13 +31,6 @@ filter {
         add_tag => "nginx"
     }
 
-    grok {
-        type => "stackato_default"
-        pattern => "%{DATESTAMP:datetime} %{LOGLEVEL:severity} -- %{GREEDYDATA:desc}"
-        pattern => "%{GREEDYDATA:desc}"
-        add_tag => "stackato_default"
-    }
-
     #
     # specify the date field names for various types
     #
@@ -58,8 +51,8 @@ filter {
     }
 
     date {
-        type => "stackato_default"
-        match => [ "datetime", "yyyy/MM/dd HH:mm:ss" ]
+        type => "stackato_apptail"
+        match => [ "HumanTime", "ISO8601" ]
     }
 
     #
