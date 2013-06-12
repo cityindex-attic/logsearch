@@ -60,6 +60,11 @@ filter {
         match => [ "UnixTime", "UNIX" ]
     }
 
+    date {
+        type => "stackato_systail"
+        match => [ "UnixTime", "UNIX" ]
+    }
+
     #
     # type-casting for more advanced searches
     #

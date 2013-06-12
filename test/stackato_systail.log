@@ -1,0 +1,18 @@
+{"Name":"cloud_controller","NodeID":"10.11.12.13","Text":"[2013-06-10 14:51:48.021057] cc - pid=1491 tid=a1f8 fid=a466  DEBUG -- Config update from doozer : /proc/logyard/config/drains/logstash.systail = file:///s/logs/logstash-systail.log?filter=systail","UnixTime":1370789508}
+{"Name":"logyard","NodeID":"10.11.12.13","Text":"2013/06/10 14:51:48 INFO -- Detected change in doozer config: logstash.systail (Drains)","UnixTime":1370875908}
+{"Name":"logyard","NodeID":"10.11.12.13","Text":"2013/06/10 14:51:48 INFO -- [drain:logstash.systail] Drain cannot be stopped (it is not running)","UnixTime":1370875908}
+{"Name":"kato","NodeID":"10.11.12.13","Text":"[2013-06-10 14:52:22 +0000] [INFO] (14858) INVOKE kato log drain add -p event -f json logstash.event file:///s/logs/logstash-event.log","UnixTime":1370875942}
+{"Name":"cloud_controller","NodeID":"10.11.12.13","Text":"[2013-06-10 14:52:22.023827] cc - pid=1491 tid=a1f8 fid=6377  DEBUG -- logyard-cli:add came online on node HF2JJ3EU5PCOW7EJ (127.0.0.1-49218)","UnixTime":1370875942}
+{"Name":"cloud_controller","NodeID":"10.11.12.13","Text":"[2013-06-10 14:52:22.032844] cc - pid=1491 tid=a1f8 fid=bab9  DEBUG -- Config update from doozer : /proc/logyard/config/drains/logstash.event = file:///s/logs/logstash-event.log?filter=event","UnixTime":1370875942}
+{"Name":"kato","NodeID":"10.11.12.13","Text":"[2013-06-10 14:52:44 +0000] [INFO] (14943) INVOKE kato log drain add -p apptail -f json logstash.apptail file:///s/logs/logstash-apptail.log","UnixTime":1370875964}
+{"Name":"cloud_controller","NodeID":"10.11.12.13","Text":"[2013-06-10 14:52:44.228296] cc - pid=1491 tid=a1f8 fid=d9f4  DEBUG -- logyard-cli:add came online on node HF2JJ3EU5PCOW7EJ (127.0.0.1-49251)","UnixTime":1370875964}
+{"Name":"logyard","NodeID":"10.11.12.13","Text":"2013/06/10 14:52:44 INFO -- Detected change in doozer config: logstash.apptail (Drains)","UnixTime":1370875964}
+{"Name":"logyard","NodeID":"10.11.12.13","Text":"2013/06/10 14:52:44 INFO -- [drain:logstash.apptail] Drain cannot be stopped (it is not running)","UnixTime":1370875964}
+{"Name":"cloud_controller","NodeID":"10.11.12.13","Text":"[2013-06-10 14:52:44.238352] cc - pid=1491 tid=a1f8 fid=4a71  DEBUG -- Config update from doozer : /proc/logyard/config/drains/logstash.apptail = file:///s/logs/logstash-apptail.log?filter=apptail","UnixTime":1370875964}
+{"Name":"logyard","NodeID":"10.11.12.13","Text":"2013/06/10 14:52:44 INFO -- [drain:logstash.apptail] Choosing retry limit 0","UnixTime":1370875964}
+{"Name":"logyard","NodeID":"10.11.12.13","Text":"2013/06/10 14:52:44 INFO -- [drain:logstash.apptail] Starting drain: file:///s/logs/logstash-apptail.log?filter=apptail","UnixTime":1370875964}
+{"Name":"logyard","NodeID":"10.11.12.13","Text":"2013/06/10 14:52:44 INFO -- [drain:logstash.apptail] Attempting to open /s/logs/logstash-apptail.log (overwrite=false) ...","UnixTime":1370875964}
+{"Name":"logyard","NodeID":"10.11.12.13","Text":"2013/06/10 14:52:44 INFO -- [drain:logstash.apptail] Successfully opened /s/logs/logstash-apptail.log.","UnixTime":1370875964}
+{"Name":"auth","NodeID":"10.11.12.13","Text":"Jun 10 15:17:01 apps CRON[12219]: pam_unix(cron:session): session opened for user root by (uid=0)","UnixTime":1370877421}
+{"Name":"auth","NodeID":"10.11.12.13","Text":"Jun 10 15:17:01 apps su[12223]: Successful su for stackato by root","UnixTime":1370877421}
+{"Name":"auth","NodeID":"10.11.12.14","Text":"Jun 10 15:17:01 apps su[12223]: + ??? root:stackato","UnixTime":1370877421}

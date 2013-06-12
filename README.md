@@ -106,6 +106,22 @@ Example:
     {"Type":"dea_stop","Desc":"Stopping application 'httpbin' on DEA c43157","Severity":"INFO","Info":{"app_id":172,"app_name":"httpbin","dea_id":"c43157","instance":0},"Process":"dea","UnixTime":1370878583,"NodeID":"10.11.12.13"}
 
 
+#### stackato_systail
+
+Documentation: [docs.stackato.com](http://docs.stackato.com/server/logging.html#log-format)
+
+Fields:
+
+ * `Name`
+ * `NodeID`
+ * `Text`
+ * `UnixTime`
+
+Example:
+
+    {"Name":"logyard","NodeID":"10.11.12.13","Text":"2013/06/10 14:52:44 INFO -- [drain:logstash.apptail] Choosing retry limit 0","UnixTime":1370875964}
+
+
 ### Quick Guide
 
 **Initialize the application**
