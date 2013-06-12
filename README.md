@@ -87,6 +87,24 @@ Example:
     72.14.199.85 - - [06/Jun/2013:06:49:17 +0000] "GET / HTTP/1.1" 302 2810 "-" "Mozilla/5.0 (compatible; GoogleDocs GoogleApps; script; +http://script.google.com/bot.html)"
 
 
+#### stackato_event
+
+Documentation: [docs.stackato.com](http://docs.stackato.com/server/logging.html#log-format)
+
+Fields:
+
+ * `Type`
+ * `Desc`
+ * `Severity`
+ * `Info.*`
+ * `Process`
+ * `UnixTime`
+ * `NodeID`
+
+Example:
+
+    {"Type":"dea_stop","Desc":"Stopping application 'httpbin' on DEA c43157","Severity":"INFO","Info":{"app_id":172,"app_name":"httpbin","dea_id":"c43157","instance":0},"Process":"dea","UnixTime":1370878583,"NodeID":"10.11.12.13"}
+
 
 ### Quick Guide
 

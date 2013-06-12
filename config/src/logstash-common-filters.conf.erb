@@ -55,6 +55,11 @@ filter {
         match => [ "HumanTime", "ISO8601" ]
     }
 
+    date {
+        type => "stackato_event"
+        match => [ "UnixTime", "UNIX" ]
+    }
+
     #
     # type-casting for more advanced searches
     #
@@ -75,5 +80,11 @@ filter {
         convert => [ "time_taken", "integer" ]
         gsub => [ "cs_referer", "\\+", " " ]
         tags => [ "iis" ]
+    }
+
+    json {
+        type => "stackato_event"
+        source => "Info"
+        target => "data"
     }
 }
