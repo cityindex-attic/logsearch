@@ -76,6 +76,11 @@ namespace :test do
             run_integration_test("iis_default", "file")
         end
 
+        desc "Run tradingapi tests"
+        task :iis_tradingapi => [ :erase ] do
+            run_integration_test("iis_tradingapi", "file")
+        end
+
         desc "Run stackato_apptail tests"
         task :stackato_apptail => [ :erase ] do
             run_integration_test("stackato_apptail", "json")
