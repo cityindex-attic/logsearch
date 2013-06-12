@@ -44,7 +44,7 @@ Fields:
  * `s_ip`
  * `cs_method`
  * `cs_uri_stem`
- * `cs_uri_query
+ * `cs_uri_query`
  * `s_port`
  * `cs_username`
  * `c_ip`
@@ -85,6 +85,27 @@ Fields:
 Example:
 
     72.14.199.85 - - [06/Jun/2013:06:49:17 +0000] "GET / HTTP/1.1" 302 2810 "-" "Mozilla/5.0 (compatible; GoogleDocs GoogleApps; script; +http://script.google.com/bot.html)"
+
+
+#### stackato_apptail
+
+Documentation: [docs.stackato.com](http://docs.stackato.com/server/logging.html#log-format)
+
+Fields:
+
+ * `Text`
+ * `LogFilename`
+ * `UnixTime`
+ * `HumanTime`
+ * `Source`
+ * `InstanceIndex`
+ * `AppID`
+ * `AppName`
+ * `NodeID`
+
+Example:
+
+    {"Text":"10.11.12.13 - - [2013-06-10 14:51:06] \"GET / HTTP/1.1\" 200 7237 \"-\" \"-\"","LogFilename":"stderr.log","UnixTime":1370875986,"HumanTime":"2013-06-09T14:53:06+00:00","Source":"app","InstanceIndex":0,"AppID":172,"AppName":"httpbin","NodeID":"10.11.12.13"}
 
 
 #### stackato_event
