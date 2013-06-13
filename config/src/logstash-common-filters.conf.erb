@@ -4,7 +4,11 @@ filter {
     #
 
     grep {
-        type => "iis_default"
+        match => ["@message", "^(\w)*$"]
+        negate => true
+    }
+
+    grep {
         match => ["@message", "^#"]
         negate => true
     }
@@ -26,9 +30,46 @@ filter {
     }
 
     grok {
+        type => "iis_tradingapi"
+        pattern => "%{DATESTAMP:datetime} %{HOST:s_sitename} %{HOST:s_computername} %{IP:s_ip} %{WORD:cs_method} %{URIPATHPARAM:cs_uri_stem} (?:%{NOTSPACE:cs_uri_query}|-) %{POSINT:s_port} (?:%{USER:cs_username}|-) %{IP:c_ip} (?:HTTP/%{NUMBER:cs_version}|-) (?:%{NOTSPACE:cs_user_agent}|-) (?:%{NOTSPACE:cs_cookie}|-) (?:%{URI:cs_referer}|-) (?:%{IPORHOST:cs_host}|-) %{POSINT:sc_status} %{INT:sc_substatus} %{INT:win32_status} %{POSINT:sc_bytes} %{POSINT:cs_bytes} %{POSINT:time_taken}"
+        add_tag => ["iis","ci_tradingapi"]
+    }
+
+    grok {
         type => "nginx_combined"
         pattern => "%{IPORHOST:remote_addr} - (?:%{USER:remote_user}|-) \[%{HTTPDATE:time_local}\] \"(?:%{WORD:request_method} %{URIPATHPARAM:request_uri}(?: HTTP/%{NUMBER:request_httpversion})?|-)\" %{INT:status} (?:%{INT:body_bytes_sent}|-) \"(?:%{URI:http_referer}|-)\" %{QS:http_user_agent}"
         add_tag => "nginx"
+    }
+
+    #
+    # Tag TradingAPI events to map uri to http://labs.cityindex.com/docs/ > Contents > CIAPI Reference > HTTP Services > Group > Service
+    #
+
+    grep {
+        type => "iis_tradingapi"
+        add_field => [ "ci_tradingapi_servicegroup", "Market" ]
+        add_field => [ "ci_tradingapi_servicename", "GetMarketInformation" ]
+        match => [ "cs_method", "GET" ]
+        match => [ "cs_uri_stem", "^/TradingApi/market/\d+/information$" ]
+        drop => false
+    }
+
+    grep {
+        type => "iis_tradingapi"
+        add_field => [ "ci_tradingapi_servicegroup", "Authentication" ]
+        add_field => [ "ci_tradingapi_servicename", "LogOn" ]
+        match => [ "cs_method", "POST" ]
+        match => [ "cs_uri_stem", "^/TradingApi/session$" ]
+        drop => false
+    }
+
+    grep {
+        type => "iis_tradingapi"
+        add_field => [ "ci_tradingapi_servicegroup", "TradesAndOrders" ]
+        add_field => [ "ci_tradingapi_servicename", "Trade" ]
+        match => [ "cs_method", "POST" ]
+        match => [ "cs_uri_stem", "^/TradingApi/order/newtradeorder$" ]
+        drop => false
     }
 
     #

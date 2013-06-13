@@ -128,6 +128,9 @@ def run_integration_test(type, task = "file")
         puts "==> Importing test data..."
         sh "ruby test/do-import.rb #{task} #{type} test/#{type}.log > /dev/null"
 
+        #FIXME: give elastic search some time to actually index things - there must be a way to query es to ask if it is finished
+        sleep 5
+
         # and run our test queries
         sh "ruby test/#{type}.rb"
     ensure

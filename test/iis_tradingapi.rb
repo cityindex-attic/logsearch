@@ -7,19 +7,22 @@ require "test/unit"
 # should be tagged:  servicegroup=Authentication, servicename=LogOn
 class SimpleTradingAPITest < Test::Unit::TestCase
   def test_search_for_LogOn
-    expected = eslog_simple_search(
-      nil,
-      '@fields.cs_method=POST AND @fields.cs_uri_stem=TradingApi\/session'
-    )
-    assert_block "The sample data doesn't contain any LogOn requests" do
-      expected['hits']['total'] > 0 
-    end
+   assert_servicename "LogOn", 2
+  end
+  def test_search_for_GetMarketInformation
+    assert_servicename "GetMarketInformation", 2
+  end
+  def test_search_for_Trade
+    assert_servicename "Trade", 4
+  end
 
-    actual = eslog_simple_search(
+  def assert_servicename(servicename, expected_matches)
+     actual = eslog_simple_search(
       nil,
-      '@fields.servicename=LogOn'
+      "@fields.ci_tradingapi_servicename=#{servicename}"
     )
 
-    assert_equal expected['hits']['total'], actual['hits']['total'], "Searching by servicename=LogOn didn't identify all the requests"
+    assert_equal expected_matches, actual['hits']['total'], 
+      "Searching for @fields.ci_tradingapi_servicename=#{servicename} identified the wrong number of requests: #{JSON.pretty_generate(actual)}"
   end
 end
