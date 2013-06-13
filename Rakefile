@@ -61,6 +61,8 @@ namespace :test do
         Rake::Task["test:type:nginx_combined"].invoke
         Rake::Task["test:type:iis_default"].invoke
         Rake::Task["test:type:stackato_apptail"].invoke
+        Rake::Task["test:type:stackato_event"].invoke
+        Rake::Task["test:type:stackato_systail"].invoke
 
         puts "==> All tests completed successfully"
     end
@@ -84,6 +86,16 @@ namespace :test do
         desc "Run stackato_apptail tests"
         task :stackato_apptail => [ :erase ] do
             run_integration_test("stackato_apptail", "json")
+        end
+
+        desc "Run stackato_event tests"
+        task :stackato_event => [ :erase ] do
+            run_integration_test("stackato_event", "json")
+        end
+
+        desc "Run stackato_systail tests"
+        task :stackato_systail => [ :erase ] do
+            run_integration_test("stackato_systail", "json")
         end
     end
 end

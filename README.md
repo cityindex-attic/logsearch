@@ -1,7 +1,31 @@
 elasticsearch-development-flow
 ==============================
 
-A development environment for ElasticSearch &amp; Kibana 3 projects
+A development environment with logstash + ElasticSearch + Kibana 3.
+
+
+### Quick Guide
+
+**Initialize the application**
+
+    git clone git://github.com/cityindex/elasticsearch-development-flow.git
+    cd elasticsearch-development-flow/
+    vagrant up
+
+**Connect to the application**
+
+    vagrant ssh
+    cd /app/app/
+
+**Start the services** - this starts the elasticsearch server, kibana web server, and a default logstash configuration
+which monitors the application logs. Open [localhost:4567](http://localhost:4567) to see things.
+
+    rake run
+
+**Backfill data** - once the elasticsearch server has started, you can backfill logs if you have them laying around.
+
+    rake import:file[nginx_combined,backfill/labs.cityindex.com.nginx.logs/access.log*]
+    rake import:file[iis_default,backfill/ciapipreprod.IIS7.logs/u_ex130605.log]
 
 
 ### Supported Log Formats
@@ -44,7 +68,7 @@ Fields:
  * `s_ip`
  * `cs_method`
  * `cs_uri_stem`
- * `cs_uri_query
+ * `cs_uri_query`
  * `s_port`
  * `cs_username`
  * `c_ip`
@@ -87,26 +111,62 @@ Example:
     72.14.199.85 - - [06/Jun/2013:06:49:17 +0000] "GET / HTTP/1.1" 302 2810 "-" "Mozilla/5.0 (compatible; GoogleDocs GoogleApps; script; +http://script.google.com/bot.html)"
 
 
+#### stackato_apptail
 
-### Quick Guide
+Documentation: [docs.stackato.com](http://docs.stackato.com/server/logging.html#log-format)
 
-**Initialize the application**
+Fields:
 
-    git clone git://github.com/cityindex/elasticsearch-development-flow.git
-    cd elasticsearch-development-flow/
-    vagrant up
+ * `Text`
+ * `LogFilename`
+ * `UnixTime`
+ * `HumanTime`
+ * `Source`
+ * `InstanceIndex`
+ * `AppID`
+ * `AppName`
+ * `NodeID`
 
-**Connect to the application**
+Example:
 
-    vagrant ssh
-    cd /app/app/
+    {"Text":"10.11.12.13 - - [2013-06-10 14:51:06] \"GET / HTTP/1.1\" 200 7237 \"-\" \"-\"","LogFilename":"stderr.log","UnixTime":1370875986,"HumanTime":"2013-06-09T14:53:06+00:00","Source":"app","InstanceIndex":0,"AppID":172,"AppName":"httpbin","NodeID":"10.11.12.13"}
 
-**Start the services** - this starts the elasticsearch server, kibana web server, and a default logstash configuration
-which monitors the application logs. Open [localhost:4567](http://localhost:4567) to see things.
 
-    rake run
+#### stackato_event
 
-**Backfill data** - once the elasticsearch server has started, you can backfill logs if you have them laying around.
+Documentation: [docs.stackato.com](http://docs.stackato.com/server/logging.html#log-format)
 
-    rake import:file[nginx_combined,backfill/labs.cityindex.com.nginx.logs/access.log*]
-    rake import:file[iis_default,backfill/ciapipreprod.IIS7.logs/u_ex130605.log]
+Fields:
+
+ * `Type`
+ * `Desc`
+ * `Severity`
+ * `Info.*`
+ * `Process`
+ * `UnixTime`
+ * `NodeID`
+
+Example:
+
+    {"Type":"dea_stop","Desc":"Stopping application 'httpbin' on DEA c43157","Severity":"INFO","Info":{"app_id":172,"app_name":"httpbin","dea_id":"c43157","instance":0},"Process":"dea","UnixTime":1370878583,"NodeID":"10.11.12.13"}
+
+
+#### stackato_systail
+
+Documentation: [docs.stackato.com](http://docs.stackato.com/server/logging.html#log-format)
+
+Fields:
+
+ * `Name`
+ * `NodeID`
+ * `Text`
+ * `UnixTime`
+
+Example:
+
+    {"Name":"logyard","NodeID":"10.11.12.13","Text":"2013/06/10 14:52:44 INFO -- [drain:logstash.apptail] Choosing retry limit 0","UnixTime":1370875964}
+
+
+### License
+
+[Apache License, Version 2.0](./LICENSE.md)

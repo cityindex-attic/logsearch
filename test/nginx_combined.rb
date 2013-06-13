@@ -1,7 +1,7 @@
 require_relative 'common'
 require "test/unit"
 
-class SimpleNginxTest < Test::Unit::TestCase
+class SimpleNginxCombinedTest < Test::Unit::TestCase
   def test_respect_for_timestamp
     res = eslog_simple_search('logstash-2013.06.06')
 

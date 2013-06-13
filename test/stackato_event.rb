@@ -1,7 +1,7 @@
 require_relative 'common'
 require "test/unit"
 
-class SimpleStackatoApptailTest < Test::Unit::TestCase
+class SimpleStackatoEventTest < Test::Unit::TestCase
   def test_respect_for_timestamp
     res = eslog_simple_search('logstash-2013.06.09')
 
@@ -9,7 +9,7 @@ class SimpleStackatoApptailTest < Test::Unit::TestCase
 
     res = eslog_simple_search('logstash-2013.06.10')
 
-    assert_equal 3, res['hits']['total']
+    assert_equal 10, res['hits']['total']
   end
 
   def test_no_events_inferred_today
@@ -18,66 +18,57 @@ class SimpleStackatoApptailTest < Test::Unit::TestCase
     end
   end
 
-  def test_search_by_Text
+  def test_search_by_Type
     res = eslog_simple_search(
       nil,
-      '@fields.Text=ping'
+      '@fields.Type=kato_action'
     )
 
     assert_equal 1, res['hits']['total']
   end
 
-  def test_search_by_LogFilename
+  def test_search_by_Desc
     res = eslog_simple_search(
       nil,
-      '@fields.LogFilename=stdout.log'
+      '@fields.Desc=httpbin'
+    )
+
+    assert_equal 2, res['hits']['total']
+  end
+
+  def test_search_by_Severity
+    res = eslog_simple_search(
+      nil,
+      '@fields.Severity=ERROR'
     )
 
     assert_equal 1, res['hits']['total']
   end
 
-  def test_search_by_AppID
+  def test_search_by_Info
     res = eslog_simple_search(
       nil,
-      '@fields.AppID=172'
+      '@fields.Info.app_name=httpbin'
     )
 
     assert_equal 2, res['hits']['total']
   end
 
-  def test_search_by_AppName
+  def test_search_by_Process
     res = eslog_simple_search(
       nil,
-      '@fields.AppName=httpbin'
+      '@fields.Process=supervisord'
     )
 
-    assert_equal 2, res['hits']['total']
-  end
-
-  def test_search_by_InstanceIndex
-    res = eslog_simple_search(
-      nil,
-      '@fields.InstanceIndex=0'
-    )
-
-    assert_equal 4, res['hits']['total']
+    assert_equal 5, res['hits']['total']
   end
 
   def test_search_by_NodeID
     res = eslog_simple_search(
       nil,
-      '@fields.NodeID=10.11.12.13'
+      '@fields.NodeID="10.11.12.14"'
     )
 
-    assert_equal 4, res['hits']['total']
-  end
-
-  def test_search_by_Source
-    res = eslog_simple_search(
-      nil,
-      '@fields.Source=app'
-    )
-
-    assert_equal 4, res['hits']['total']
+    assert_equal 1, res['hits']['total']
   end
 end
