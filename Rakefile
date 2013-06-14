@@ -132,18 +132,16 @@ def run_integration_test(type, task = "file")
     Rake::Task['erase'].reenable
 
     begin
-        # wait until elasticsearch is ready
-        puts "==> Waiting for elasticsearch..."
+        puts "==> Waiting for elasticsearch to be ready ..."
         sh "while ! nc -vz localhost 9200 2>/dev/null ; do sleep 2 ; done"
 
-        # then we can start importing our test data
-        puts "==> Importing test data..."
+        puts "==> Importing test data ..."
         sh "ruby test/do-import.rb #{task} #{type} test/#{type}.log > /dev/null"
 
-        #FIXME: give elastic search some time to actually index things - there must be a way to query es to ask if it is finished
-        sleep 5
-
-        # and run our test queries
+        puts "==> Ensuring elastic search has finished indexing our data..."
+        sh "curl -sXPOST 'http://localhost:9200/_all/_refresh' > /dev/null"
+      
+        puts "==> Run our test queries ..."
         sh "ruby test/#{type}.rb"
     ensure
         Process.kill("TERM", File.read("#{ENV['APP_RUN_DIR']}/elasticsearch.pid").to_i)
