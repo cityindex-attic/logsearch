@@ -9,8 +9,29 @@ class SimpleTradingAPITest < Test::Unit::TestCase
   def test_search_for_LogOn
    assert_servicename "LogOn", 2
   end
+  def test_search_for_DeleteSession
+   assert_servicename "DeleteSession", 2
+  end
+  def test_search_for_ListTradeHistory
+   assert_servicename "ListTradeHistory", 2
+  end
+  def test_search_for_ListSpreadMarkets
+   assert_servicename "ListSpreadMarkets", 2
+  end
+  def test_search_for_ListOpenPositions
+   assert_servicename "ListOpenPositions", 4
+  end
+  def test_search_for_ListNewsHeadlinesWithSource
+   assert_servicename "ListNewsHeadlinesWithSource", 2
+  end
+  def test_search_for_GetPriceBars
+   assert_servicename "GetPriceBars", 2
+  end
   def test_search_for_GetMarketInformation
     assert_servicename "GetMarketInformation", 2
+  end
+  def test_search_for_GetClientAndTradingAccount
+    assert_servicename "GetClientAndTradingAccount", 2
   end
   def test_search_for_Trade
     assert_servicename "Trade", 4
