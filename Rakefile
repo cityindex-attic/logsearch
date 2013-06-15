@@ -17,6 +17,20 @@ task :configure do
   process_erb("#{ENV['APP_APP_DIR']}/config/src/elasticsearch-standalone.json.erb", "#{ENV['APP_APP_DIR']}/config/elasticsearch.json")
   process_erb("#{ENV['APP_APP_DIR']}/config/src/logstash-standalone.conf.erb", "#{ENV['APP_APP_DIR']}/config/logstash.conf")
   process_erb("#{ENV['APP_APP_DIR']}/config/src/kibana-config.js.erb", "#{ENV['APP_VENDOR_DIR']}/kibana/config.js")
+
+  # now we need to startup elasticsearch so we can send it the configs we want to use
+  pid = fork do
+    exec "rake run:elasticsearch_nodeps > /dev/null"
+    Kernel.exit!
+  end
+
+  begin
+    sh "while ! nc -vz localhost 9200 2>/dev/null ; do sleep 2 ; done"
+    sh "curl -sXPUT 'http://localhost:9200/_template/template_default' -d @#{ENV['APP_APP_DIR']}/config/elasticsearch-templates/default.json > /dev/null"
+  ensure
+    Process.kill("TERM", File.read("#{ENV['APP_RUN_DIR']}/elasticsearch.pid").to_i)
+    Process.waitpid(pid)
+  end
 end
 
 desc "Run ElasticSearch & Kibana"
@@ -26,7 +40,12 @@ task :run => :configure do
 end
 
 namespace :run do
+  desc "Run ElasticSearch"
   task :elasticsearch => :configure do
+    sh "foreman start elasticsearch"
+  end
+
+  task :elasticsearch_nodeps do
     sh "foreman start elasticsearch"
   end
 end
