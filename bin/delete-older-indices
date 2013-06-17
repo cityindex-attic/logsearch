@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+
+require 'date'
+require 'json'
+require 'net/http'
+
+throw "Missing `yyyy-mm-dd` argument to remove older indices." unless ARGV[0]
+
+purgedate = DateTime.strptime(ARGV[0], '%Y-%m-%d')
+
+es = Net::HTTP.new('localhost', '9200')
+req = Net::HTTP::Get.new('/_aliases', { 'Content-Type' => 'application/json' })
+res = es.start { |http| http.request(req) }
+
+for index, aliases in JSON.parse(res.body)
+  indexdate = DateTime.strptime(index, 'logstash-%Y.%m.%d')
+
+  if (indexdate < purgedate)
+    print "DELETE #{index}..."
+
+    req = Net::HTTP::Delete.new("/#{index}", { 'Content-Type' => 'application/json' })
+    res = es.start { |http| http.request(req) }
+    resjson = JSON.parse(res.body)
+
+    if (!resjson['ok'])
+      puts "error"
+      puts resjson
+
+      exit 1
+    end
+
+    puts "done"
+  end
+end
