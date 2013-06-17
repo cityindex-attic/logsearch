@@ -31,6 +31,11 @@ filter {
         add_tag => "nginx"
     }
 
+    grok {
+        type => "ci_appmetrics"
+        pattern => "%{TIMESTAMP_ISO8601:time}\t(?<name>[^\t]+)\t%{GREEDYDATA:value}"
+    }
+
     #
     # specify the date field names for various types
     #
@@ -63,6 +68,11 @@ filter {
     date {
         type => "stackato_systail"
         match => [ "UnixTime", "UNIX" ]
+    }
+
+    date {
+        type => "ci_appmetrics"
+        match => [ "time", "YYYY-MM-dd HH:mm:ss.SSSSSSS" ]
     }
 
     #

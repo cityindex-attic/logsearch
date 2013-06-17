@@ -1,0 +1,27 @@
+2013-05-14 00:08:15.6470000	ClientIP	10.11.12.13
+2013-05-14 00:08:15.6470000	ClientHostName	10.11.12.13
+2013-05-14 00:08:15.6470000	ClientUserAgent	
+2013-05-14 00:08:15.6470000	System_OsName	Microsoft Windows Server 2008 R2 Datacenter 
+2013-05-14 00:08:15.6680000	System_ComputerName	AMAZONA-123456
+2013-05-14 00:08:15.6680000	System_UserName	AMAZONA-123456$
+2013-05-14 00:08:15.6700000	System_PhysicalMemory	3839
+2013-05-14 00:08:15.6700000	System_VirtualMemory	2047
+2013-05-14 00:08:15.6700000	System_CurrentCulture	en-US
+2013-05-14 00:08:15.6700000	System_CurrentUiCulture	en-US
+2013-05-14 00:08:15.6700000	System_SystemDefaultEncoding	Windows-1252
+2013-05-14 00:08:15.6700000	System_CalendarType	GregorianCalendar
+2013-05-14 00:08:15.6700000	System_NumberDecimalSeparator	.
+2013-05-14 00:08:15.6710000	System_TimeZone	Coordinated Universal Time
+2013-05-14 00:08:15.6710000	System_TimeZoneOffset	0
+2013-05-14 00:08:15.6820000	Client_ProcessName	C:\Program Files (x86)\City Index\CIAPI Latency Collector\CiapiLatencyCollector.exe
+2013-05-14 00:08:15.7050000	Client_ProcessVersion	1.0.142.0
+2013-05-14 00:08:15.7050000	Client_AppMetricsVersion	AppMetrics.Client, Version=1.0.4596.15783, Culture=neutral, PublicKeyToken=null
+2013-05-14 00:08:15.7050000	Client_WorkingSet	18
+2013-05-14 00:08:15.7050000	Client_PrivateMemorySize	20
+2013-05-14 00:08:15.7050000	System_AvailablePhysicalMemory	3378
+2013-05-14 00:08:15.7050000	System_AvailableVirtualMemory	1882
+2013-05-14 00:08:16.7360000	Info_UserId	01234567-89ab-cdef-0123-4567890abcde
+2013-05-14 00:08:16.7360000	Info_NodeName	AWS-EU-WEST-1B-192.168.1.1
+2013-05-14 00:08:16.7360000	Info_LatencyCollectorVersion	CiapiLatencyCollectorCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+2013-05-14 00:08:22.6940000	Event	Central settings updated
+2013-05-15 00:08:22.6950000	SessionFinished	
