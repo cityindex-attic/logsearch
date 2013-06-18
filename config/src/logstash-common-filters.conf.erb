@@ -27,7 +27,8 @@ filter {
     grok {
         type => "<%=type%>"
         pattern => "%{DATESTAMP:datetime} %{HOST:s_sitename} %{HOST:s_computername} %{IP:s_ip} %{WORD:cs_method} %{URIPATHPARAM:cs_uri_stem} (?:%{NOTSPACE:cs_uri_query}|-) %{POSINT:s_port} (?:%{USER:cs_username}|-) %{IP:c_ip} (?:HTTP/%{NUMBER:cs_version}|-) (?:%{NOTSPACE:cs_user_agent}|-) (?:%{NOTSPACE:cs_cookie}|-) (?:%{URI:cs_referer}|-) (?:%{IPORHOST:cs_host}|-) %{POSINT:sc_status} %{INT:sc_substatus} %{INT:win32_status} %{POSINT:sc_bytes} %{POSINT:cs_bytes} %{POSINT:time_taken}"
-        add_tag => "iis,<%=type%>"
+        add_tag => "iis"
+        add_tag => "<%=type%>"
     }
 <% end %>
 
@@ -73,10 +74,12 @@ filter {
         match => [ "timestamp", "dd/MMM/yyyy:HH:mm:ss Z" ]
     }
 
+<% ["iis_default","iis_tradingapi"].each do |type| %>
     date {
-        type => "iis_default"
+        type => "<%=type%>"
         match => [ "datetime", "yyyy-MM-dd HH:mm:ss" ]
     }
+<% end %>
 
     date {
         type => "nginx_combined"

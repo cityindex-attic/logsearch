@@ -6,6 +6,26 @@ require "test/unit"
 # i.e:  2013-06-05 00:00:34 W3SVC1 PKH-PPE-WEB24 172.16.68.7 POST /TradingApi/session - 444 - 172.16.68.245 HTTP/1.1 CIAPI.CS.10.0.0.548 - - ciapipreprod.cityindextest9.co.uk 200 0 0 590 422 281
 # should be tagged:  servicegroup=Authentication, servicename=LogOn
 class SimpleTradingAPITest < Test::Unit::TestCase
+  def test_respect_for_timestamp
+    res = eslog_simple_search('logstash-2013.06.05')
+
+    assert_equal 41, res['hits']['total']
+
+    res = eslog_simple_search('logstash-2013.06.06')
+
+    assert_equal 7, res['hits']['total']
+  end
+
+  def test_timetaken_should_be_integer
+    res = eslog_simple_search(
+      nil,
+      "@fields.ci_tradingapi_servicename=LogOn"
+    )
+    actual_time_taken = res['hits']['hits'][0]['_source']['@fields']['time_taken'][0]
+
+    assert_equal Fixnum, actual_time_taken.class, "actual_time_taken is: #{actual_time_taken}"
+  end
+
   def test_search_for_LogOn
    assert_servicename "LogOn", 2
   end
@@ -38,7 +58,7 @@ class SimpleTradingAPITest < Test::Unit::TestCase
   end
 
   def assert_servicename(servicename, expected_matches)
-     actual = eslog_simple_search(
+    actual = eslog_simple_search(
       nil,
       "@fields.ci_tradingapi_servicename=#{servicename}"
     )
