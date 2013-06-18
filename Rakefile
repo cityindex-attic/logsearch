@@ -92,37 +92,37 @@ namespace :test do
 
     namespace :type do
         desc "Run nginx_combined tests"
-        task :nginx_combined => [ :erase ] do
+        task :nginx_combined => [ :erase, :configure ] do
             run_integration_test("nginx_combined", "file")
         end
 
         desc "Run iis_default tests"
-        task :iis_default => [ :erase ] do
+        task :iis_default => [ :erase, :configure ] do
             run_integration_test("iis_default", "file")
         end
 
         desc "Run iis_tradingapi tests"
-        task :iis_tradingapi => [ :erase ] do
+        task :iis_tradingapi => [ :erase, :configure ] do
             run_integration_test("iis_tradingapi", "file")
         end
 
         desc "Run stackato_apptail tests"
-        task :stackato_apptail => [ :erase ] do
+        task :stackato_apptail => [ :erase, :configure ] do
             run_integration_test("stackato_apptail", "json")
         end
 
         desc "Run stackato_event tests"
-        task :stackato_event => [ :erase ] do
+        task :stackato_event => [ :erase, :configure ] do
             run_integration_test("stackato_event", "json")
         end
 
         desc "Run stackato_systail tests"
-        task :stackato_systail => [ :erase ] do
+        task :stackato_systail => [ :erase, :configure ] do
             run_integration_test("stackato_systail", "json")
         end
 
         desc "Run ci_appmetrics tests"
-        task :ci_appmetrics => [ :erase ] do
+        task :ci_appmetrics => [ :erase, :configure ] do
             run_integration_test("ci_appmetrics", "file")
         end
     end
@@ -155,12 +155,13 @@ end
 
 def run_integration_test(type, task = "file")
     pid = fork do
-        exec "rake run:elasticsearch > /dev/null"
+        exec "rake run:elasticsearch_nodeps > /dev/null"
         Kernel.exit!
     end
 
-    # dependencies would have marked erase to not run again, so reset that
+    # dependencies would have marked these to not run again, so reset that
     Rake::Task['erase'].reenable
+    Rake::Task['configure'].reenable
 
     begin
         puts "==> Waiting for elasticsearch to be ready ..."
