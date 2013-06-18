@@ -21,7 +21,7 @@ class SimpleStackatoApptailTest < Test::Unit::TestCase
   def test_search_by_Text
     res = eslog_simple_search(
       nil,
-      '@fields.Text=ping'
+      '@fields.Text:"Jun 10, 2013 3:08:24 PM hudson.model.AsyncPeriodicWork$1 run"'
     )
 
     assert_equal 1, res['hits']['total']
@@ -30,7 +30,7 @@ class SimpleStackatoApptailTest < Test::Unit::TestCase
   def test_search_by_LogFilename
     res = eslog_simple_search(
       nil,
-      '@fields.LogFilename=stdout.log'
+      '@fields.LogFilename:stdout.log'
     )
 
     assert_equal 1, res['hits']['total']
@@ -39,7 +39,7 @@ class SimpleStackatoApptailTest < Test::Unit::TestCase
   def test_search_by_AppID
     res = eslog_simple_search(
       nil,
-      '@fields.AppID=172'
+      '@fields.AppID:172'
     )
 
     assert_equal 2, res['hits']['total']
@@ -48,7 +48,7 @@ class SimpleStackatoApptailTest < Test::Unit::TestCase
   def test_search_by_AppName
     res = eslog_simple_search(
       nil,
-      '@fields.AppName=httpbin'
+      '@fields.AppName:httpbin'
     )
 
     assert_equal 2, res['hits']['total']
@@ -57,7 +57,7 @@ class SimpleStackatoApptailTest < Test::Unit::TestCase
   def test_search_by_InstanceIndex
     res = eslog_simple_search(
       nil,
-      '@fields.InstanceIndex=0'
+      '@fields.InstanceIndex:0'
     )
 
     assert_equal 4, res['hits']['total']
@@ -66,7 +66,7 @@ class SimpleStackatoApptailTest < Test::Unit::TestCase
   def test_search_by_NodeID
     res = eslog_simple_search(
       nil,
-      '@fields.NodeID=10.11.12.13'
+      '@fields.NodeID:10.11.12.13'
     )
 
     assert_equal 4, res['hits']['total']
@@ -75,7 +75,7 @@ class SimpleStackatoApptailTest < Test::Unit::TestCase
   def test_search_by_Source
     res = eslog_simple_search(
       nil,
-      '@fields.Source=app'
+      '@fields.Source:app'
     )
 
     assert_equal 4, res['hits']['total']

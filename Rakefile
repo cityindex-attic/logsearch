@@ -3,6 +3,8 @@ require 'dotenv'
 
 Dotenv.load('../.env')
 
+class ElasticSearchNotRunning < RuntimeError; end  
+
 desc "Connect to development VM"
 task :connect do
   sh "vagrant up"
@@ -17,6 +19,20 @@ task :configure do
   process_erb("#{ENV['APP_APP_DIR']}/config/src/elasticsearch-standalone.json.erb", "#{ENV['APP_APP_DIR']}/config/elasticsearch.json")
   process_erb("#{ENV['APP_APP_DIR']}/config/src/logstash-standalone.conf.erb", "#{ENV['APP_APP_DIR']}/config/logstash.conf")
   process_erb("#{ENV['APP_APP_DIR']}/config/src/kibana-config.js.erb", "#{ENV['APP_VENDOR_DIR']}/kibana/config.js")
+
+  # now we need to startup elasticsearch so we can send it the configs we want to use
+  pid = fork do
+    exec "rake run:elasticsearch_nodeps > /dev/null"
+    Kernel.exit!
+  end
+
+  begin
+    sh "while ! nc -vz localhost 9200 2>/dev/null ; do sleep 2 ; done"
+    sh "curl -sXPUT 'http://localhost:9200/_template/template_default' -d @#{ENV['APP_APP_DIR']}/config/elasticsearch-templates/default.json > /dev/null"
+  ensure
+    Process.kill("TERM", File.read("#{ENV['APP_RUN_DIR']}/elasticsearch.pid").to_i)
+    Process.waitpid(pid)
+  end
 end
 
 desc "Run ElasticSearch & Kibana"
@@ -26,7 +42,12 @@ task :run => :configure do
 end
 
 namespace :run do
+  desc "Run ElasticSearch"
   task :elasticsearch => :configure do
+    sh "foreman start elasticsearch"
+  end
+
+  task :elasticsearch_nodeps do
     sh "foreman start elasticsearch"
   end
 end
@@ -60,6 +81,7 @@ namespace :test do
 
         Rake::Task["test:type:nginx_combined"].invoke
         Rake::Task["test:type:iis_default"].invoke
+        Rake::Task["test:type:iis_tradingapi"].invoke
         Rake::Task["test:type:stackato_apptail"].invoke
         Rake::Task["test:type:stackato_event"].invoke
         Rake::Task["test:type:stackato_systail"].invoke
@@ -77,6 +99,11 @@ namespace :test do
         desc "Run iis_default tests"
         task :iis_default => [ :erase ] do
             run_integration_test("iis_default", "file")
+        end
+
+        desc "Run iis_tradingapi tests"
+        task :iis_tradingapi => [ :erase ] do
+            run_integration_test("iis_tradingapi", "file")
         end
 
         desc "Run stackato_apptail tests"
@@ -109,10 +136,13 @@ task :erase do
 end
 
 def do_import(args)
+  puts "==> Verifying that elasticsearch is ready to recieve data on localhost 9200..."
+  if !system('nc -vz localhost 9200 2>/dev/null') then raise ElasticSearchNotRunning end
+
   puts "==> Importing data from file..."
 
   process_erb("#{ENV['APP_APP_DIR']}/config/src/logstash-import-file.conf.erb", "#{ENV['APP_TMP_DIR']}/import-file.conf", args)
-  sh "pv -ept #{args[:path]} | java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_TMP_DIR']}/import-file.conf'"
+  sh "pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_TMP_DIR']}/import-file.conf'"
 end
 
 def process_erb(input, output, args = nil)
@@ -133,15 +163,16 @@ def run_integration_test(type, task = "file")
     Rake::Task['erase'].reenable
 
     begin
-        # wait until elasticsearch is ready
-        puts "==> Waiting for elasticsearch..."
+        puts "==> Waiting for elasticsearch to be ready ..."
         sh "while ! nc -vz localhost 9200 2>/dev/null ; do sleep 2 ; done"
 
-        # then we can start importing our test data
-        puts "==> Importing test data..."
+        puts "==> Importing test data ..."
         sh "ruby test/do-import.rb #{task} #{type} test/#{type}.log > /dev/null"
 
-        # and run our test queries
+        puts "==> Ensuring elasticsearch has finished indexing our data ..."
+        sh "curl -sXPOST 'http://localhost:9200/_all/_refresh' > /dev/null"
+      
+        puts "==> Running our test queries ..."
         sh "ruby test/#{type}.rb"
     ensure
         Process.kill("TERM", File.read("#{ENV['APP_RUN_DIR']}/elasticsearch.pid").to_i)

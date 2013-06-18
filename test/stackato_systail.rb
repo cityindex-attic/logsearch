@@ -21,7 +21,7 @@ class SimpleStackatoSystailTest < Test::Unit::TestCase
   def test_search_by_Name
     res = eslog_simple_search(
       nil,
-      '@fields.Name=cloud_controller'
+      '@fields.Name:cloud_controller'
     )
 
     assert_equal 5, res['hits']['total']
@@ -30,7 +30,7 @@ class SimpleStackatoSystailTest < Test::Unit::TestCase
   def test_search_by_NodeID
     res = eslog_simple_search(
       nil,
-      '@fields.NodeID="10.11.12.14"'
+      '@fields.NodeID:"10.11.12.14"'
     )
 
     assert_equal 1, res['hits']['total']
@@ -39,9 +39,9 @@ class SimpleStackatoSystailTest < Test::Unit::TestCase
   def test_search_by_Text
     res = eslog_simple_search(
       nil,
-      '@fields.Text="drain:logstash.apptail"'
+      '@fields.Text:"Jun 10 15:17:01 apps su[12223]: + ??? root:stackato"'
     )
 
-    assert_equal 5, res['hits']['total']
+    assert_equal 1, res['hits']['total']
   end
 end
