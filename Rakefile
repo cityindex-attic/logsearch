@@ -106,7 +106,7 @@ def do_import(args)
   puts "==> Importing data from file..."
 
   process_erb("#{ENV['APP_APP_DIR']}/config/src/logstash-import-file.conf.erb", "#{ENV['APP_TMP_DIR']}/import-file.conf", args)
-  sh "pv -ept #{args[:path]} | java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_TMP_DIR']}/import-file.conf'"
+  sh "pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_TMP_DIR']}/import-file.conf'"
 end
 
 def process_erb(input, output, args = nil)
