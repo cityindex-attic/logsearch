@@ -4,7 +4,11 @@ filter {
     #
 
     grep {
-        type => "iis_default"
+        match => ["@message", "^(\w)*$"]
+        negate => true
+    }
+
+    grep {
         match => ["@message", "^#"]
         negate => true
     }
@@ -19,17 +23,47 @@ filter {
         add_tag => "apache"
     }
 
+<% ["iis_default","iis_tradingapi"].each do |type| %>
     grok {
-        type => "iis_default"
+        type => "<%=type%>"
         pattern => "%{DATESTAMP:datetime} %{HOST:s_sitename} %{HOST:s_computername} %{IP:s_ip} %{WORD:cs_method} %{URIPATHPARAM:cs_uri_stem} (?:%{NOTSPACE:cs_uri_query}|-) %{POSINT:s_port} (?:%{USER:cs_username}|-) %{IP:c_ip} (?:HTTP/%{NUMBER:cs_version}|-) (?:%{NOTSPACE:cs_user_agent}|-) (?:%{NOTSPACE:cs_cookie}|-) (?:%{URI:cs_referer}|-) (?:%{IPORHOST:cs_host}|-) %{POSINT:sc_status} %{INT:sc_substatus} %{INT:win32_status} %{POSINT:sc_bytes} %{POSINT:cs_bytes} %{POSINT:time_taken}"
         add_tag => "iis"
+        add_tag => "<%=type%>"
     }
+<% end %>
 
     grok {
         type => "nginx_combined"
         pattern => "%{IPORHOST:remote_addr} - (?:%{USER:remote_user}|-) \[%{HTTPDATE:time_local}\] \"(?:%{WORD:request_method} %{URIPATHPARAM:request_uri}(?: HTTP/%{NUMBER:request_httpversion})?|-)\" %{INT:status} (?:%{INT:body_bytes_sent}|-) \"(?:%{URI:http_referer}|-)\" %{QS:http_user_agent}"
         add_tag => "nginx"
     }
+
+    #
+    # Tag TradingAPI events to map uri to http://labs.cityindex.com/docs/ > Contents > CIAPI Reference > HTTP Services > Group > Service
+    #
+<% services = [
+     { :group => "Authentication", :name => "LogOn", :method => "POST", :uri => '^/TradingApi/session$'},
+     { :group => "Authentication", :name => "DeleteSession", :method => "POST", :uri => '^/TradingApi/deleteSession$'},
+     { :group => "AccountInformation", :name => "GetClientAndTradingAccount", :method => "GET", :uri => '^/TradingApi/useraccount/ClientAndTradingAccount$'},
+     { :group => "Market", :name => "GetMarketInformation", :method => "GET", :uri => '^/TradingApi/market/\d+/information$' },
+     { :group => "SpreadMarkets", :name => "ListSpreadMarkets", :method => "GET", :uri => '^/TradingApi/spread/markets$'},
+     { :group => "News", :name => "ListNewsHeadlinesWithSource", :method => "GET", :uri => '^/TradingApi/news/\w+/\w+$' },
+     { :group => "PriceHistory", :name => "GetPriceBars", :method => "GET", :uri => '^/TradingApi/market/\d+/barhistory$' }, 
+     { :group => "TradesAndOrders", :name => "ListTradeHistory", :method => "GET", :uri => '^/TradingApi/(order/)*order/tradehistory$'},
+     { :group => "TradesAndOrders", :name => "ListOpenPositions", :method => "GET", :uri => '^/TradingApi/order/openpositions$'},
+     { :group => "TradesAndOrders", :name => "Trade", :method => "POST", :uri => '^/TradingApi/order/newtradeorder$'}    
+   ]
+
+   services.each do |service| %>
+    grep {
+        type => "iis_tradingapi"
+        add_field => [ "ci_tradingapi_servicegroup", "<%=service[:group]%>" ]
+        add_field => [ "ci_tradingapi_servicename", "<%=service[:name]%>" ]
+        match => [ "cs_method", "(?i:<%=service[:method]%>)" ]
+        match => [ "cs_uri_stem", "(?i:<%=service[:uri]%>)" ]
+        drop => false
+    }
+<% end %>
 
     #
     # specify the date field names for various types
@@ -40,10 +74,12 @@ filter {
         match => [ "timestamp", "dd/MMM/yyyy:HH:mm:ss Z" ]
     }
 
+<% ["iis_default","iis_tradingapi"].each do |type| %>
     date {
-        type => "iis_default"
+        type => "<%=type%>"
         match => [ "datetime", "yyyy-MM-dd HH:mm:ss" ]
     }
+<% end %>
 
     date {
         type => "nginx_combined"

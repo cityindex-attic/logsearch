@@ -36,9 +36,6 @@ res = eslog_search(
 )
 
 if (0 < res['hits']['total'])
-    for event in res['hits']['hits']
-        puts JSON.pretty_generate(event)
-    end
-
-    raise "Some log events were not parsed correctly (#{res['hits']['total']} events) - the most recent 10 are shown"
+    raise "Some log events were not parsed correctly (#{res['hits']['total']} events) " +
+          "- the most recent 10 are shown: #{JSON.pretty_generate(res)}"
 end
