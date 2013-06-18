@@ -1,0 +1,609 @@
+{
+  "title": "TradingAPI dashboard",
+  "rows": [
+    {
+      "title": "Options",
+      "height": "50px",
+      "editable": true,
+      "collapse": false,
+      "collapsable": true,
+      "panels": [
+        {
+          "loading": false,
+          "error": "",
+          "span": 5,
+          "editable": true,
+          "group": [
+            "default"
+          ],
+          "type": "timepicker",
+          "mode": "relative",
+          "time_options": [
+            "5m",
+            "15m",
+            "1h",
+            "6h",
+            "12h",
+            "24h",
+            "2d",
+            "5d"
+          ],
+          "timespan": "5d",
+          "timefield": "@timestamp",
+          "index": "[logstash-]YYYY.MM.DD",
+          "defaultindex": "NOINDEX",
+          "index_interval": "day",
+          "refresh": {
+            "enable": false,
+            "interval": 30,
+            "min": 3
+          },
+          "timeformat": ""
+        },
+        {
+          "loading": false,
+          "error": false,
+          "span": 3,
+          "editable": true,
+          "group": [
+            "default"
+          ],
+          "type": "dashcontrol",
+          "save": {
+            "gist": false,
+            "elasticsearch": true,
+            "local": true,
+            "default": true
+          },
+          "load": {
+            "gist": true,
+            "elasticsearch": true,
+            "local": true
+          },
+          "hide_control": false,
+          "elasticsearch_size": 20,
+          "elasticsearch_saveto": "kibana-int",
+          "temp": true,
+          "temp_ttl": "30d",
+          "hide": false
+        }
+      ]
+    },
+    {
+      "title": "Query",
+      "height": "50px",
+      "editable": true,
+      "collapse": false,
+      "collapsable": true,
+      "panels": [
+        {
+          "loading": false,
+          "error": false,
+          "span": 12,
+          "editable": true,
+          "group": [
+            "default"
+          ],
+          "type": "stringquery",
+          "label": "Search",
+          "query": "* AND @fields.cs_uri_stem:\"/TradingAPI\"",
+          "size": 100,
+          "sort": [
+            "_score",
+            "desc"
+          ],
+          "multi": false,
+          "multi_arrange": "horizontal"
+        }
+      ]
+    },
+    {
+      "title": "Summary",
+      "height": "150px",
+      "editable": true,
+      "collapse": false,
+      "collapsable": true,
+      "panels": [
+        {
+          "loading": false,
+          "error": false,
+          "span": 3,
+          "editable": true,
+          "group": [
+            "default"
+          ],
+          "type": "pie",
+          "query": {
+            "query": "*",
+            "field": "@fields.sc_status"
+          },
+          "size": 10,
+          "exclude": [],
+          "donut": false,
+          "tilt": true,
+          "legend": "above",
+          "labels": true,
+          "mode": "terms",
+          "default_field": "DEFAULT",
+          "spyable": true,
+          "title": "HTTP status"
+        },
+        {
+          "loading": false,
+          "span": 3,
+          "editable": true,
+          "group": [
+            "default"
+          ],
+          "type": "hits",
+          "query": [
+            {
+              "query": "@fields.ci_tradingapi_servicename=LogOn",
+              "label": "LogOn"
+            },
+            {
+              "query": "@fields.ci_tradingapi_servicename=Trade",
+              "label": "Trade"
+            },
+            {
+              "query": "@fields.ci_tradingapi_servicename=GetMarketInformation",
+              "label": "GetMarketInformation"
+            }
+          ],
+          "style": {
+            "font-size": "10pt"
+          },
+          "arrangement": "vertical",
+          "chart": "bar",
+          "counter_pos": "above",
+          "donut": false,
+          "tilt": false,
+          "labels": true,
+          "title": "Totals"
+        }
+      ]
+    },
+    {
+      "title": "Graph",
+      "height": "350px",
+      "editable": true,
+      "collapse": false,
+      "collapsable": true,
+      "panels": [
+        {
+          "loading": false,
+          "span": 6,
+          "editable": true,
+          "group": [
+            "default"
+          ],
+          "type": "histogram",
+          "query": [
+            {
+              "query": "@fields.ci_tradingapi_servicename=LogOn",
+              "label": "LogOn"
+            },
+            {
+              "query": "@fields.ci_tradingapi_servicename=Trade",
+              "label": "Trade"
+            },
+            {
+              "query": "@fields.ci_tradingapi_servicename=GetMarketInformation",
+              "label": "GetMarketInformation"
+            }
+          ],
+          "mode": "mean",
+          "value_field": "@fields.time_taken",
+          "auto_int": true,
+          "resolution": 100,
+          "interval": "1h",
+          "fill": 3,
+          "linewidth": 2,
+          "timezone": "browser",
+          "spyable": true,
+          "zoomlinks": true,
+          "bars": false,
+          "stack": false,
+          "points": false,
+          "lines": true,
+          "legend": true,
+          "x-axis": true,
+          "y-axis": true,
+          "percentage": false,
+          "interactive": true,
+          "title": "Request Latency (mean in ms)",
+          "error": false
+        },
+        {
+          "loading": false,
+          "span": 6,
+          "editable": true,
+          "group": [
+            "default"
+          ],
+          "type": "histogram",
+          "query": [
+            {
+              "query": "* AND @fields.cs_uri_stem:\"/TradingAPI\"",
+              "label": "* AND @fields.cs_uri_stem:\"/TradingAPI\""
+            }
+          ],
+          "interval": "1h",
+          "show": [
+            "points",
+            "lines",
+            "legend",
+            "x-axis",
+            "y-axis"
+          ],
+          "timezone": "browser",
+          "spyable": true,
+          "zoomlinks": true,
+          "fill": 0,
+          "linewidth": 2,
+          "bars": true,
+          "stack": true,
+          "points": false,
+          "lines": false,
+          "legend": true,
+          "x-axis": true,
+          "y-axis": true,
+          "mode": "count",
+          "value_field": null,
+          "auto_int": true,
+          "resolution": 100,
+          "percentage": false,
+          "interactive": true,
+          "title": "Request count"
+        },
+        {
+          "loading": false,
+          "span": 0,
+          "editable": true,
+          "group": [
+            "default"
+          ],
+          "type": "hits",
+          "query": [
+            {
+              "query": "* AND @fields.cs_uri_stem:\"/TradingAPI\"",
+              "label": "* AND @fields.cs_uri_stem:\"/TradingAPI\""
+            }
+          ],
+          "style": {
+            "font-size": "9pt"
+          },
+          "aggregate": false,
+          "arrangement": "horizontal",
+          "chart": true,
+          "counters": true,
+          "count_pos": "above",
+          "counter_pos": "above",
+          "donut": false,
+          "tilt": false,
+          "labels": true
+        }
+      ]
+    },
+    {
+      "title": "Events",
+      "height": "350px",
+      "editable": true,
+      "collapse": false,
+      "collapsable": true,
+      "panels": [
+        {
+          "loading": false,
+          "error": false,
+          "span": 2,
+          "editable": true,
+          "group": [
+            "default"
+          ],
+          "type": "fields",
+          "style": {},
+          "arrange": "vertical",
+          "micropanel_position": "right",
+          "sort": [
+            "@fields.ci_tradingapi_servicegroup",
+            "desc"
+          ],
+          "query": "* AND @fields.cs_uri_stem:\"/TradingAPI\""
+        },
+        {
+          "loading": false,
+          "error": false,
+          "span": 10,
+          "editable": true,
+          "group": [
+            "default"
+          ],
+          "type": "table",
+          "query": "* AND @fields.cs_uri_stem:\"/TradingAPI\"",
+          "interval": "1y",
+          "show": [
+            "bars",
+            "y-axis",
+            "x-axis",
+            "legend"
+          ],
+          "fill": 3,
+          "overflow": "min-height",
+          "timezone": "browser",
+          "spyable": true,
+          "zoomlinks": true,
+          "size": 50,
+          "pages": 10,
+          "offset": 0,
+          "sort": [
+            "@fields.ci_tradingapi_servicegroup",
+            "desc"
+          ],
+          "style": {
+            "font-size": "9pt"
+          },
+          "fields": [
+            "@timestamp",
+            "@fields.ci_tradingapi_servicegroup",
+            "@fields.ci_tradingapi_servicename",
+            "@fields.time_taken",
+            "@fields.sc_status",
+            "@message"
+          ],
+          "sortable": true,
+          "highlight": [],
+          "header": true,
+          "paging": true
+        }
+      ]
+    }
+  ],
+  "editable": true,
+  "last": {
+    "title": "Logstash Search",
+    "rows": [
+      {
+        "title": "Options",
+        "height": "50px",
+        "editable": true,
+        "collapse": false,
+        "collapsable": true,
+        "panels": [
+          {
+            "loading": false,
+            "error": "",
+            "span": 5,
+            "editable": true,
+            "group": [
+              "default"
+            ],
+            "type": "timepicker",
+            "mode": "relative",
+            "time_options": [
+              "5m",
+              "15m",
+              "1h",
+              "6h",
+              "12h",
+              "24h",
+              "2d",
+              "5d"
+            ],
+            "timespan": "6h",
+            "timefield": "@timestamp",
+            "index": "[logstash-]YYYY.MM.DD",
+            "defaultindex": "NOINDEX",
+            "index_interval": "day",
+            "refresh": {
+              "enable": false,
+              "interval": 30,
+              "min": 3
+            },
+            "timeformat": ""
+          },
+          {
+            "loading": false,
+            "error": false,
+            "span": 3,
+            "editable": true,
+            "group": [
+              "default"
+            ],
+            "type": "dashcontrol",
+            "save": {
+              "gist": false,
+              "elasticsearch": true,
+              "local": true,
+              "default": true
+            },
+            "load": {
+              "gist": true,
+              "elasticsearch": true,
+              "local": true
+            },
+            "hide_control": false,
+            "elasticsearch_size": 20,
+            "elasticsearch_saveto": "kibana-int",
+            "temp": true,
+            "temp_ttl": "30d"
+          }
+        ]
+      },
+      {
+        "title": "Query",
+        "height": "50px",
+        "editable": true,
+        "collapse": false,
+        "collapsable": true,
+        "panels": [
+          {
+            "loading": false,
+            "error": false,
+            "span": 12,
+            "editable": true,
+            "group": [
+              "default"
+            ],
+            "type": "stringquery",
+            "label": "Search",
+            "query": "*",
+            "size": 100,
+            "sort": [
+              "_score",
+              "desc"
+            ],
+            "multi": false,
+            "multi_arrange": "horizontal"
+          }
+        ]
+      },
+      {
+        "title": "Graph",
+        "height": "350px",
+        "editable": true,
+        "collapse": false,
+        "collapsable": true,
+        "panels": [
+          {
+            "loading": false,
+            "span": 12,
+            "editable": true,
+            "group": [
+              "default"
+            ],
+            "type": "histogram",
+            "query": [
+              {
+                "query": "*",
+                "label": "*"
+              }
+            ],
+            "interval": "5m",
+            "show": [
+              "points",
+              "lines",
+              "legend",
+              "x-axis",
+              "y-axis"
+            ],
+            "timezone": "browser",
+            "spyable": true,
+            "zoomlinks": true,
+            "fill": 0,
+            "linewidth": 2,
+            "bars": true,
+            "stack": true,
+            "points": false,
+            "lines": false,
+            "legend": true,
+            "x-axis": true,
+            "y-axis": true,
+            "mode": "count",
+            "value_field": null,
+            "auto_int": true,
+            "resolution": 100,
+            "percentage": false,
+            "interactive": true
+          },
+          {
+            "loading": false,
+            "span": 0,
+            "editable": true,
+            "group": [
+              "default"
+            ],
+            "type": "hits",
+            "query": [
+              {
+                "query": "*",
+                "label": "*"
+              }
+            ],
+            "style": {
+              "font-size": "9pt"
+            },
+            "aggregate": false,
+            "arrangement": "horizontal",
+            "chart": true,
+            "counters": true,
+            "count_pos": "above",
+            "counter_pos": "above",
+            "donut": false,
+            "tilt": false,
+            "labels": true
+          }
+        ]
+      },
+      {
+        "title": "Events",
+        "height": "350px",
+        "editable": true,
+        "collapse": false,
+        "collapsable": true,
+        "panels": [
+          {
+            "loading": false,
+            "error": false,
+            "span": 2,
+            "editable": true,
+            "group": [
+              "default"
+            ],
+            "type": "fields",
+            "style": {},
+            "arrange": "vertical",
+            "micropanel_position": "right",
+            "sort": [
+              "@timestamp",
+              "desc"
+            ],
+            "query": "*"
+          },
+          {
+            "loading": false,
+            "error": false,
+            "span": 10,
+            "editable": true,
+            "group": [
+              "default"
+            ],
+            "type": "table",
+            "query": "*",
+            "interval": "1y",
+            "show": [
+              "bars",
+              "y-axis",
+              "x-axis",
+              "legend"
+            ],
+            "fill": 3,
+            "overflow": "min-height",
+            "timezone": "browser",
+            "spyable": true,
+            "zoomlinks": true,
+            "size": 50,
+            "pages": 10,
+            "offset": 0,
+            "sort": [
+              "@timestamp",
+              "desc"
+            ],
+            "style": {
+              "font-size": "9pt"
+            },
+            "fields": [
+              "@timestamp",
+              "@message"
+            ],
+            "sortable": true,
+            "highlight": [],
+            "header": true,
+            "paging": true
+          }
+        ]
+      }
+    ],
+    "editable": true,
+    "last": null
+  }
+}
