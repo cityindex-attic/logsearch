@@ -17,7 +17,7 @@
             "default"
           ],
           "type": "timepicker",
-          "mode": "absolute",
+          "mode": "relative",
           "time_options": [
             "5m",
             "15m",
@@ -28,7 +28,7 @@
             "2d",
             "5d"
           ],
-          "timespan": "6h",
+          "timespan": "5d",
           "timefield": "@timestamp",
           "index": "[logstash-]YYYY.MM.DD",
           "defaultindex": "NOINDEX",
@@ -38,11 +38,7 @@
             "interval": 30,
             "min": 3
           },
-          "timeformat": "",
-          "time": {
-            "from": "06/05/2013 05:44:42",
-            "to": "06/05/2013 14:36:58"
-          }
+          "timeformat": ""
         },
         {
           "loading": false,
@@ -142,16 +138,16 @@
           "type": "hits",
           "query": [
             {
-              "query": "@fields.cs_uri_stem=\"session\"",
-              "label": "Login"
+              "query": "@fields.ci_tradingapi_servicename=LogOn",
+              "label": "LogOn"
             },
             {
-              "query": "@fields.cs_uri_stem=\"order\"",
+              "query": "@fields.ci_tradingapi_servicename=Trade",
               "label": "Trade"
             },
             {
-              "query": "@fields.cs_uri_stem=\"market\"",
-              "label": "Market"
+              "query": "@fields.ci_tradingapi_servicename=GetMarketInformation",
+              "label": "GetMarketInformation"
             }
           ],
           "style": {
@@ -184,23 +180,23 @@
           "type": "histogram",
           "query": [
             {
-              "query": "@fields.cs_uri_stem=\"session\"",
-              "label": "Login"
+              "query": "@fields.ci_tradingapi_servicename=LogOn",
+              "label": "LogOn"
             },
             {
-              "query": "@fields.cs_uri_stem=\"order\"",
+              "query": "@fields.ci_tradingapi_servicename=Trade",
               "label": "Trade"
             },
             {
-              "query": "@fields.cs_uri_stem=\"market\"",
-              "label": "Market"
+              "query": "@fields.ci_tradingapi_servicename=GetMarketInformation",
+              "label": "GetMarketInformation"
             }
           ],
           "mode": "mean",
           "value_field": "@fields.time_taken",
           "auto_int": true,
           "resolution": 100,
-          "interval": "5m",
+          "interval": "1h",
           "fill": 3,
           "linewidth": 2,
           "timezone": "browser",
@@ -215,7 +211,8 @@
           "y-axis": true,
           "percentage": false,
           "interactive": true,
-          "title": "Request Latency (mean in ms)"
+          "title": "Request Latency (mean in ms)",
+          "error": false
         },
         {
           "loading": false,
@@ -231,7 +228,7 @@
               "label": "* AND @fields.cs_uri_stem:\"/TradingAPI\""
             }
           ],
-          "interval": "5m",
+          "interval": "1h",
           "show": [
             "points",
             "lines",
@@ -308,7 +305,7 @@
           "arrange": "vertical",
           "micropanel_position": "right",
           "sort": [
-            "@fields.sc_status",
+            "@fields.ci_tradingapi_servicegroup",
             "desc"
           ],
           "query": "* AND @fields.cs_uri_stem:\"/TradingAPI\""
@@ -339,7 +336,7 @@
           "pages": 10,
           "offset": 0,
           "sort": [
-            "@fields.sc_status",
+            "@fields.ci_tradingapi_servicegroup",
             "desc"
           ],
           "style": {
@@ -347,7 +344,8 @@
           },
           "fields": [
             "@timestamp",
-            "@fields.cs_uri_stem",
+            "@fields.ci_tradingapi_servicegroup",
+            "@fields.ci_tradingapi_servicename",
             "@fields.time_taken",
             "@fields.sc_status",
             "@message"
@@ -361,5 +359,251 @@
     }
   ],
   "editable": true,
-  "last": null
+  "last": {
+    "title": "Logstash Search",
+    "rows": [
+      {
+        "title": "Options",
+        "height": "50px",
+        "editable": true,
+        "collapse": false,
+        "collapsable": true,
+        "panels": [
+          {
+            "loading": false,
+            "error": "",
+            "span": 5,
+            "editable": true,
+            "group": [
+              "default"
+            ],
+            "type": "timepicker",
+            "mode": "relative",
+            "time_options": [
+              "5m",
+              "15m",
+              "1h",
+              "6h",
+              "12h",
+              "24h",
+              "2d",
+              "5d"
+            ],
+            "timespan": "6h",
+            "timefield": "@timestamp",
+            "index": "[logstash-]YYYY.MM.DD",
+            "defaultindex": "NOINDEX",
+            "index_interval": "day",
+            "refresh": {
+              "enable": false,
+              "interval": 30,
+              "min": 3
+            },
+            "timeformat": ""
+          },
+          {
+            "loading": false,
+            "error": false,
+            "span": 3,
+            "editable": true,
+            "group": [
+              "default"
+            ],
+            "type": "dashcontrol",
+            "save": {
+              "gist": false,
+              "elasticsearch": true,
+              "local": true,
+              "default": true
+            },
+            "load": {
+              "gist": true,
+              "elasticsearch": true,
+              "local": true
+            },
+            "hide_control": false,
+            "elasticsearch_size": 20,
+            "elasticsearch_saveto": "kibana-int",
+            "temp": true,
+            "temp_ttl": "30d"
+          }
+        ]
+      },
+      {
+        "title": "Query",
+        "height": "50px",
+        "editable": true,
+        "collapse": false,
+        "collapsable": true,
+        "panels": [
+          {
+            "loading": false,
+            "error": false,
+            "span": 12,
+            "editable": true,
+            "group": [
+              "default"
+            ],
+            "type": "stringquery",
+            "label": "Search",
+            "query": "*",
+            "size": 100,
+            "sort": [
+              "_score",
+              "desc"
+            ],
+            "multi": false,
+            "multi_arrange": "horizontal"
+          }
+        ]
+      },
+      {
+        "title": "Graph",
+        "height": "350px",
+        "editable": true,
+        "collapse": false,
+        "collapsable": true,
+        "panels": [
+          {
+            "loading": false,
+            "span": 12,
+            "editable": true,
+            "group": [
+              "default"
+            ],
+            "type": "histogram",
+            "query": [
+              {
+                "query": "*",
+                "label": "*"
+              }
+            ],
+            "interval": "5m",
+            "show": [
+              "points",
+              "lines",
+              "legend",
+              "x-axis",
+              "y-axis"
+            ],
+            "timezone": "browser",
+            "spyable": true,
+            "zoomlinks": true,
+            "fill": 0,
+            "linewidth": 2,
+            "bars": true,
+            "stack": true,
+            "points": false,
+            "lines": false,
+            "legend": true,
+            "x-axis": true,
+            "y-axis": true,
+            "mode": "count",
+            "value_field": null,
+            "auto_int": true,
+            "resolution": 100,
+            "percentage": false,
+            "interactive": true
+          },
+          {
+            "loading": false,
+            "span": 0,
+            "editable": true,
+            "group": [
+              "default"
+            ],
+            "type": "hits",
+            "query": [
+              {
+                "query": "*",
+                "label": "*"
+              }
+            ],
+            "style": {
+              "font-size": "9pt"
+            },
+            "aggregate": false,
+            "arrangement": "horizontal",
+            "chart": true,
+            "counters": true,
+            "count_pos": "above",
+            "counter_pos": "above",
+            "donut": false,
+            "tilt": false,
+            "labels": true
+          }
+        ]
+      },
+      {
+        "title": "Events",
+        "height": "350px",
+        "editable": true,
+        "collapse": false,
+        "collapsable": true,
+        "panels": [
+          {
+            "loading": false,
+            "error": false,
+            "span": 2,
+            "editable": true,
+            "group": [
+              "default"
+            ],
+            "type": "fields",
+            "style": {},
+            "arrange": "vertical",
+            "micropanel_position": "right",
+            "sort": [
+              "@timestamp",
+              "desc"
+            ],
+            "query": "*"
+          },
+          {
+            "loading": false,
+            "error": false,
+            "span": 10,
+            "editable": true,
+            "group": [
+              "default"
+            ],
+            "type": "table",
+            "query": "*",
+            "interval": "1y",
+            "show": [
+              "bars",
+              "y-axis",
+              "x-axis",
+              "legend"
+            ],
+            "fill": 3,
+            "overflow": "min-height",
+            "timezone": "browser",
+            "spyable": true,
+            "zoomlinks": true,
+            "size": 50,
+            "pages": 10,
+            "offset": 0,
+            "sort": [
+              "@timestamp",
+              "desc"
+            ],
+            "style": {
+              "font-size": "9pt"
+            },
+            "fields": [
+              "@timestamp",
+              "@message"
+            ],
+            "sortable": true,
+            "highlight": [],
+            "header": true,
+            "paging": true
+          }
+        ]
+      }
+    ],
+    "editable": true,
+    "last": null
+  }
 }
