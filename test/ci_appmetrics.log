@@ -25,3 +25,21 @@
 2013-05-14 00:08:16.7360000	Info_LatencyCollectorVersion	CiapiLatencyCollectorCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
 2013-05-14 00:08:22.6940000	Event	Central settings updated
 2013-05-15 00:08:22.6950000	SessionFinished	
+2013-05-14 04:45:14.7580000	Latency General.DefaultPage	0.016992
+2013-05-14 04:45:20.7650000	Latency General.DefaultPage	0.0166625
+2013-05-14 04:45:24.6810000	Latency CIAPI.LogIn	0.0935096
+2013-05-14 04:45:24.7750000	Latency CIAPI.GetClientAndTradingAccount	0.0942767
+2013-05-14 04:45:24.9470000	Latency CIAPI.ListSpreadMarkets	0.1719842
+2013-05-14 04:45:26.5300000	Latency CIAPI.ListNewsHeadlinesWithSource	1.5829053
+2013-05-14 04:45:26.6030000	Latency CIAPI.GetMarketInformation	0.0724037
+2013-05-14 04:45:26.6450000	Latency CIAPI.GetPriceBars	0.0421701
+2013-05-14 04:45:26.7640000	Latency General.DefaultPage	0.0165245
+2013-05-14 04:45:28.2500000	Info_CloseAllOpenPositions_Count	0
+2013-05-14 04:45:28.3900000	Latency CIAPI.Trade	0.1401438
+2013-05-14 04:45:28.4250000	Latency CIAPI.ListOpenPositions	0.034858
+2013-05-14 04:45:28.5460000	Latency CIAPI.Trade	0.1209036
+2013-05-14 04:45:28.6390000	Latency CIAPI.ListTradeHistory	0.0925315
+2013-05-14 04:45:28.6770000	Latency CIAPI.LogOut	0.0381982
+2013-05-14 04:45:32.7730000	Latency General.DefaultPage	0.016546
+2013-05-14 04:45:35.2240000	Exception	Session is not valid\r\n\r\n   at Salient.ReliableHttpClient.ClientBase.Request(RequestMethod method, String target, String uriTemplate, Dictionary`2 headers, Dictionary`2 parameters, ContentType requestContentType, ContentType responseContentType, TimeSpan cacheDuration, Int32 timeout, Int32 retryCount)\r\n   at Salient.ReliableHttpClient.ClientBase.Request[T](RequestMethod method, String target, String uriTemplate, Dictionary`2 headers, Dictionary`2 parameters, ContentType requestContentType, ContentType responseContentType, TimeSpan cacheDuration, Int32 timeout, Int32 retryCount)\r\n   at CIAPI.Rpc.Client.Request[T](RequestMethod method, String target, String uriTemplate, Dictionary`2 parameters, ContentType requestContentType, ContentType responseContentType, TimeSpan cacheDuration, Int32 timeout, Int32 retryCount)\r\n   at CIAPI.Rpc.Client.LogOut()\r\n   at LatencyCollectorCore.Monitors.AllServiceMonitor.InterruptInternal()\r\n   at LatencyCollectorCore.Monitors.LatencyMonitor.Interrupt()\r\n\r\n
+2013-05-14 04:45:35.3260000	SessionFinished	
