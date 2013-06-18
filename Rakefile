@@ -85,6 +85,7 @@ namespace :test do
         Rake::Task["test:type:stackato_apptail"].invoke
         Rake::Task["test:type:stackato_event"].invoke
         Rake::Task["test:type:stackato_systail"].invoke
+        Rake::Task["test:type:ci_appmetrics"].invoke
 
         puts "==> All tests completed successfully"
     end
@@ -118,6 +119,11 @@ namespace :test do
         desc "Run stackato_systail tests"
         task :stackato_systail => [ :erase ] do
             run_integration_test("stackato_systail", "json")
+        end
+
+        desc "Run ci_appmetrics tests"
+        task :ci_appmetrics => [ :erase ] do
+            run_integration_test("ci_appmetrics", "file")
         end
     end
 end

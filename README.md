@@ -58,6 +58,21 @@ Example:
     127.0.0.1 - - [03/Jun/2013:22:41:31 -0600] "GET / HTTP/1.0" 200 3785 "-" "Reeder/1.5.7 CFNetwork/609 Darwin/13.0.0"
 
 
+#### ci_appmetrics
+
+Documentation: [fandrei/AppMetrics](https://github.com/fandrei/AppMetrics/blob/master/samples/ReportingToAppMetrics/Program.cs#L49)
+
+Fields:
+
+ * `time`
+ * `name`
+ * `value`
+
+Example:
+
+    2013-05-14 00:08:15.6680000	System_ComputerName	AMAZONA-123456
+
+
 #### iis_default
 
 Fields:
