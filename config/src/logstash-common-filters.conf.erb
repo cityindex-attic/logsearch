@@ -58,8 +58,8 @@ filter {
         type => "iis_tradingapi"
         add_field => [ "ci_tradingapi_servicegroup", "<%=service[:group]%>" ]
         add_field => [ "ci_tradingapi_servicename", "<%=service[:name]%>" ]
-        match => [ "cs_method", "<%=service[:method]%>" ]
-        match => [ "cs_uri_stem", "<%=service[:uri]%>" ]
+        match => [ "cs_method", "(?i:<%=service[:method]%>)" ]
+        match => [ "cs_uri_stem", "(?i:<%=service[:uri]%>)" ]
         drop => false
     }
 <% end %>
