@@ -19,7 +19,7 @@ class SimpleTradingAPITest < Test::Unit::TestCase
   def test_timetaken_should_be_integer
     res = eslog_simple_search(
       nil,
-      "@fields.ci_tradingapi_servicename=LogOn"
+      "@fields.ci_tradingapi_servicename:LogOn"
     )
     actual_time_taken = res['hits']['hits'][0]['_source']['@fields']['time_taken'][0]
 
@@ -60,10 +60,10 @@ class SimpleTradingAPITest < Test::Unit::TestCase
   def assert_servicename(servicename, expected_matches)
     actual = eslog_simple_search(
       nil,
-      "@fields.ci_tradingapi_servicename=#{servicename}"
+      "@fields.ci_tradingapi_servicename:#{servicename}"
     )
 
     assert_equal expected_matches, actual['hits']['total'], 
-      "Searching for @fields.ci_tradingapi_servicename=#{servicename} identified the wrong number of requests: #{JSON.pretty_generate(actual)}"
+      "Searching for @fields.ci_tradingapi_servicename:#{servicename} identified the wrong number of requests: #{JSON.pretty_generate(actual)}"
   end
 end

@@ -43,7 +43,7 @@ filter {
     #
 <% services = [
      { :group => "Authentication", :name => "LogOn", :method => "POST", :uri => '^/TradingApi/session$'},
-     { :group => "Authentication", :name => "DeleteSession", :method => "POST", :uri => '^/TradingApi/deleteSession$'},
+     { :group => "Authentication", :name => "DeleteSession", :method => "POST", :uri => '^/TradingApi/session/deleteSession$'},
      { :group => "AccountInformation", :name => "GetClientAndTradingAccount", :method => "GET", :uri => '^/TradingApi/useraccount/ClientAndTradingAccount$'},
      { :group => "Market", :name => "GetMarketInformation", :method => "GET", :uri => '^/TradingApi/market/\d+/information$' },
      { :group => "SpreadMarkets", :name => "ListSpreadMarkets", :method => "GET", :uri => '^/TradingApi/spread/markets$'},
