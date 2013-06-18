@@ -62,6 +62,7 @@ namespace :test do
 
         Rake::Task["test:type:nginx_combined"].invoke
         Rake::Task["test:type:iis_default"].invoke
+        Rake::Task["test:type:iis_tradingapi"].invoke
         Rake::Task["test:type:stackato_apptail"].invoke
         Rake::Task["test:type:stackato_event"].invoke
         Rake::Task["test:type:stackato_systail"].invoke
@@ -80,7 +81,7 @@ namespace :test do
             run_integration_test("iis_default", "file")
         end
 
-        desc "Run tradingapi tests"
+        desc "Run iis_tradingapi tests"
         task :iis_tradingapi => [ :erase ] do
             run_integration_test("iis_tradingapi", "file")
         end
@@ -143,10 +144,10 @@ def run_integration_test(type, task = "file")
         puts "==> Importing test data ..."
         sh "ruby test/do-import.rb #{task} #{type} test/#{type}.log > /dev/null"
 
-        puts "==> Ensuring elastic search has finished indexing our data..."
+        puts "==> Ensuring elasticsearch has finished indexing our data ..."
         sh "curl -sXPOST 'http://localhost:9200/_all/_refresh' > /dev/null"
       
-        puts "==> Run our test queries ..."
+        puts "==> Running our test queries ..."
         sh "ruby test/#{type}.rb"
     ensure
         Process.kill("TERM", File.read("#{ENV['APP_RUN_DIR']}/elasticsearch.pid").to_i)
