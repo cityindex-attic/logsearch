@@ -3,6 +3,8 @@ require 'dotenv'
 
 Dotenv.load('../.env')
 
+class ElasticSearchNotRunning < RuntimeError; end  
+
 desc "Connect to development VM"
 task :connect do
   sh "vagrant up"
@@ -108,6 +110,9 @@ task :erase do
 end
 
 def do_import(args)
+  puts "==> Verifying that elasticsearch is ready to recieve data on localhost 9200..."
+  if !system('nc -vz localhost 9200 2>/dev/null') then raise ElasticSearchNotRunning end
+
   puts "==> Importing data from file..."
 
   process_erb("#{ENV['APP_APP_DIR']}/config/src/logstash-import-file.conf.erb", "#{ENV['APP_TMP_DIR']}/import-file.conf", args)
