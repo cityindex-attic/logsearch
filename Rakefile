@@ -50,6 +50,11 @@ namespace :run do
   task :elasticsearch_nodeps do
     sh "foreman start elasticsearch"
   end
+
+  desc "Run redis-server"
+  task :redis do
+    sh "#{ENV['APP_VENDOR_DIR']}/redis/src/redis-server"
+  end
 end
 
 desc "Import existing data"
