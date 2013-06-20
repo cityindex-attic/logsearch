@@ -12,45 +12,47 @@ task :connect do
   sh "vagrant ssh"
 end
 
-desc "Generate configuration files"
-task :configure do
-  puts "==> Configuring..."
-  process_erb("#{ENV['APP_APP_DIR']}/config/src/nginx.conf.erb", "#{ENV['APP_APP_DIR']}/config/nginx.conf")
-  process_erb("#{ENV['APP_APP_DIR']}/config/src/elasticsearch-standalone.json.erb", "#{ENV['APP_APP_DIR']}/config/elasticsearch.json")
-  process_erb("#{ENV['APP_APP_DIR']}/config/src/kibana-config.js.erb", "#{ENV['APP_VENDOR_DIR']}/kibana/config.js")
-
-  # now we need to startup elasticsearch so we can send it the configs we want to use
-  pid = fork do
-    exec "rake run:elasticsearch_nodeps > /dev/null"
-    Kernel.exit!
-  end
-
-  begin
-    sh "while ! nc -vz localhost 9200 2>/dev/null ; do sleep 2 ; done"
-    sh "curl -sXPUT 'http://localhost:9200/_template/template_default' -d @#{ENV['APP_APP_DIR']}/config/elasticsearch-templates/default.json > /dev/null"
-  ensure
-    Process.kill("TERM", File.read("#{ENV['APP_RUN_DIR']}/elasticsearch.pid").to_i)
-    Process.waitpid(pid)
-  end
-end
-
-desc "Run ElasticSearch & Kibana"
-task :run => :configure do
-  puts "==> Starting..."
+desc "Start up the elasticsearch backend and kibana frontend service"
+task :run do
   sh "foreman start"
 end
 
 namespace :run do
   desc "Run ElasticSearch"
-  task :elasticsearch => :configure do
-    sh "foreman start elasticsearch"
+  task :elasticsearch do
+    process_erb("#{ENV['APP_APP_DIR']}/config/src/elasticsearch-standalone.json.erb", "#{ENV['APP_APP_DIR']}/config/elasticsearch.json")
+
+    # now we need to startup elasticsearch so we can send it the configs we want to use
+    pid = fork do
+      # the term signal will cause an error, so suppress the output and prevent confusion
+      exec "rake run:elasticsearch_nodeps > /dev/null 2>&1"
+      Kernel.exit!
+    end
+
+    begin
+      sh "while ! nc -vz localhost 9200 2>/dev/null ; do sleep 2 ; done"
+      sh "curl -sXPUT 'http://localhost:9200/_template/template_default' -d @#{ENV['APP_APP_DIR']}/config/elasticsearch-templates/default.json > /dev/null"
+    ensure
+      Process.kill("TERM", File.read("#{ENV['APP_RUN_DIR']}/elasticsearch.pid").to_i)
+      Process.waitpid(pid)
+    end
+
+    Rake::Task['run:elasticsearch_nodeps'].invoke
   end
 
   task :elasticsearch_nodeps do
-    sh "foreman start elasticsearch"
+    sh "'#{ENV['APP_VENDOR_DIR']}/elasticsearch/bin/elasticsearch' -f -Des.config='#{ENV['APP_APP_DIR']}/config/elasticsearch.json' -Des.pidfile='#{ENV['APP_RUN_DIR']}/elasticsearch.pid'"
   end
 
-  desc "Run redis-server"
+  desc "Run the kibana frontend"
+  task :kibana do
+    process_erb("#{ENV['APP_APP_DIR']}/config/src/nginx.conf.erb", "#{ENV['APP_APP_DIR']}/config/nginx.conf")
+    process_erb("#{ENV['APP_APP_DIR']}/config/src/kibana-config.js.erb", "#{ENV['APP_VENDOR_DIR']}/kibana/config.js")
+
+    sh "nginx -c '#{ENV['APP_APP_DIR']}/config/nginx.conf'"
+  end
+
+  desc "Run redis to be a broker"
   task :redis do
     sh "#{ENV['APP_VENDOR_DIR']}/redis/src/redis-server"
   end
@@ -103,37 +105,37 @@ namespace :test do
 
     namespace :type do
         desc "Run nginx_combined tests"
-        task :nginx_combined => [ :erase, :configure ] do
+        task :nginx_combined => :erase do
             run_integration_test("nginx_combined", "file")
         end
 
         desc "Run iis_default tests"
-        task :iis_default => [ :erase, :configure ] do
+        task :iis_default => :erase do
             run_integration_test("iis_default", "file")
         end
 
         desc "Run iis_tradingapi tests"
-        task :iis_tradingapi => [ :erase, :configure ] do
+        task :iis_tradingapi => :erase do
             run_integration_test("iis_tradingapi", "file")
         end
 
         desc "Run stackato_apptail tests"
-        task :stackato_apptail => [ :erase, :configure ] do
+        task :stackato_apptail => :erase do
             run_integration_test("stackato_apptail", "json")
         end
 
         desc "Run stackato_event tests"
-        task :stackato_event => [ :erase, :configure ] do
+        task :stackato_event => :erase do
             run_integration_test("stackato_event", "json")
         end
 
         desc "Run stackato_systail tests"
-        task :stackato_systail => [ :erase, :configure ] do
+        task :stackato_systail => :erase do
             run_integration_test("stackato_systail", "json")
         end
 
         desc "Run ci_appmetrics tests"
-        task :ci_appmetrics => [ :erase, :configure ] do
+        task :ci_appmetrics => :erase do
             run_integration_test("ci_appmetrics", "file")
         end
     end
@@ -166,13 +168,12 @@ end
 
 def run_integration_test(type, task = "file")
     pid = fork do
-        exec "rake run:elasticsearch_nodeps > /dev/null"
+        exec "rake run:elasticsearch_nodeps > /dev/null 2>&1"
         Kernel.exit!
     end
 
     # dependencies would have marked these to not run again, so reset that
     Rake::Task['erase'].reenable
-    Rake::Task['configure'].reenable
 
     begin
         puts "==> Waiting for elasticsearch to be ready ..."
