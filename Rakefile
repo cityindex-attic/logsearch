@@ -17,7 +17,6 @@ task :configure do
   puts "==> Configuring..."
   process_erb("#{ENV['APP_APP_DIR']}/config/src/nginx.conf.erb", "#{ENV['APP_APP_DIR']}/config/nginx.conf")
   process_erb("#{ENV['APP_APP_DIR']}/config/src/elasticsearch-standalone.json.erb", "#{ENV['APP_APP_DIR']}/config/elasticsearch.json")
-  process_erb("#{ENV['APP_APP_DIR']}/config/src/logstash-standalone.conf.erb", "#{ENV['APP_APP_DIR']}/config/logstash.conf")
   process_erb("#{ENV['APP_APP_DIR']}/config/src/kibana-config.js.erb", "#{ENV['APP_VENDOR_DIR']}/kibana/config.js")
 
   # now we need to startup elasticsearch so we can send it the configs we want to use
@@ -54,6 +53,13 @@ namespace :run do
   desc "Run redis-server"
   task :redis do
     sh "#{ENV['APP_VENDOR_DIR']}/redis/src/redis-server"
+  end
+
+  desc "Run logstash off the redis broker"
+  task :logstash_redis_indexer do
+    process_erb("#{ENV['APP_APP_DIR']}/config/src/logstash-redis-indexer.conf.erb", "#{ENV['APP_APP_DIR']}/config/logstash-redis-indexer.conf")
+
+    sh "java -Djava.io.tmpdir='#{ENV['APP_TMP_DIR']}' -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/config/logstash-redis-indexer.conf'"
   end
 end
 

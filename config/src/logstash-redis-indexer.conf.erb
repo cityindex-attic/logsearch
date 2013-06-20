@@ -1,0 +1,18 @@
+<%= ERB.new(File.read("#{ENV['APP_APP_DIR']}/config/src/logstash-common-filters.conf.erb")).result(binding) %>
+
+input {
+    redis {
+        host => "127.0.0.1"
+        type => "redis-input"
+        data_type => "list"
+        key => "logstash"
+        format => "json_event"
+    }
+}
+
+output {
+    #stdout { debug => true debug_format => "json"}
+    elasticsearch_http {
+        flush_size => 10
+    }
+}
