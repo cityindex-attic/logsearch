@@ -1,4 +1,4 @@
-Vagrant.configure("2") do |config|                                                                                                                                                        
+Vagrant.configure("2") do |config|
   config.vm.box = "precise-server-cloudimg-amd64-vagrant-20130603"
   config.vm.box_url = "http://cloud-images.ubuntu.com/vagrant/precise/20130603/precise-server-cloudimg-amd64-vagrant-disk1.box"
 
@@ -6,6 +6,8 @@ Vagrant.configure("2") do |config|
 
   config.vm.provider :virtualbox do |v|
     v.customize ["modifyvm", :id, "--memory", "1024"]
+
+    config.vm.provision :shell, :inline => 'cd /app/app/ && . ../.env && sudo foreman export --app app --user $APP_USER --env /app/.env upstart /etc/init && sudo restart app'
   end
 
   config.vm.provider :aws do |aws, override|
@@ -17,6 +19,9 @@ Vagrant.configure("2") do |config|
     aws.tags = {
       'Name' => "#{ENV['USER']}-#{File.basename(Dir.getwd)}",
     }
+
+    config.vm.provision :shell, :inline => "echo export APP_CONFIG_ES_IPADDRESS=`ec2metadata | grep local-ipv4 | awk -F ' ' '{ print $2 }'` >> /app/.env"
+    config.vm.provision :shell, :inline => 'cd /app/app/ && . ../.env && sudo foreman export --app app --user $APP_USER --env /app/.env upstart /etc/init && sudo restart app'
 
     override.ssh.username = 'ubuntu'
     override.ssh.private_key_path = ENV['AWS_PRIVATE_KEY_PATH']

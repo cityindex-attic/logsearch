@@ -21,7 +21,7 @@
         "data" : "<%= ENV['APP_DATA_DIR'] %>"
     },
     "network" : {
-        "host" : "<%= ENV['APP_CONFIG_EC2_ACCESS'] ? '_ec2:privateIp_' : '127.0.0.1' %>"
+        "host" : "<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>"
     },
     "http" : {
         "port" : "9200"

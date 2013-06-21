@@ -30,8 +30,8 @@ namespace :run do
     end
 
     begin
-      sh "while ! nc -vz localhost 9200 2>/dev/null ; do sleep 2 ; done"
-      sh "curl -sXPUT 'http://localhost:9200/_template/template_default' -d @#{ENV['APP_APP_DIR']}/config/elasticsearch-templates/default.json > /dev/null"
+      sh "while ! nc -vz #{ENV['APP_CONFIG_ES_IPADDRESS']} 9200 2>/dev/null ; do sleep 2 ; done"
+      sh "curl -sXPUT 'http://#{ENV['APP_CONFIG_ES_IPADDRESS']}:9200/_template/template_default' -d @#{ENV['APP_APP_DIR']}/config/elasticsearch-templates/default.json > /dev/null"
     ensure
       Process.kill("TERM", File.read("#{ENV['APP_RUN_DIR']}/elasticsearch.pid").to_i)
       Process.waitpid(pid)
@@ -49,7 +49,7 @@ namespace :run do
     process_erb("#{ENV['APP_APP_DIR']}/config/src/nginx.conf.erb", "#{ENV['APP_APP_DIR']}/config/nginx.conf")
     process_erb("#{ENV['APP_APP_DIR']}/config/src/kibana-config.js.erb", "#{ENV['APP_VENDOR_DIR']}/kibana/config.js")
 
-    sh "nginx -c '#{ENV['APP_APP_DIR']}/config/nginx.conf'"
+    sh "/usr/sbin/nginx -c '#{ENV['APP_APP_DIR']}/config/nginx.conf'"
   end
 
   desc "Run redis to be a broker"
@@ -61,7 +61,7 @@ namespace :run do
   task :redis_indexer do
     process_erb("#{ENV['APP_APP_DIR']}/config/src/logstash-redis-indexer.conf.erb", "#{ENV['APP_APP_DIR']}/config/logstash-redis-indexer.conf")
 
-    sh "java -Djava.io.tmpdir='#{ENV['APP_TMP_DIR']}' -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/config/logstash-redis-indexer.conf'"
+    sh "/usr/bin/java -Djava.io.tmpdir='#{ENV['APP_TMP_DIR']}' -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/config/logstash-redis-indexer.conf'"
   end
 end
 
@@ -149,13 +149,13 @@ task :erase do
 end
 
 def do_import(args)
-  puts "==> Verifying that elasticsearch is ready to recieve data on localhost 9200..."
-  if !system('nc -vz localhost 9200 2>/dev/null') then raise ElasticSearchNotRunning end
+  puts "==> Verifying that elasticsearch is ready to recieve data..."
+  if !system("nc -vz #{ENV['APP_CONFIG_ES_IPADDRESS']} 9200 2>/dev/null") then raise ElasticSearchNotRunning end
 
   puts "==> Importing data from file..."
 
   process_erb("#{ENV['APP_APP_DIR']}/config/src/logstash-import-file.conf.erb", "#{ENV['APP_TMP_DIR']}/import-file.conf", args)
-  sh "pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_TMP_DIR']}/import-file.conf'"
+  sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_TMP_DIR']}/import-file.conf'"
 end
 
 def process_erb(input, output, args = nil)
@@ -177,13 +177,13 @@ def run_integration_test(type, task = "file")
 
     begin
         puts "==> Waiting for elasticsearch to be ready ..."
-        sh "while ! nc -vz localhost 9200 2>/dev/null ; do sleep 2 ; done"
+        sh "while ! nc -vz #{ENV['APP_CONFIG_ES_IPADDRESS']} 9200 2>/dev/null ; do sleep 2 ; done"
 
         puts "==> Importing test data ..."
         sh "ruby test/do-import.rb #{task} #{type} test/#{type}.log > /dev/null"
 
         puts "==> Ensuring elasticsearch has finished indexing our data ..."
-        sh "curl -sXPOST 'http://localhost:9200/_all/_refresh' > /dev/null"
+        sh "curl -sXPOST 'http://#{ENV['APP_CONFIG_ES_IPADDRESS']}:9200/_all/_refresh' > /dev/null"
       
         puts "==> Running our test queries ..."
         sh "ruby test/#{type}.rb"

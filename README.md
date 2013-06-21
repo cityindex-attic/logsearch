@@ -38,6 +38,9 @@ Environment variables are used for differentiating configurations.
 Vagrant can be used to quickly deploy machines running this application. A default application configuration will be
 used and the application will be installed into `/app/app`.
 
+You may override the default `Vagrantfile` settings by creating a your own `Vagrantfile.local` file. It will be loaded
+after the default file.
+
 
 ##### AWS EC2 Provider
 
@@ -52,6 +55,7 @@ environment variables are expected to exist:
 
 By default, the application loads the environment from `/app/.env`. The following variables are expected to exist:
 
+    export APP_USER=vagrant
     export APP_ROOT_DIR=/app
     export APP_APP_DIR=/app/app
     export APP_VENDOR_DIR="/app/vendor"
@@ -61,6 +65,8 @@ By default, the application loads the environment from `/app/.env`. The followin
     export APP_DATA_DIR="/app/data"
     # the name of the elasticsearch cluster
     export APP_CONFIG_ES_CLUSTER="default"
+    # the ip address for elasticsearch to listen on
+    export APP_CONFIG_ES_IPADDRESS="127.0.0.1"
     # these two are used for elasticsearch dynamic clustering, when configured
     export APP_CONFIG_EC2_ACCESS="AKIA1234567890ABCDEF"
     export APP_CONFIG_EC2_SECRET="9315e48ada0b11e2911960334b1d09d1"

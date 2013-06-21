@@ -30,7 +30,18 @@ if [ ! -e $APP_VENDOR_DIR/elasticsearch ] ; then
     popd
 fi
 
-echo "elasticsearch:$($APP_VENDOR_DIR/elasticsearch/bin/elasticsearch -v | awk -F ':|,' '/Version/ { print $2 }')"
+
+#
+# elasticsearch/cloud-aws
+#
+
+if [ ! -e $APP_VENDOR_DIR/elasticsearch/plugins/cloud-aws ] ; then
+    echo "Downloading elasticsearch/cloud-aws-1.12.0..."
+
+    pushd $APP_VENDOR_DIR/elasticsearch/
+    ./bin/plugin -install elasticsearch/elasticsearch-cloud-aws/1.12.0
+    popd
+fi
 
 
 #

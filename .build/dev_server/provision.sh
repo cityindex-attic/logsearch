@@ -139,6 +139,8 @@ echo '$APP_USER soft nofile 32000' > /etc/security/limits.d/$APP_USER.conf
 echo '$APP_USER hard nofile 64000' >> /etc/security/limits.d/$APP_USER.conf
 
 /app/app/bin/default-app-dir > /app/.env
+echo "export APP_USER='$APP_USER'" >> /app/.env
+echo "export APP_CONFIG_ES_IPADDRESS='127.0.0.1'" >> /app/.env
 echo 'export APP_CONFIG_ES_CLUSTER="default"' >> /app/.env
 chmod +x /app/.env
 
