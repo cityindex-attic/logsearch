@@ -28,7 +28,29 @@ which monitors the application logs. Open [localhost:4567](http://localhost:4567
     rake import:file[iis_default,backfill/ciapipreprod.IIS7.logs/u_ex130605.log]
 
 
-### Environment Variables
+### Configuration
+
+Environment variables are used for differentiating configurations.
+
+
+#### Deploying via Vagrant
+
+Vagrant can be used to quickly deploy machines running this application. A default application configuration will be
+used and the application will be installed into `/app/app`.
+
+
+##### AWS EC2 Provider
+
+When using the `vagrant-aws` provider plugin, in addition to configuring your access key and secret, the following
+environment variables are expected to exist:
+
+    export AWS_KEYPAIR_NAME="my-private-ec2-keypair"
+    export AWS_PRIVATE_KEY_PATH="$HOME/.ssh/my-private-ec2-keypair.pem"
+
+
+#### Running the Application
+
+By default, the application loads the environment from `/app/.env`. The following variables are expected to exist:
 
     export APP_ROOT_DIR=/app
     export APP_APP_DIR=/app/app

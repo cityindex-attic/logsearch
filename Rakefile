@@ -58,7 +58,7 @@ namespace :run do
   end
 
   desc "Run logstash off the redis broker"
-  task :logstash_redis_indexer do
+  task :redis_indexer do
     process_erb("#{ENV['APP_APP_DIR']}/config/src/logstash-redis-indexer.conf.erb", "#{ENV['APP_APP_DIR']}/config/logstash-redis-indexer.conf")
 
     sh "java -Djava.io.tmpdir='#{ENV['APP_TMP_DIR']}' -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/config/logstash-redis-indexer.conf'"

@@ -10,19 +10,20 @@ Vagrant.configure("2") do |config|
 
   config.vm.provider :aws do |aws, override|
     aws.region = 'us-east-1'
-    aws.ami = 'ami-d0f89fb9' # aka ubuntu-12.04-64
+    aws.ami = 'ami-d0f89fb9' # aka ubuntu-12.04-x64
     aws.instance_type = 't1.micro'
-    aws.keypair_name = "#{ENV['USER']}-default"
+    aws.keypair_name = ENV['AWS_KEYPAIR_NAME']
     aws.security_groups = [ 'vagrant', 'logstash-default' ]
     aws.tags = {
       'Name' => "#{ENV['USER']}-#{File.basename(Dir.getwd)}",
     }
 
     override.ssh.username = 'ubuntu'
-    override.ssh.private_key_path = '~/.ssh/cityindex-aws-ec2-default.pem'
+    override.ssh.private_key_path = ENV['AWS_PRIVATE_KEY_PATH']
   end
 
   config.vm.provision :shell, :path => ".build/dev_server/provision.sh"
   config.vm.synced_folder ".", "/app/app"
 end
 
+load "Vagrantfile.local" if File.exists? "Vagrantfile.local"
