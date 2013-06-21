@@ -9,4 +9,3 @@
 config/*
 !config/src
 !config/kibana-dashboards
-backfill/
