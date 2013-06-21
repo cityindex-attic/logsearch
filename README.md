@@ -41,6 +41,13 @@ used and the application will be installed into `/app/app`.
 You may override the default `Vagrantfile` settings by creating a your own `Vagrantfile.local` file. It will be loaded
 after the default file.
 
+If you'd like to install the foreman tasks as system services, try:
+
+    cd /app/app/
+    . ../.env
+    sudo foreman export --app app --user $APP_USER --env /app/.env upstart /etc/init
+    sudo start app
+
 
 ##### AWS EC2 Provider
 

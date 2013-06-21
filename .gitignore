@@ -9,5 +9,6 @@
 config/*
 !config/src
 !config/kibana-dashboards
+!config/vagrant
 
 Vagrantfile.local

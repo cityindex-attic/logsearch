@@ -6,8 +6,6 @@ Vagrant.configure("2") do |config|
 
   config.vm.provider :virtualbox do |v|
     v.customize ["modifyvm", :id, "--memory", "1024"]
-
-    config.vm.provision :shell, :inline => 'cd /app/app/ && . ../.env && sudo foreman export --app app --user $APP_USER --env /app/.env upstart /etc/init && sudo restart app'
   end
 
   config.vm.provider :aws do |aws, override|
@@ -21,7 +19,6 @@ Vagrant.configure("2") do |config|
     }
 
     config.vm.provision :shell, :inline => "echo export APP_CONFIG_ES_IPADDRESS=`ec2metadata | grep local-ipv4 | awk -F ' ' '{ print $2 }'` >> /app/.env"
-    config.vm.provision :shell, :inline => 'cd /app/app/ && . ../.env && sudo foreman export --app app --user $APP_USER --env /app/.env upstart /etc/init && sudo restart app'
 
     override.ssh.username = 'ubuntu'
     override.ssh.private_key_path = ENV['AWS_PRIVATE_KEY_PATH']

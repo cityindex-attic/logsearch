@@ -13,6 +13,7 @@ input {
 output {
     #stdout { debug => true debug_format => "json"}
     elasticsearch_http {
+        host => "<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>"
         flush_size => 10
     }
 }

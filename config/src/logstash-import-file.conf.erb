@@ -16,5 +16,6 @@ output {
         # https://logstash.jira.com/browse/LOGSTASH-679 - supposedly almost fixed?
         # once fixed, this hack and its references should be removed in favor of a static number
         flush_size => <%= $bug_679_flush_size ? $bug_679_flush_size : 100 %>
+        host => "<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>"
     }
 }
