@@ -8,6 +8,20 @@ Vagrant.configure("2") do |config|
     v.customize ["modifyvm", :id, "--memory", "1024"]
   end
 
+  config.vm.provider :aws do |aws, override|
+    aws.region = 'us-east-1'
+    aws.ami = 'ami-d0f89fb9' # aka ubuntu-12.04-64
+    aws.instance_type = 't1.micro'
+    aws.keypair_name = "#{ENV['USER']}-default"
+    aws.security_groups = [ 'vagrant', 'logstash-default' ]
+    aws.tags = {
+      'Name' => "#{ENV['USER']}-#{File.basename(Dir.getwd)}",
+    }
+
+    override.ssh.username = 'ubuntu'
+    override.ssh.private_key_path = '~/.ssh/cityindex-aws-ec2-default.pem'
+  end
+
   config.vm.provision :shell, :path => ".build/dev_server/provision.sh"
   config.vm.synced_folder ".", "/app/app"
 end

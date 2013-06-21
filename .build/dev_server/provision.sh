@@ -21,6 +21,8 @@ if [ "`tail -1 /root/.profile`" = "mesg n" ]; then
 EOH
 fi
 
+apt-get update
+
 if [ ! -f /usr/bin/curl ]; then
   echo "Installing curl"
   sudo apt-get install curl -y
@@ -116,17 +118,28 @@ echo "pv:$(pv -V | head -n1 | awk -F ' ' '/pv/ { print $2 }')"
 # app
 #
 
-chown vagrant:vagrant /app
+USER=$(ls /home/)
 
-echo 'vagrant soft nofile 32000' > /etc/security/limits.d/vagrant.conf
-echo 'vagrant hard nofile 64000' > /etc/security/limits.d/vagrant.conf
+mkdir -p /app
 
-/app/app/bin/default-app-dirs > /app/.env
+if [ 'vagrant' != "$USER" ] ; then
+    if [ ! -e /app/app ] ; then
+        mv /vagrant /app/app
+        ln -s /app/app /vagrant
+    fi
+fi
+
+chown $USER:$USER /app
+
+echo '$USER soft nofile 32000' > /etc/security/limits.d/$USER.conf
+echo '$USER hard nofile 64000' >> /etc/security/limits.d/$USER.conf
+
+/app/app/bin/default-app-dir > /app/.env
 echo 'export APP_CONFIG_ES_CLUSTER="default"' >> /app/.env
 chmod +x /app/.env
 
 cd /app/
-sudo -H -u vagrant ./app/bin/provision.sh
+sudo -H -u $USER ./app/bin/provision.sh
 
 
 #
@@ -135,10 +148,10 @@ sudo -H -u vagrant ./app/bin/provision.sh
 
 # workaround to avoid the alert about it not being writable - http://wiki.nginx.org/CoreModule#error_log
 touch /var/log/nginx/error.log
-chown vagrant /var/log/nginx/error.log
+chown $USER /var/log/nginx/error.log
 
 # a custom fastcgi_cache_path doesn't seem to be respected in nginx.conf; this is a hack workaround
-chown -R vagrant:vagrant /var/lib/nginx
+chown -R $USER:$USER /var/lib/nginx
 
 
 echo "=-=-=-=-=-=-=-=-=-=-=-="
