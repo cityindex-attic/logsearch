@@ -1,14 +1,18 @@
 #!/usr/bin/env ruby
 
 require 'date'
+require 'dotenv'
 require 'json'
 require 'net/http'
+
+Dotenv.load('../../.env')
 
 throw "Missing `yyyy-mm-dd` argument to remove older indices." unless ARGV[0]
 
 purgedate = DateTime.strptime(ARGV[0], '%Y-%m-%d')
 
-es = Net::HTTP.new('localhost', '9200')
+puts ENV['APP_CONFIG_ES_IPADDRESS']
+es = Net::HTTP.new(ENV['APP_CONFIG_ES_IPADDRESS'], '9200')
 req = Net::HTTP::Get.new('/_aliases', { 'Content-Type' => 'application/json' })
 res = es.start { |http| http.request(req) }
 
