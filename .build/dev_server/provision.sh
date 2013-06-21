@@ -118,28 +118,32 @@ echo "pv:$(pv -V | head -n1 | awk -F ' ' '/pv/ { print $2 }')"
 # app
 #
 
-USER=$(ls /home/)
+if [ -e /home/vagrant ] ; then
+    APP_USER=vagrant
+else
+    APP_USER=$(ls /home/)
+fi
 
 mkdir -p /app
 
-if [ 'vagrant' != "$USER" ] ; then
+if [ 'vagrant' != "$APP_USER" ] ; then
     if [ ! -e /app/app ] ; then
         mv /vagrant /app/app
         ln -s /app/app /vagrant
     fi
 fi
 
-chown $USER:$USER /app
+chown $APP_USER:$APP_USER /app
 
-echo '$USER soft nofile 32000' > /etc/security/limits.d/$USER.conf
-echo '$USER hard nofile 64000' >> /etc/security/limits.d/$USER.conf
+echo '$APP_USER soft nofile 32000' > /etc/security/limits.d/$APP_USER.conf
+echo '$APP_USER hard nofile 64000' >> /etc/security/limits.d/$APP_USER.conf
 
 /app/app/bin/default-app-dir > /app/.env
 echo 'export APP_CONFIG_ES_CLUSTER="default"' >> /app/.env
 chmod +x /app/.env
 
 cd /app/
-sudo -H -u $USER ./app/bin/provision.sh
+sudo -H -u $APP_USER ./app/bin/provision.sh
 
 
 #
@@ -148,10 +152,10 @@ sudo -H -u $USER ./app/bin/provision.sh
 
 # workaround to avoid the alert about it not being writable - http://wiki.nginx.org/CoreModule#error_log
 touch /var/log/nginx/error.log
-chown $USER /var/log/nginx/error.log
+chown $APP_USER /var/log/nginx/error.log
 
 # a custom fastcgi_cache_path doesn't seem to be respected in nginx.conf; this is a hack workaround
-chown -R $USER:$USER /var/lib/nginx
+chown -R $APP_USER:$APP_USER /var/lib/nginx
 
 
 echo "=-=-=-=-=-=-=-=-=-=-=-="
