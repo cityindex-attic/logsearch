@@ -121,14 +121,8 @@ chown vagrant:vagrant /app
 echo 'vagrant soft nofile 32000' > /etc/security/limits.d/vagrant.conf
 echo 'vagrant hard nofile 64000' > /etc/security/limits.d/vagrant.conf
 
-echo -n '' > /app/.env
-echo 'export APP_ROOT_DIR=/app' >> /app/.env
-echo 'export APP_APP_DIR=/app/app' >> /app/.env
-echo 'export APP_VENDOR_DIR="/app/vendor"' >> /app/.env
-echo 'export APP_LOG_DIR="/app/var/log"' >> /app/.env
-echo 'export APP_RUN_DIR="/app/var/run"' >> /app/.env
-echo 'export APP_TMP_DIR="/app/tmp"' >> /app/.env
-echo 'export APP_DATA_DIR="/app/data"' >> /app/.env
+/app/app/bin/default-app-dirs > /app/.env
+echo 'export APP_CONFIG_ES_CLUSTER="default"' >> /app/.env
 chmod +x /app/.env
 
 cd /app/

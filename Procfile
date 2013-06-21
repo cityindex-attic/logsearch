@@ -1,2 +1,4 @@
 elasticsearch: rake run:elasticsearch
-nginx: rake run:kibana
+kibana: rake run:kibana
+redis: rake run:redis
+logstash_redis_indexer: rake run:logstash_redis_indexer

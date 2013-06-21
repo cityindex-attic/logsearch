@@ -1,0 +1,9 @@
+#!/bin/bash
+
+echo 'export APP_ROOT_DIR=/app'
+echo 'export APP_APP_DIR=/app/app'
+echo 'export APP_VENDOR_DIR="/app/vendor"'
+echo 'export APP_LOG_DIR="/app/var/log"'
+echo 'export APP_RUN_DIR="/app/var/run"'
+echo 'export APP_TMP_DIR="/app/tmp"'
+echo 'export APP_DATA_DIR="/app/data"'

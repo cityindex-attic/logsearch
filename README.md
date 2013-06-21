@@ -28,6 +28,23 @@ which monitors the application logs. Open [localhost:4567](http://localhost:4567
     rake import:file[iis_default,backfill/ciapipreprod.IIS7.logs/u_ex130605.log]
 
 
+### Environment Variables
+
+    export APP_ROOT_DIR=/app
+    export APP_APP_DIR=/app/app
+    export APP_VENDOR_DIR="/app/vendor"
+    export APP_LOG_DIR="/app/var/log"
+    export APP_RUN_DIR="/app/var/run"
+    export APP_TMP_DIR="/app/tmp"
+    export APP_DATA_DIR="/app/data"
+    # the name of the elasticsearch cluster
+    export APP_CONFIG_ES_CLUSTER="default"
+    # these two are used for elasticsearch dynamic clustering, when configured
+    export APP_CONFIG_EC2_ACCESS="AKIA1234567890ABCDEF"
+    export APP_CONFIG_EC2_SECRET="9315e48ada0b11e2911960334b1d09d1"
+    export APP_CONFIG_EC2_GROUPS="logstash-default-es"
+
+
 ### Supported Log Formats
 
 The following formats have been configured for parsing. Fields are generally named favoring vendor-defined terminology.

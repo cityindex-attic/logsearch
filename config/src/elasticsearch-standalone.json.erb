@@ -1,10 +1,27 @@
 {
+    "cluster" : {
+        "name" : "<%= ENV['APP_CONFIG_ES_CLUSTER'] %>"
+    },
+    <% if ENV['APP_CONFIG_EC2_ACCESS'] then %>
+        "cloud" : {
+            "aws" : {
+                "access_key" : "<%= ENV['APP_CONFIG_EC2_ACCESS'] %>",
+                "secret_key" : "<%= ENV['APP_CONFIG_EC2_SECRET'] %>"
+            }
+        },
+        "discovery" : {
+            "type" : "ec2",
+            "ec2" : {
+                "groups" : "<%= ENV['APP_CONFIG_EC2_GROUPS'] %>"
+            }
+        },
+    <% end %>
     "path" : {
         "logs" : "<%= ENV['APP_LOG_DIR'] %>/elasticsearch",
         "data" : "<%= ENV['APP_DATA_DIR'] %>"
     },
     "network" : {
-        "host" : "127.0.0.1"
+        "host" : "<%= ENV['APP_CONFIG_EC2_ACCESS'] ? '_ec2:privateIp_' : '127.0.0.1' %>"
     },
     "http" : {
         "port" : "9200"
