@@ -43,6 +43,11 @@ filter {
         pattern => "%{TIMESTAMP_ISO8601:time}\t(?<name>[^\t]+)\t%{GREEDYDATA:value}"
     }
 
+    grok {
+        type => "ci_log4net"
+        pattern => "%{NOTSPACE:level}\s+%{TIMESTAMP_ISO8601:datetime} %{NOTSPACE:thread} %{NOTSPACE:logger} %{GREEDYDATA:message}"
+    }
+
     #
     # Tag TradingAPI events to map uri to http://labs.cityindex.com/docs/ > Contents > CIAPI Reference > HTTP Services > Group > Service
     #
@@ -109,6 +114,11 @@ filter {
     date {
         type => "ci_appmetrics"
         match => [ "time", "YYYY-MM-dd HH:mm:ss.SSSSSSS" ]
+    }
+
+    date {
+        type => "ci_log4net"
+        match => [ "datetime", "YYYY-MM-dd HH:mm:ss,SSS" ]
     }
 
     #
