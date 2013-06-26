@@ -12,4 +12,3 @@ config/*
 !config/vagrant
 
 Vagrantfile.local
-backfill/
