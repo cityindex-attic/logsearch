@@ -24,9 +24,10 @@ which monitors the application logs. Open [localhost:4567](http://localhost:4567
 
 **Backfill data** - once the elasticsearch server has started, you can backfill logs if you have them laying around.
 
-    rake import:file[nginx_combined,backfill/labs.cityindex.com.nginx.logs/access.log*]
-    rake import:file[iis_default,backfill/ciapipreprod.IIS7.logs/u_ex130605.log]
+    rake import:file[nginx_combined,/on_vm/path/to/logs/labs.cityindex.com.nginx.logs/access.log*]
+    rake import:file[iis_default,/on_vm/path/to/logs/ciapipreprod.IIS7.logs/u_ex130605.log]
 
+> TODO - document how to pull logs from S3
 
 ### Configuration
 
@@ -51,14 +52,39 @@ If you'd like to install the foreman tasks as system services, try:
 
 ##### AWS EC2 Provider
 
-When using the `vagrant-aws` provider plugin, in addition to configuring your access key and secret, the following
-environment variables are expected to exist:
+When using the [`vagrant-aws` provider plugin](https://github.com/mitchellh/vagrant-aws) the following environment variables are expected to exist:
 
+    export AWS_ACCESS_KEY="XXXXXXXXXXXXXXXXX"
+    export AWS_SECRET_KEY="YYYYYYYYYYYYYYYYYYYYYYY/YYYYYYYYYYY"
     export AWS_KEYPAIR_NAME="my-private-ec2-keypair"
     export AWS_PRIVATE_KEY_PATH="$HOME/.ssh/my-private-ec2-keypair.pem"
 
-
 #### Running the Application
+
+##### VirtualBox
+
+```
+$ vagrant up
+$ vagrant ssh
+vagrant$ cd /app/app
+vagrant$ rake run
+```
+
+Access Kibana via http://localhost:3456/
+
+##### AWS EC2
+
+```
+$ vagrant up --provider=aws
+$ vagrant ssh
+vagrant$ ec2metadata | grep public-hostname -> gives you the EC2 public DNS name
+vagrant$ cd /app/app
+vagrant$ rake run
+```
+
+Access Kibana via http://{public-hostname}:8080/
+
+##### Runtime default settings
 
 By default, the application loads the environment from `/app/.env`. The following variables are expected to exist:
 
