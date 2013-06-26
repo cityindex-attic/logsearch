@@ -51,7 +51,7 @@ If you'd like to install the foreman tasks as system services, try:
 
 ##### AWS EC2 Provider
 
-When using the `vagrant-aws` provider plugin the following environment variables are expected to exist:
+When using the [`vagrant-aws` provider plugin](https://github.com/mitchellh/vagrant-aws) the following environment variables are expected to exist:
 
     export AWS_ACCESS_KEY_ID="XXXXXXXXXXXXXXXXX"
     export AWS_SECRET_ACCESS_KEY="YYYYYYYYYYYYYYYYYYYYYYY/YYYYYYYYYYY"
