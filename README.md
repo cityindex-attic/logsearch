@@ -69,14 +69,19 @@ vagrant$ cd /app/app
 vagrant$ rake run
 ```
 
+Access Kibana via http://localhost:3456/
+
 ##### AWS EC2
 
 ```
 $ vagrant up --provider=aws
 $ vagrant ssh
+vagrant$ ec2metadata | grep public-hostname -> gives you the EC2 public DNS name
 vagrant$ cd /app/app
 vagrant$ rake run
 ```
+
+Access Kibana via http://{public-hostname}:8080/
 
 ##### Runtime default settings
 
