@@ -60,6 +60,26 @@ When using the [`vagrant-aws` provider plugin](https://github.com/mitchellh/vagr
 
 #### Running the Application
 
+##### VirtualBox
+
+```
+$ vagrant up
+$ vagrant ssh
+vagrant$ cd /app/app
+vagrant$ rake run
+```
+
+##### AWS EC2
+
+```
+$ vagrant up --provider=aws
+$ vagrant ssh
+vagrant$ cd /app/app
+vagrant$ rake run
+```
+
+##### Runtime default settings
+
 By default, the application loads the environment from `/app/.env`. The following variables are expected to exist:
 
     export APP_USER=vagrant
