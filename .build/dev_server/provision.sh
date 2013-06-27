@@ -9,6 +9,7 @@ if [[ ! "$(locale)" =~ "en_US.utf8" ]]; then
   export LC_ALL=en_US.UTF-8
   locale-gen en_US.UTF-8
   sudo dpkg-reconfigure locales
+  sleep 1
 fi
 
 if [ "`tail -1 /root/.profile`" = "mesg n" ]; then
