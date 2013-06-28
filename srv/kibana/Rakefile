@@ -4,6 +4,6 @@ namespace :kibana do
     process_erb("#{ENV['APP_APP_DIR']}/srv/kibana/config/nginx.conf.erb", "#{ENV['APP_APP_DIR']}/srv/kibana/config/nginx.conf")
     process_erb("#{ENV['APP_APP_DIR']}/srv/kibana/config/config.js.erb", "#{ENV['APP_VENDOR_DIR']}/kibana/config.js")
 
-    sh "/usr/sbin/nginx -c '#{ENV['APP_APP_DIR']}/srv/kibana/config/nginx.conf'"
+    sh "sudo /usr/sbin/nginx -c '#{ENV['APP_APP_DIR']}/srv/kibana/config/nginx.conf'"
   end
 end
