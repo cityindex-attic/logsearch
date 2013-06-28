@@ -102,6 +102,11 @@ By default, the application loads the environment from `/app/.env`. The followin
     * `APP_CONFIG_ES_AWS_ACCESS_KEY` - an AWS access key to enable elasticsearch cloud clustering ([learn more](http://www.elasticsearch.org/guide/reference/modules/discovery/ec2/))
     * `APP_CONFIG_ES_AWS_SECRET_KEY` - an AWS secret key to enable elasticsearch cloud clustering ([learn more](http://www.elasticsearch.org/guide/reference/modules/discovery/ec2/))
     * `APP_CONFIG_ES_AWS_EC2_GROUP` - an AWS EC2 security group to restrict clustered nodes ([learn more](http://www.elasticsearch.org/guide/reference/modules/discovery/ec2/))
+ * Redis service
+    * `APP_CONFIG_REDIS_IPADDRESS` - the IP address to bind to (e.g. `127.0.0.1`)
+    * `APP_CONFIG_REDIS_KEY` - the name of redis list or channel (e.g. `logstash`)
+ * importqueue service
+    * `APP_CONFIG_IMPORTQUEUE_KEY` - the name of redis list or channel (e.g. `importqueue`)
 
 
 ### Supported Log Formats

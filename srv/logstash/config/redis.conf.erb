@@ -2,10 +2,10 @@
 
 input {
     redis {
-        host => "127.0.0.1"
+        host => "<%= ENV['APP_CONFIG_REDIS_IPADDRESS'] || '127.0.0.1'  %>"
         type => "redis-input"
         data_type => "list"
-        key => "logstash"
+        key => "<%= ENV['APP_CONFIG_REDIS_KEY'] || 'logstash'  %>"
         format => "json_event"
     }
 }

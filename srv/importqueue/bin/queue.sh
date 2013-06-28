@@ -1,0 +1,3 @@
+#!/bin/bash
+
+$APP_VENDOR_DIR/redis/src/redis-cli -h $APP_CONFIG_REDIS_IPADDRESS --raw LPUSH $APP_CONFIG_IMPORTQUEUE_KEY "$1"
