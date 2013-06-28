@@ -29,6 +29,14 @@ http {
             proxy_pass http://<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>:9200;
         }
 
+        location ~ ^/kibana-int/dashboard/.*$ {
+            proxy_pass http://<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>:9200;
+        }
+
+        location ~ ^/kibana-int/temp.*$ {
+            proxy_pass http://<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>:9200;
+        }
+
         location / {
             root <%= ENV['APP_VENDOR_DIR'] %>/kibana;
             index index.html;
