@@ -4,7 +4,7 @@ require_relative 'common'
 # import the test data
 #
 
-system "cd #{File.dirname(__FILE__)}/../ && rake import:slow[#{ARGV[0]},#{ARGV[1]},#{ARGV[2]}]"
+system "cd #{File.dirname(__FILE__)}/../../../ && rake logstash:input:slow[#{ARGV[0]},#{ARGV[1]},#{ARGV[2]}]"
 
 raise "Failed to import '#{ARGV[1]}' as #{ARGV[0]}" if 0 < $?.exitstatus
 

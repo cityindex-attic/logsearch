@@ -6,9 +6,7 @@
 *.ear
 .vagrant/
 
-config/*
-!config/src
-!config/kibana-dashboards
-!config/vagrant
+srv/*/config/*
+!srv/*/config/*.erb
 
 Vagrantfile.local

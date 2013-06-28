@@ -18,7 +18,7 @@ Vagrant.configure("2") do |config|
       'Name' => "#{ENV['USER']}-#{File.basename(Dir.getwd)}",
     }
 
-    config.vm.provision :shell, :inline => "echo export APP_CONFIG_ES_IPADDRESS=`ec2metadata | grep local-ipv4 | awk -F ' ' '{ print $2 }'` >> /app/.env"
+#    config.vm.provision :shell, :inline => "echo export APP_CONFIG_ES_IPADDRESS=`ec2metadata | grep local-ipv4 | awk -F ' ' '{ print $2 }'` >> /app/.env"
 
     override.ssh.username = 'ubuntu'
     override.ssh.private_key_path = ENV['AWS_PRIVATE_KEY_PATH']

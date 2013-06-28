@@ -9,7 +9,6 @@ if [[ ! "$(locale)" =~ "en_US.utf8" ]]; then
   export LC_ALL=en_US.UTF-8
   locale-gen en_US.UTF-8
   sudo dpkg-reconfigure locales
-  sleep 1
 fi
 
 if [ "`tail -1 /root/.profile`" = "mesg n" ]; then
@@ -145,8 +144,26 @@ echo "export APP_CONFIG_ES_IPADDRESS='127.0.0.1'" >> /app/.env
 echo 'export APP_CONFIG_ES_CLUSTER="default"' >> /app/.env
 chmod +x /app/.env
 
-cd /app/
-sudo -H -u $APP_USER ./app/bin/provision.sh
+sudo -H -u $APP_USER /bin/bash << 'EOF'
+    cd /app/app/
+
+    set -e
+    
+    . ../.env
+    
+    mkdir -p $APP_VENDOR_DIR
+    mkdir -p $APP_LOG_DIR
+    mkdir -p $APP_RUN_DIR
+    mkdir -p $APP_TMP_DIR
+    mkdir -p $APP_DATA_DIR
+
+    bundle install
+
+    ./srv/elasticsearch/provision.sh
+    ./srv/logstash/provision.sh
+    ./srv/kibana/provision.sh
+    ./srv/redis/provision.sh
+EOF
 
 
 #

@@ -1,0 +1,27 @@
+namespace :elasticsearch do
+  desc 'Run Elasticsearch service'
+  task :run do
+    process_erb("#{ENV['APP_APP_DIR']}/srv/elasticsearch/config/default.json.erb", "#{ENV['APP_APP_DIR']}/srv/elasticsearch/config/default.json")
+
+    # now we need to startup elasticsearch so we can send it the configs we want to use
+    pid = fork do
+      # the term signal will cause an error, so suppress the output and prevent confusion
+      exec "rake elasticsearch:run_nodeps > /dev/null 2>&1"
+      Kernel.exit!
+    end
+
+    begin
+      sh "while ! nc -vz #{ENV['APP_CONFIG_ES_IPADDRESS']} 9200 2>/dev/null ; do sleep 2 ; done"
+      sh "curl -sXPUT 'http://#{ENV['APP_CONFIG_ES_IPADDRESS']}:9200/_template/template_default' -d @#{ENV['APP_APP_DIR']}/srv/elasticsearch/templates/default.json > /dev/null"
+    ensure
+      Process.kill("TERM", File.read("#{ENV['APP_RUN_DIR']}/elasticsearch.pid").to_i)
+      Process.waitpid(pid)
+    end
+
+    Rake::Task['elasticsearch:run_nodeps'].invoke
+  end
+
+  task :run_nodeps do
+    sh "'#{ENV['APP_VENDOR_DIR']}/elasticsearch/bin/elasticsearch' -f -Des.config='#{ENV['APP_APP_DIR']}/srv/elasticsearch/config/default.json' -Des.pidfile='#{ENV['APP_RUN_DIR']}/elasticsearch.pid'"
+  end
+end

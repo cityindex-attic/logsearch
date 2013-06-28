@@ -1,0 +1,6 @@
+namespace :redis do
+  desc "Run Redis service"
+  task :run do
+    sh "#{ENV['APP_VENDOR_DIR']}/redis/src/redis-server"
+  end
+end

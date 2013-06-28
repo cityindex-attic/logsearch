@@ -17,17 +17,16 @@ A development environment with logstash + ElasticSearch + Kibana 3.
     vagrant ssh
     cd /app/app/
 
-**Start the services** - this starts the elasticsearch server, kibana web server, and a default logstash configuration
-which monitors the application logs. Open [localhost:4567](http://localhost:4567) to see things.
+**Start the services** - this will start all the services so you can easily have a look at the various aspects. Open
+[localhost:4567](http://localhost:4567) (via vagrant) to see the frontend.
 
     rake run
 
 **Backfill data** - once the elasticsearch server has started, you can backfill logs if you have them laying around.
 
-    rake import:file[nginx_combined,/on_vm/path/to/logs/labs.cityindex.com.nginx.logs/access.log*]
-    rake import:file[iis_default,/on_vm/path/to/logs/ciapipreprod.IIS7.logs/u_ex130605.log]
+    rake logstash:input:file[nginx_combined,/on_vm/path/to/logs/labs.cityindex.com.nginx.logs/access.log*]
+    rake logstash:input:file[iis_default,/on_vm/path/to/logs/ciapipreprod.IIS7.logs/u_ex130605.log]
 
-> TODO - document how to pull logs from S3
 
 ### Configuration
 

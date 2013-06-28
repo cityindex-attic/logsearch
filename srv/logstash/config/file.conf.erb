@@ -1,9 +1,12 @@
-<%= ERB.new(File.read("#{ENV['APP_APP_DIR']}/config/src/logstash-common-filters.conf.erb")).result(binding) %>
+<%= ERB.new(File.read("#{ENV['APP_APP_DIR']}/srv/logstash/config/common.conf.erb")).result(binding) %>
 
 input {
-    stdin {
+    file {
         type => "<%= @args[:logstash_type] %>"
         format => "<%= @args[:logstash_format] || 'plain' %>"
+        sincedb => "<%= Dir.getwd %>/logstash_position.db"
+        sincedb_write_interval => 10
+        start_position => "beginning"
     }
 }
 

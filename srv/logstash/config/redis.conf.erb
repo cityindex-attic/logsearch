@@ -1,4 +1,4 @@
-<%= ERB.new(File.read("#{ENV['APP_APP_DIR']}/config/src/logstash-common-filters.conf.erb")).result(binding) %>
+<%= ERB.new(File.read("#{ENV['APP_APP_DIR']}/srv/logstash/config/common.conf.erb")).result(binding) %>
 
 input {
     redis {
