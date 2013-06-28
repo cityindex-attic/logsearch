@@ -2,17 +2,17 @@
     "cluster" : {
         "name" : "<%= ENV['APP_CONFIG_ES_CLUSTER'] %>"
     },
-    <% if ENV['APP_CONFIG_EC2_ACCESS'] then %>
+    <% if ENV['APP_CONFIG_ES_AWS_ACCESS_KEY'] then %>
         "cloud" : {
             "aws" : {
-                "access_key" : "<%= ENV['APP_CONFIG_EC2_ACCESS'] %>",
-                "secret_key" : "<%= ENV['APP_CONFIG_EC2_SECRET'] %>"
+                "access_key" : "<%= ENV['APP_CONFIG_ES_AWS_ACCESS_KEY'] %>",
+                "secret_key" : "<%= ENV['APP_CONFIG_ES_AWS_SECRET_KEY'] %>"
             }
         },
         "discovery" : {
             "type" : "ec2",
             "ec2" : {
-                "groups" : "<%= ENV['APP_CONFIG_EC2_GROUPS'] %>"
+                "groups" : "<%= ENV['APP_CONFIG_ES_AWS_EC2_GROUP'] %>"
             }
         },
     <% end %>

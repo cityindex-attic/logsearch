@@ -87,22 +87,21 @@ Access Kibana via http://{public-hostname}:8080/
 
 By default, the application loads the environment from `/app/.env`. The following variables are expected to exist:
 
-    export APP_USER=vagrant
-    export APP_ROOT_DIR=/app
-    export APP_APP_DIR=/app/app
-    export APP_VENDOR_DIR="/app/vendor"
-    export APP_LOG_DIR="/app/var/log"
-    export APP_RUN_DIR="/app/var/run"
-    export APP_TMP_DIR="/app/tmp"
-    export APP_DATA_DIR="/app/data"
-    # the name of the elasticsearch cluster
-    export APP_CONFIG_ES_CLUSTER="default"
-    # the ip address for elasticsearch to listen on
-    export APP_CONFIG_ES_IPADDRESS="127.0.0.1"
-    # these two are used for elasticsearch dynamic clustering, when configured
-    export APP_CONFIG_EC2_ACCESS="AKIA1234567890ABCDEF"
-    export APP_CONFIG_EC2_SECRET="9315e48ada0b11e2911960334b1d09d1"
-    export APP_CONFIG_EC2_GROUPS="logstash-default-es"
+ * Runtime
+    * `APP_USER` - account the services run under (e.g. `vagrant`, `ubuntu`)
+    * `APP_ROOT_DIR` - top-level deploy directory (e.g. `/app`)
+    * `APP_APP_DIR` - application source code directory (e.g. `/app/app`)
+    * `APP_VENDOR_DIR` - directory with vendor libraries and code (e.g. `/app/vendor`)
+    * `APP_LOG_DIR` - directory for logging (e.g. `/app/log`)
+    * `APP_RUN_DIR` - directory to maintain PIDs and sockets (e.g. `/app/run`)
+    * `APP_TMP_DIR` - temporary directory (e.g. `/app/tmp`)
+    * `APP_DATA_DIR` - persistent data directory (e.g. `/app/data`)
+ * Elasticsearch service
+    * `APP_CONFIG_ES_CLUSTER` - name of the elasticsearch cluster (e.g. `default`, [learn more](http://www.elasticsearch.org/guide/reference/modules/discovery/))
+    * `APP_CONFIG_ES_IPADDRESS` - the IP address to bind to (e.g. `127.0.0.1`)
+    * `APP_CONFIG_ES_AWS_ACCESS_KEY` - an AWS access key to enable elasticsearch cloud clustering ([learn more](http://www.elasticsearch.org/guide/reference/modules/discovery/ec2/))
+    * `APP_CONFIG_ES_AWS_SECRET_KEY` - an AWS secret key to enable elasticsearch cloud clustering ([learn more](http://www.elasticsearch.org/guide/reference/modules/discovery/ec2/))
+    * `APP_CONFIG_ES_AWS_EC2_GROUP` - an AWS EC2 security group to restrict clustered nodes ([learn more](http://www.elasticsearch.org/guide/reference/modules/discovery/ec2/))
 
 
 ### Supported Log Formats
