@@ -1,4 +1,17 @@
 {
+    "bootstrap" : {
+        "mlockall" : true
+    },
+    "indices" : {
+        "memory" : {
+            "index_buffer_size" : "50%"
+        }
+    },
+    "index" : {
+        "translog" : {
+            "flush_threshold_ops" : 64000
+        }
+    },
     "cluster" : {
         "name" : "<%= ENV['APP_CONFIG_ES_CLUSTER'] %>"
     },
@@ -25,5 +38,17 @@
     },
     "http" : {
         "port" : "9200"
+    },
+    "threadpool" : {
+        "search" : {
+            "type" : "fixed",
+            "size" : 32,
+            queue_size : 128
+        },
+        "index" : {
+            "type" : "fixed",
+            "size" : 64,
+            queue_size : 256
+        }
     }
 }
