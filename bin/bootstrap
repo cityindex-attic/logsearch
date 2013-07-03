@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# before using, you'll want to ensure the /app/.env file has been written
+# call this as the application user (not root) to bootstrap a base ubuntu system
+#
+# args: provisioner, csv-of-service-names-to-provision
+
+set -e
+
+sudo mkdir -p /app/
+sudo chown -R `whoami`:`whoami` /app/
+
+if ! (which git 1>/dev/null 2>&1) ; then
+    sudo apt-get install -y git
+fi
+
+if [ ! -d /app/app ]; then
+    git clone https://github.com/cityindex/elasticsearch-development-flow.git /app/app
+fi
+
+cd /app/app/
+
+sudo $1
+
+. ../.env
+
+mkdir -p $APP_VENDOR_DIR
+mkdir -p $APP_LOG_DIR
+mkdir -p $APP_RUN_DIR
+mkdir -p $APP_TMP_DIR
+mkdir -p $APP_DATA_DIR
+
+bundle install
+
+for srv in srv/* ; do
+    if [ -d "$srv" ] ; then
+        if [ -e "$srv/provision.sh" ] ; then
+            if [[ "$2" =~ (^|,)`basename $srv`(,|$) ]] ; then
+                ./$srv/provision.sh
+            fi
+        fi
+    fi
+done
