@@ -1,0 +1,91 @@
+#!/bin/bash
+
+# script used for profiling imports using origin files from S3
+# pass three arguments: logstash_type, bucket, url
+
+set -e
+
+echo '====> ARG1:' $1
+echo '====> ARG2:' $2
+echo '====> ARG3:' $3
+
+echo '====> Preparing environment...'
+
+if [ -f /etc/init/app-elasticsearch-1.conf ]; then
+    sudo stop app-elasticsearch || true
+    sleep 10
+fi
+
+(cd /app/app/ && rake erase)
+rm -fr ~/run-file-solo
+
+mkdir -p ~/run-file-solo
+cd ~/run-file-solo/
+
+SOLODIR=$PWD
+
+(cd /app/app/ && . ../.env && sudo foreman export --app app --user $APP_USER --env /app/.env upstart /etc/init)
+sudo start app-elasticsearch
+
+# elasticsearch is slow to bind
+sleep 30
+
+
+echo '====> Downloading data...'
+
+aws s3 get-object --bucket "$2" --key "$3" `basename $3`
+
+ls -al *
+
+
+echo '====> Expanding data...'
+
+if [ `echo $3 | grep -E '\.zip$'` ] ; then
+    unzip *.zip
+    rm *.zip
+else
+    echo '====> Unknown file type'
+
+    exit 1
+fi
+
+ls -al *
+wc -l *
+
+
+echo '====> Preparing statistics'
+
+# delay to isolate, ensure munin logged
+sleep 60
+
+export SESSION_START=`date -u +%Y-%m-%dT%TZ`
+echo "====> pre-start: $SESSION_START"
+
+sleep 300
+
+echo '====> Starting profile...'
+echo '====> start:' `date -u +%Y-%m-%dT%TZ`
+
+(cd /app/app ; rake logstash:input:file[$1,$SOLODIR/*])
+sudo stop app-elasticsearch
+# ensure elasticsearch has written out
+sleep 10
+
+echo '====> end:' `date -u +%Y-%m-%dT%TZ`
+
+sleep 300
+
+export SESSION_END=`date -u +%Y-%m-%dT%TZ`
+echo "====> post-end: $SESSION_END"
+
+sleep 60
+
+echo '====> Gathering stats...'
+
+du -sh /app/data/*
+
+/app/app/bin/gather-stats > ~/gather-stats.log
+
+if [ -f ~/run-file-solo-complete.sh ] ; then
+    ~/run-file-solo-complete.sh
+fi

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# args: key, host
+
+set -e
+
+ssh -i $1 ubuntu@$2 "sudo mkdir -p /app ; sudo chown ubuntu:ubuntu /app ; (echo 'export AWS_DEFAULT_REGION=us-east-1' ; echo 'export AWS_ACCESS_KEY_ID=\"$AWS_ACCESS_KEY\"' ; echo 'export AWS_SECRET_ACCESS_KEY=\"$AWS_SECRET_KEY\"' ) >> ~/.bash_profile"
+rsync -auze "ssh -i $1" . ubuntu@$2:/app/app
+ssh -i $1 ubuntu@$2 'sudo /app/app/.build/dev_server/provision.sh ; sudo /app/app/.build/dev_server/extra.sh'
+ssh -i $1 ubuntu@$2

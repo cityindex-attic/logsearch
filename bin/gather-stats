@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# a script to gather up stats from AWS CloudFormation (EC2 and EBS stats) and munin for localhost stats
+# args: start-date, end-date
+# where *-date is formatted as '+%Y-%m-%dT%TZ'
+
+set -e
+
+SESSION_START=$1
+SESSION_END=$2
+
+INSTANCE_ID=`ec2metadata | awk '/instance-id: / { print $2 }'`
+
+# this isn't working as i expect...
+# aws ec2 describe-volumes --filter "{\"name\":\"attachment.instance-id\",\"value\":[\"$INSTANCE_ID\"]}"
+# so, statically storing it in ~/.volumes
+
+JSON_PREFIX_L0=''
+
+echo '{'
+
+for METRIC_NAME in CPUUtilization DiskReadBytes DiskReadOps DiskWriteBytes DiskWriteOps NetworkIn NetworkOut ; do
+    echo $JSON_PREFIX_L0 "\"aws-ec2/$METRIC_NAME\":"
+
+    aws cloudwatch get-metric-statistics --namespace "AWS/EC2"  --dimensions "{\"name\":\"InstanceId\",\"value\":\"$INSTANCE_ID\"}" --metric-name $METRIC_NAME --start-time $SESSION_START --end-time $SESSION_END --period 60 --statistics "[\"Average\",\"Sum\",\"SampleCount\",\"Maximum\",\"Minimum\"]"
+    JSON_PREFIX_L0=','
+done
+
+if [ -f ~/.volumes ] ; then
+    cat ~/.volumes | while read VOLUME_ID ; do
+        for METRIC_NAME in VolumeIdleTime VolumeQueueLength VolumeReadBytes VolumeReadOps VolumeTotalReadTime VolumeTotalWriteTime VolumeWriteBytes VolumeWriteOps ; do
+            echo $JSON_PREFIX_L0 "\"aws-ebs/$VOLUME_ID/$METRIC_NAME\":"
+
+            aws cloudwatch get-metric-statistics --namespace "AWS/EBS"  --dimensions "{\"name\":\"VolumeId\",\"value\":\"$VOLUME_ID\"}" --metric-name $METRIC_NAME --start-time $SESSION_START --end-time $SESSION_END --period 60 --statistics "[\"Average\",\"Sum\",\"SampleCount\",\"Maximum\",\"Minimum\"]"
+            JSON_PREFIX_L0=','
+        done
+    done
+fi
+
+for RRD_FILE in /var/lib/munin/localdomain/localhost.localdomain-*.rrd ; do
+    RRD_NAME=$(echo $RRD_FILE | sed 's#^/var/lib/munin/localdomain/localhost.localdomain-\(.*\)\.rrd$#\1#')
+
+    echo $JSON_PREFIX_L0 "\"munin/$RRD_NAME\":{"
+    JSON_PREFIX_L1=''
+
+    rrdtool fetch $RRD_FILE AVERAGE -r 60 -s $(date --date="$SESSION_START" +%s) -e $(date --date="$SESSION_END" +%s) | while read RRD_LINE ; do
+        if [ "" != "$RRD_LINE" ] && [ "42" != "$RRD_LINE" ]; then
+            echo $JSON_PREFIX_L1
+
+            RRD_DATE=`echo $RRD_LINE | awk -F ':' '{ system("date --date=\"@" $1 "\" +%Y-%m-%dT%H:%M:%SZ") }'`
+
+            echo -n "    \"$RRD_DATE\": "
+
+            if [[ `echo $RRD_LINE | grep -E ': -nan$'` ]] ; then
+                echo "null"
+            else
+                echo $RRD_LINE | awk -F ': ' '{ system("echo \"print eval " $2 "\" | perl") }'
+            fi
+
+            JSON_PREFIX_L1=','
+        fi
+    done
+
+    echo "}"
+
+    JSON_PREFIX_L0=','
+done
+
+echo '}'
