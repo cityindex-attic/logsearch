@@ -24,6 +24,11 @@ task :erase do
     sh "rm -fr #{ENV['APP_DATA_DIR']}/*"
 end
 
+desc "Install the foreman tasks as system services (requires sudo)"
+task :install_system_services do
+    sh "foreman export --app app --user #{ENV['APP_USER']} --env /app/.env upstart /etc/init"
+end
+
 def process_erb(input, output, args = nil)
   @args=args
 
