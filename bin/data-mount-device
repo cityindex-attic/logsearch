@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# args: device-name, volume-name, application-user
+
+set -e
+
+sudo mkdir -p /$2
+
+if ! (sudo fdisk -l /dev/$1) ; then
+    sudo mkfs.ext4 /dev/$1
+fi
+
+if ! (cat /proc/mounts | grep /dev/$1) ; then
+    sudo mount /dev/$1 /$2
+fi
+
+if [ ! -e /$2/default ] ; then
+    sudo mkdir -p /$2/default
+    sudo chown $3:$3 /$2/default
+fi
+
+if [ ! -e /app/data ] ; then
+    ln -s /$2/default /app/data
+fi
