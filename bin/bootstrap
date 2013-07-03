@@ -32,11 +32,18 @@ mkdir -p $APP_DATA_DIR
 
 bundle install
 
+sudo rake install_system_services
+
 for srv in srv/* ; do
     if [ -d "$srv" ] ; then
-        if [ -e "$srv/provision.sh" ] ; then
-            if [[ "$2" =~ (^|,)`basename $srv`(,|$) ]] ; then
+        if [[ "$2" =~ (^|,)`basename $srv`(,|$) ]] ; then
+            if [ -e "$srv/provision.sh" ] ; then
                 ./$srv/provision.sh
+            fi
+
+            # this might be ubuntu-specific...
+            if [ -e "/etc/init/app-`basename $srv`.conf" ] ; then
+                sudo start app-`basename $srv` || true # true in case it's already running
             fi
         fi
     fi
