@@ -1,0 +1,452 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create a basic elasticsearch/kibana cluster environment.",
+    "Parameters": {
+        "AvailabilityZone": {
+            "Type": "String",
+            "Description": "Availability Zone (AZ) to start the cluster in.",
+            "Default": "us-east-1c"
+        },
+        "InstanceProfile": {
+            "Type": "String",
+            "Description": "IAM instance profile to use within the cluster."
+        },
+        "KeyName": {
+            "Description": "Name of an existing EC2 key pair to enable remote access to the EC2 instance.",
+            "Type": "String"
+        },
+        "ClusterName": {
+            "Type": "String",
+            "Description": "A unique name for the cluster.",
+            "Default": "cfn-logstash"
+        },
+        "ExternalAccessCidrRange": {
+            "Description": "The CIDR IP address range for remote access to the EC2 instances via tcp:22, tcp:80 (default: 127.0.0.1/32, i.e. none).",
+            "Type": "String",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "127.0.0.1/32",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
+        },
+        "ElasticsearchPrimaryVolumeSize": {
+            "Description": "Size of a dedicated EBS volume to be attached to the EC2 instance.",
+            "Type": "Number",
+            "Default": "64"
+        }
+    },
+    "Mappings": {
+        "RegionMap": {
+            "us-east-1": {
+                "AMI": "ami-d0f89fb9"
+            }
+        }
+    },
+    "Resources": {
+        "SecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Stackato Security Group",
+                "SecurityGroupIngress": [{
+                    "IpProtocol": "icmp",
+                    "FromPort": "3",
+                    "ToPort": "4",
+                    "CidrIp": "0.0.0.0/0"
+                }, {
+                    "IpProtocol": "tcp",
+                    "FromPort": "22",
+                    "ToPort": "22",
+                    "CidrIp": {
+                        "Ref": "ExternalAccessCidrRange"
+                    }
+                }, {
+                    "IpProtocol": "tcp",
+                    "FromPort": "80",
+                    "ToPort": "80",
+                    "CidrIp": {
+                        "Ref": "ExternalAccessCidrRange"
+                    }
+                }]
+            }
+        },
+        "SecurityGroupInterElasticsearch9200": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupName": {
+                    "Ref": "SecurityGroup"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "9200",
+                "ToPort": "9299",
+                "SourceSecurityGroupName": {
+                    "Ref": "SecurityGroup"
+                }
+            }
+        },
+       "SecurityGroupInterElasticsearch9300": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupName": {
+                    "Ref": "SecurityGroup"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "9300",
+                "ToPort": "9399",
+                "SourceSecurityGroupName": {
+                    "Ref": "SecurityGroup"
+                }
+            }
+        },
+        "SecurityGroupInterRedis": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupName": {
+                    "Ref": "SecurityGroup"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "4379",
+                "ToPort": "4379",
+                "SourceSecurityGroupName": {
+                    "Ref": "SecurityGroup"
+                }
+            }
+        },
+        "ElasticsearchPrimaryVolume": {
+            "Type": "AWS::EC2::Volume",
+            "Properties": {
+                "Size": {
+                    "Ref": "ElasticsearchPrimaryVolumeSize"
+                },
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone"
+                }
+            },
+            "DeletionPolicy": "Snapshot"
+        },
+        "ElasticsearchPrimaryInstance": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata" : {
+                "AWS::CloudFormation::Init" : {
+                    "config" : {
+                        "files" : {
+                            "/app/.env" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "export APP_ROOT_DIR=/app", "\n",
+                                            "export APP_APP_DIR=/app/app", "\n",
+                                            "export APP_VENDOR_DIR=/app/vendor", "\n",
+                                            "export APP_LOG_DIR=/app/var/log", "\n",
+                                            "export APP_RUN_DIR=/app/var/run", "\n",
+                                            "export APP_TMP_DIR=/app/tmp", "\n",
+                                            "export APP_DATA_DIR=/app/data", "\n",
+                                            "export APP_USER=ubuntu", "\n",
+                                            "export APP_CONFIG_ES_CLUSTER=", { "Ref" : "ClusterName" }, "\n",
+                                            "export APP_CONFIG_ES_IPADDRESS=`ec2metadata --local-ipv4`", "\n",
+                                            "export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup" }, "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000755"
+                            },
+                            "/home/ubuntu/provision" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "#!/bin/bash", "\n",
+                                            "set -e", "\n",
+                                            "/app/app/.build/ubuntu-12/provision.sh", "\n",
+                                            "/app/app/bin/data-mount-device xvdf ", { "Ref" : "ElasticsearchPrimaryVolume" }, " ubuntu", "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
+                            },
+                            "/home/ubuntu/bootstrap" : {
+                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone"
+                },
+                "DisableApiTermination": "true",
+                "ImageId": {
+                    "Fn::FindInMap": ["RegionMap",
+                    {
+                        "Ref": "AWS::Region"
+                    }, "AMI"]
+                },
+                "IamInstanceProfile": {
+                    "Ref": "InstanceProfile"
+                },
+                "InstanceType": "t1.micro",
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SecurityGroups": [{
+                    "Ref": "SecurityGroup"
+                }],
+                "Volumes": [{
+                    "VolumeId": {
+                        "Ref": "ElasticsearchPrimaryVolume"
+                    },
+                    "Device": "/dev/sdf"
+                }],
+                "Tags": [{
+                    "Key": "Name",
+                    "Value": {
+                        "Fn::Join": [
+                            "-",
+                            [
+                                { "Ref" : "ClusterName" },
+                                "elasticsearch-p0"
+                            ]
+                        ]
+                    },
+                    "PropagateAtLaunch": "true"
+                }],
+                "UserData" : {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash", "\n",
+                                "apt-get update", "\n",
+                                "apt-get -y install python-setuptools", "\n",
+                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
+                                "cfn-init --verbose ",
+                                " --region ", { "Ref": "AWS::Region" },
+                                " --stack ", { "Ref": "AWS::StackName" },
+                                " --resource ElasticsearchPrimaryInstance ",
+                                " || error_exit 'Failed to run cfn-init'", "\n",
+                                "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch", "\n",
+                                "/app/app/.build/dev_server/extra.sh", "\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "ElasticsearchReplicaInstance": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata" : {
+                "AWS::CloudFormation::Init" : {
+                    "config" : {
+                        "files" : {
+                            "/app/.env" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "export APP_ROOT_DIR=/app", "\n",
+                                            "export APP_APP_DIR=/app/app", "\n",
+                                            "export APP_VENDOR_DIR=/app/vendor", "\n",
+                                            "export APP_LOG_DIR=/app/var/log", "\n",
+                                            "export APP_RUN_DIR=/app/var/run", "\n",
+                                            "export APP_TMP_DIR=/app/tmp", "\n",
+                                            "export APP_DATA_DIR=/app/data", "\n",
+                                            "export APP_USER=ubuntu", "\n",
+                                            "export APP_CONFIG_ES_CLUSTER=", { "Ref" : "ClusterName" }, "\n",
+                                            "export APP_CONFIG_ES_IPADDRESS=`ec2metadata --local-ipv4`", "\n",
+                                            "export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup" }, "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000755"
+                            },
+                            "/home/ubuntu/bootstrap" : {
+                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone"
+                },
+                "DisableApiTermination": "true",
+                "ImageId": {
+                    "Fn::FindInMap": ["RegionMap",
+                    {
+                        "Ref": "AWS::Region"
+                    }, "AMI"]
+                },
+                "IamInstanceProfile": {
+                    "Ref": "InstanceProfile"
+                },
+                "InstanceType": "t1.micro",
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SecurityGroups": [{
+                    "Ref": "SecurityGroup"
+                }],
+                "Tags": [{
+                    "Key": "Name",
+                    "Value": {
+                        "Fn::Join": [
+                            "-",
+                            [
+                                { "Ref" : "ClusterName" },
+                                "elasticsearch-r0"
+                            ]
+                        ]
+                    },
+                    "PropagateAtLaunch": "true"
+                }],
+                "UserData" : {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash", "\n",
+                                "apt-get update", "\n",
+                                "apt-get -y install python-setuptools", "\n",
+                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
+                                "cfn-init --verbose ",
+                                " --region ", { "Ref": "AWS::Region" },
+                                " --stack ", { "Ref": "AWS::StackName" },
+                                " --resource ElasticsearchReplicaInstance ",
+                                " || error_exit 'Failed to run cfn-init'", "\n",
+                                "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh elasticsearch,kibana", "\n",
+                                "/app/app/.build/dev_server/extra.sh", "\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "BrokerInstance": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata" : {
+                "AWS::CloudFormation::Init" : {
+                    "config" : {
+                        "files" : {
+                            "/app/.env" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "export APP_ROOT_DIR=/app", "\n",
+                                            "export APP_APP_DIR=/app/app", "\n",
+                                            "export APP_VENDOR_DIR=/app/vendor", "\n",
+                                            "export APP_LOG_DIR=/app/var/log", "\n",
+                                            "export APP_RUN_DIR=/app/var/run", "\n",
+                                            "export APP_TMP_DIR=/app/tmp", "\n",
+                                            "export APP_DATA_DIR=/app/data", "\n",
+                                            "export APP_USER=ubuntu", "\n",
+                                            "export APP_CONFIG_ES_IPADDRESS=", { "Fn::GetAtt" : [ "ElasticsearchPrimaryInstance", "PrivateIp" ] }, "\n",
+                                            "export APP_CONFIG_REDIS_IPADDRESS=`ec2metadata --local-ipv4`", "\n",
+                                            "export APP_CONFIG_REDIS_KEY=logstash", "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000755"
+                            },
+                            "/home/ubuntu/bootstrap" : {
+                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone"
+                },
+                "DisableApiTermination": "true",
+                "ImageId": {
+                    "Fn::FindInMap": ["RegionMap",
+                    {
+                        "Ref": "AWS::Region"
+                    }, "AMI"]
+                },
+                "IamInstanceProfile": {
+                    "Ref": "InstanceProfile"
+                },
+                "InstanceType": "t1.micro",
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SecurityGroups": [{
+                    "Ref": "SecurityGroup"
+                }],
+                "Tags": [{
+                    "Key": "Name",
+                    "Value": {
+                        "Fn::Join": [
+                            "-",
+                            [
+                                { "Ref" : "ClusterName" },
+                                "broker-p0"
+                            ]
+                        ]
+                    },
+                    "PropagateAtLaunch": "true"
+                }],
+                "UserData" : {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash", "\n",
+                                "apt-get update", "\n",
+                                "apt-get -y install python-setuptools", "\n",
+                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
+                                "cfn-init --verbose ",
+                                " --region ", { "Ref": "AWS::Region" },
+                                " --stack ", { "Ref": "AWS::StackName" },
+                                " --resource BrokerInstance ",
+                                " || error_exit 'Failed to run cfn-init'", "\n",
+                                "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh logstash,redis,logstash_redis", "\n",
+                                "/app/app/.build/dev_server/extra.sh", "\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "WebInterface": {
+            "Description": "The web address for Kibana.",
+            "Value": {
+                "Fn::Join": [
+                    "",
+                    [
+                        "http://",
+                        { "Fn::GetAtt" : [ "ElasticsearchReplicaInstance", "PublicDnsName" ] },
+                        "/"
+                    ]
+                ]
+            }
+        }
+    }
+}
