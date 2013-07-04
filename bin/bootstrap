@@ -23,7 +23,10 @@ cd /app/app/
 sudo $1
 
 # ruby dotenv doesn't handle dynamic assignments, so overwrite any dynamic properties (like `ec2metadata` calls)
-env -i sh -c '. /app/.env ; env | grep -v "^PWD"' > /app/.env
+[ -f /app/.env-prior ] && rm -f /app/.env-prior
+mv /app/.env /app/.env-prior
+env -i sh -c '. /app/.env-prior ; env | grep -v "^PWD"' | sed -r 's/(.*)/export \1/' > /app/.env #| tee /app/.env
+chmod +x /app/.env
 
 . ../.env
 

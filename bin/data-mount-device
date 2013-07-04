@@ -6,11 +6,11 @@ set -e
 
 sudo mkdir -p /$2
 
-if ! (sudo fdisk -l /dev/$1) ; then
+if ! (sudo dumpe2fs /dev/$1 > /dev/null) ; then
     sudo mkfs.ext4 /dev/$1
 fi
 
-if ! (cat /proc/mounts | grep /dev/$1) ; then
+if ! (cat /proc/mounts | grep /dev/$1 > /dev/null) ; then
     sudo mount /dev/$1 /$2
 fi
 
