@@ -9,11 +9,7 @@ set -e
 SESSION_START=$1
 SESSION_END=$2
 
-INSTANCE_ID=`ec2metadata | awk '/instance-id: / { print $2 }'`
-
-# this isn't working as i expect...
-# aws ec2 describe-volumes --filter "{\"name\":\"attachment.instance-id\",\"value\":[\"$INSTANCE_ID\"]}"
-# so, statically storing it in ~/.volumes
+INSTANCE_ID=`ec2metadata --instance-id`
 
 JSON_PREFIX_L0=''
 
@@ -26,16 +22,14 @@ for METRIC_NAME in CPUUtilization DiskReadBytes DiskReadOps DiskWriteBytes DiskW
     JSON_PREFIX_L0=','
 done
 
-if [ -f ~/.volumes ] ; then
-    cat ~/.volumes | while read VOLUME_ID ; do
-        for METRIC_NAME in VolumeIdleTime VolumeQueueLength VolumeReadBytes VolumeReadOps VolumeTotalReadTime VolumeTotalWriteTime VolumeWriteBytes VolumeWriteOps ; do
-            echo $JSON_PREFIX_L0 "\"aws-ebs/$VOLUME_ID/$METRIC_NAME\":"
+(aws ec2 describe-volumes --filter name="attachment.instance-id",values=$INSTANCE_ID | grep 'VolumeId' | sed -r 's/^.*"(vol-[^"]+)".*$/\1/' | uniq) | while read VOLUME_ID ; do
+    for METRIC_NAME in VolumeIdleTime VolumeQueueLength VolumeReadBytes VolumeReadOps VolumeTotalReadTime VolumeTotalWriteTime VolumeWriteBytes VolumeWriteOps ; do
+        echo $JSON_PREFIX_L0 "\"aws-ebs/$VOLUME_ID/$METRIC_NAME\":"
 
-            aws cloudwatch get-metric-statistics --namespace "AWS/EBS"  --dimensions "{\"name\":\"VolumeId\",\"value\":\"$VOLUME_ID\"}" --metric-name $METRIC_NAME --start-time $SESSION_START --end-time $SESSION_END --period 60 --statistics "[\"Average\",\"Sum\",\"SampleCount\",\"Maximum\",\"Minimum\"]"
-            JSON_PREFIX_L0=','
-        done
+        aws cloudwatch get-metric-statistics --namespace "AWS/EBS"  --dimensions "{\"name\":\"VolumeId\",\"value\":\"$VOLUME_ID\"}" --metric-name $METRIC_NAME --start-time $SESSION_START --end-time $SESSION_END --period 60 --statistics "[\"Average\",\"Sum\",\"SampleCount\",\"Maximum\",\"Minimum\"]"
+        JSON_PREFIX_L0=','
     done
-fi
+done
 
 for RRD_FILE in /var/lib/munin/localdomain/localhost.localdomain-*.rrd ; do
     RRD_NAME=$(echo $RRD_FILE | sed 's#^/var/lib/munin/localdomain/localhost.localdomain-\(.*\)\.rrd$#\1#')
