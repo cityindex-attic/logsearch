@@ -16,6 +16,29 @@
             "Type": "String",
             "Description": "IAM instance profile to use within the cluster."
         },
+        "InstanceType": {
+            "Description": "EC2 instance type",
+            "Type": "String",
+            "Default": "t1.micro",
+            "AllowedValues": [
+                "m1.medium",
+                "m1.large",
+                "m1.xlarge",
+                "m2.xlarge",
+                "m2.2xlarge",
+                "m2.4xlarge",
+                "m3.xlarge",
+                "m3.2xlarge",
+                "c1.medium",
+                "c1.xlarge",
+                "cc2.8xlarge",
+                "cr1.8xlarge",
+                "cg1.4xlarge",
+                "hi1.4xlarge",
+                "hs1.8xlarge"
+            ],
+            "ConstraintDescription": "must be a valid EC2 instance type."
+        },
         "KeyName": {
             "Description": "Name of an existing EC2 key pair to enable remote access to the EC2 instance.",
             "Type": "String"
@@ -199,7 +222,9 @@
                 "IamInstanceProfile": {
                     "Ref": "InstanceProfile"
                 },
-                "InstanceType": "t1.micro",
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
                 "KeyName": {
                     "Ref": "KeyName"
                 },
@@ -303,7 +328,9 @@
                 "IamInstanceProfile": {
                     "Ref": "InstanceProfile"
                 },
-                "InstanceType": "t1.micro",
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
                 "KeyName": {
                     "Ref": "KeyName"
                 },
@@ -401,7 +428,9 @@
                 "IamInstanceProfile": {
                     "Ref": "InstanceProfile"
                 },
-                "InstanceType": "t1.micro",
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
                 "KeyName": {
                     "Ref": "KeyName"
                 },
