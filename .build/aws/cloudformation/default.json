@@ -7,6 +7,11 @@
             "Description": "Availability Zone (AZ) to start the cluster in.",
             "Default": "us-east-1c"
         },
+        "DisableApiTermination": {
+            "Type": "String",
+            "Description": "Prevent EC2 instance termination (if active, requires to active enable it to successfully delete the stack).",
+            "Default": "false"
+        },
         "InstanceProfile": {
             "Type": "String",
             "Description": "IAM instance profile to use within the cluster."
@@ -182,7 +187,9 @@
                 "AvailabilityZone": {
                     "Ref": "AvailabilityZone"
                 },
-                "DisableApiTermination": "true",
+                "DisableApiTermination": {
+                    "Ref": "DisableApiTermination"
+                },
                 "ImageId": {
                     "Fn::FindInMap": ["RegionMap",
                     {
@@ -284,7 +291,9 @@
                 "AvailabilityZone": {
                     "Ref": "AvailabilityZone"
                 },
-                "DisableApiTermination": "true",
+                "DisableApiTermination": {
+                    "Ref": "DisableApiTermination"
+                },
                 "ImageId": {
                     "Fn::FindInMap": ["RegionMap",
                     {
@@ -380,7 +389,9 @@
                 "AvailabilityZone": {
                     "Ref": "AvailabilityZone"
                 },
-                "DisableApiTermination": "true",
+                "DisableApiTermination": {
+                    "Ref": "DisableApiTermination"
+                },
                 "ImageId": {
                     "Fn::FindInMap": ["RegionMap",
                     {
