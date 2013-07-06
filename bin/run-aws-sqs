@@ -27,7 +27,7 @@ while true ; do
         MSGRCPT=`echo $APIRES | sed -r 's/.*"ReceiptHandle": "([^"]+)".*/\1/'`
         MSGBODY=`echo $APIRES | sed -r 's/.*"Body": "([^"]+)".*/\1/'`
     
-        echo aws sqs delete-message --queue-url "$1" --receipt-handle "$MSGRCPT"
+        aws sqs delete-message --queue-url "$1" --receipt-handle "$MSGRCPT"
     
         echo "====> $MSGID"
         echo "====> $MSGBODY"

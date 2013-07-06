@@ -7,7 +7,7 @@ input {
         data_type => "list"
         key => "<%= ENV['APP_CONFIG_REDIS_KEY'] || 'logstash'  %>"
         format => "json_event"
-        threads => 6
+        threads => 8
     }
 }
 

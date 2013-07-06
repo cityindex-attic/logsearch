@@ -1,5 +1,3 @@
-<%= ERB.new(File.read("#{ENV['APP_APP_DIR']}/srv/logstash/config/common.conf.erb")).result(binding) %>
-
 input {
     file {
         type => "<%= @args[:logstash_type] %>"
