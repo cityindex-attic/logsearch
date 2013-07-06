@@ -1,0 +1,25 @@
+<%= ERB.new(File.read("#{ENV['APP_APP_DIR']}/srv/logstash/config/common.conf.erb")).result(binding) %>
+
+input {
+    file {
+        type => "<%= @args[:logstash_type] %>"
+        format => "<%= @args[:logstash_format] || 'plain' %>"
+        path => "<%= @args[:path] %>"
+        sincedb_path => "<%= Dir.getwd %>/logstash_position.db"
+        sincedb_write_interval => 10
+        start_position => "beginning"
+    }
+}
+
+output {
+    # uncomment for debugging
+    #stdout { debug => true debug_format => "json"}
+
+    redis {
+        host => "<%= ENV['APP_CONFIG_REDIS_IPADDRESS'] || '127.0.0.1'  %>"
+        data_type => "list"
+        key => "<%= ENV['APP_CONFIG_REDIS_KEY'] || 'logstash'  %>"
+        batch => true
+        batch_events => 250
+    }
+}
