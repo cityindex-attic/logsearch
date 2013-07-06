@@ -134,8 +134,8 @@
                     "Ref": "SecurityGroup"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "4379",
-                "ToPort": "4379",
+                "FromPort": "6379",
+                "ToPort": "6379",
                 "SourceSecurityGroupName": {
                     "Ref": "SecurityGroup"
                 }
@@ -446,7 +446,7 @@
                             "-",
                             [
                                 { "Ref" : "ClusterName" },
-                                "broker-p0"
+                                "broker-n0"
                             ]
                         ]
                     },
@@ -474,11 +474,110 @@
                     }
                 }
             }
+        },
+        "ShipperInstance": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata" : {
+                "AWS::CloudFormation::Init" : {
+                    "config" : {
+                        "files" : {
+                            "/app/.env" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "export APP_ROOT_DIR=/app", "\n",
+                                            "export APP_APP_DIR=/app/app", "\n",
+                                            "export APP_VENDOR_DIR=/app/vendor", "\n",
+                                            "export APP_LOG_DIR=/app/var/log", "\n",
+                                            "export APP_RUN_DIR=/app/var/run", "\n",
+                                            "export APP_TMP_DIR=/app/tmp", "\n",
+                                            "export APP_DATA_DIR=/app/data", "\n",
+                                            "export APP_USER=ubuntu", "\n",
+                                            "export APP_CONFIG_REDIS_IPADDRESS=", { "Fn::GetAtt" : [ "BrokerInstance", "PrivateIp" ] }, "\n",
+                                            "export APP_CONFIG_REDIS_KEY=logstash", "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000755"
+                            },
+                            "/home/ubuntu/bootstrap" : {
+                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone"
+                },
+                "DisableApiTermination": {
+                    "Ref": "DisableApiTermination"
+                },
+                "ImageId": {
+                    "Fn::FindInMap": ["RegionMap",
+                    {
+                        "Ref": "AWS::Region"
+                    }, "AMI"]
+                },
+                "IamInstanceProfile": {
+                    "Ref": "InstanceProfile"
+                },
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SecurityGroups": [{
+                    "Ref": "SecurityGroup"
+                }],
+                "Tags": [{
+                    "Key": "Name",
+                    "Value": {
+                        "Fn::Join": [
+                            "-",
+                            [
+                                { "Ref" : "ClusterName" },
+                                "shipper-n0"
+                            ]
+                        ]
+                    },
+                    "PropagateAtLaunch": "true"
+                }],
+                "UserData" : {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash", "\n",
+                                "apt-get update", "\n",
+                                "apt-get -y install python-setuptools", "\n",
+                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
+                                "cfn-init --verbose ",
+                                " --region ", { "Ref": "AWS::Region" },
+                                " --stack ", { "Ref": "AWS::StackName" },
+                                " --resource ShipperInstance ",
+                                " || error_exit 'Failed to run cfn-init'", "\n",
+                                "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh logstash", "\n",
+                                "/app/app/.build/dev_server/extra.sh", "\n"
+                            ]
+                        ]
+                    }
+                }
+            }
         }
     },
     "Outputs": {
         "WebInterface": {
-            "Description": "The web address for Kibana.",
+            "Description": "Access the Kibana frontend.",
             "Value": {
                 "Fn::Join": [
                     "",
@@ -486,6 +585,18 @@
                         "http://",
                         { "Fn::GetAtt" : [ "ElasticsearchReplicaInstance", "PublicDnsName" ] },
                         "/"
+                    ]
+                ]
+            }
+        },
+        "LogShipper": {
+            "Description": "Ship log messages into the system.",
+            "Value": {
+                "Fn::Join": [
+                    "",
+                    [
+                        "ssh ubuntu@",
+                        { "Fn::GetAtt" : [ "ShipperInstance", "PublicDnsName" ] }
                     ]
                 ]
             }
