@@ -1,0 +1,452 @@
+<html>
+    <head>
+        <title>gather-stats viewer</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"></script>
+        <script src="http://code.highcharts.com/adapters/mootools-adapter.js"></script>
+        <script src="http://code.highcharts.com/highcharts.js"></script>
+        <script src="common.js"></script>
+    </head>
+    <body>
+        <input id="datasource" value="test/stats.json" style="width:100%;"/>
+        <hr />
+        <div id="charts"></div>
+        <script type="text/javascript">
+            function redraw() {
+                createChart(
+                    {
+                        title : {
+                            text : 'aws/cpu-utilization'
+                        },
+                        series : [
+                            {
+                                name : 'CPU',
+                                data : gatherStats('aws-ec2/CPUUtilization')
+                            }
+                        ]
+                    }
+                );
+
+                createChart(
+                    {
+                        title : {
+                            text : 'collectd/cpu-utilization'
+                        },
+                        plotOptions : {
+                            areaspline : {
+                                stacking : 'normal'
+                            }
+                        },
+                        yAxis : {
+                            min : 0,
+                            max : 100
+                        },
+                        series : Array.map(
+                            [ 'idle', 'interrupt', 'nice', 'softirq', 'steal', 'system', 'user', 'wait' ],
+                            function (cat) {
+                                return {
+                                    name : cat,
+                                    data : gatherStats('collectd/cpu-0/cpu-' + cat + '/value')
+                                };
+                            }
+                        )
+                    }
+                );
+
+                createChart(
+                    {
+                        chart : {
+                            type : 'line'
+                        },
+                        title : {
+                            text : 'collectd/irq'
+                        },
+                        yAxis : {
+                            min : 0,
+                            max : 100
+                        },
+                        series : localInterrupts.map(
+                            function (v) {
+                                return {
+                                    name : v,
+                                    data : gatherStats('collectd/irq/irq-' + v + '/value')
+                                };
+                            }
+                        )
+                    }
+                );
+
+                createChart(
+                    {
+                        title : {
+                            text : 'collectd/memory'
+                        },
+                        plotOptions : {
+                            areaspline : {
+                                stacking : 'normal'
+                            }
+                        },
+                        yAxis : {
+                            min : 0
+                        },
+                        series : Array.map(
+                            [ 'free', 'buffered', 'cached', 'used' ],
+                            function (cat) {
+                                return {
+                                    name : cat,
+                                    data : gatherStats('collectd/memory/memory-' + cat + '/value')
+                                };
+                            }
+                        )
+                    }
+                );
+
+                createChart(
+                    {
+                        chart : {
+                            type : 'spline'
+                        },
+                        title : {
+                            text : 'collectd/loadavg'
+                        },
+                        series : [
+                            {
+                                name : 'short',
+                                data : gatherStats('collectd/load/load/shortterm')
+                            },
+                            {
+                                name : 'mid',
+                                data : gatherStats('collectd/load/load/midterm')
+                            },
+                            {
+                                name : 'long',
+                                data : gatherStats('collectd/load/load/longterm')
+                            }
+                        ]
+                    }
+                );
+
+                createChart(
+                    {
+                        title : {
+                            text : 'aws-ec2/DiskActivity'
+                        },
+                        yAxis : [
+                            {
+                                title : {
+                                    text : 'bytes'
+                                }
+                            },
+                            {
+                                title : {
+                                    text : 'operations'
+                                },
+                                opposite : true
+                            }
+                        ],
+                        series : [
+                            {
+                                name : 'bytes-read',
+                                data : gatherStats('aws-ec2/DiskReadBytes')
+                            },
+                            {
+                                name : 'bytes-write',
+                                data : gatherStats('aws-ec2/DiskWriteBytes').map(function (v) { v[1] = 0 - v[1]; return v; })
+                            },
+                            {
+                                name : 'ops-read',
+                                data : gatherStats('aws-ec2/DiskReadOps'),
+                                type : 'spline',
+                                yAxis : 1
+                            },
+                            {
+                                name : 'ops-write',
+                                data : gatherStats('aws-ec2/DiskWriteOps').map(function (v) { v[1] = 0 - v[1]; return v; }),
+                                type : 'spline',
+                                yAxis : 1
+                            }
+                        ]
+                    }
+                );
+
+                Array.each(
+                    localMounts,
+                    function (disk) {
+                        createChart(
+                            {
+                                chart : {
+                                    type : 'areaspline'
+                                },
+                                title : {
+                                    text : 'collectd/df/df-' + disk
+                                },
+                                series : [
+                                    {
+                                        name : 'free',
+                                        data : gatherStats('collectd/df/df-' + disk + '/free')
+                                    },
+                                    {
+                                        name : 'used',
+                                        data : gatherStats('collectd/df/df-' + disk + '/used')
+                                    }
+                                ]
+                            }
+                        );
+                    }
+                );
+
+                Array.each(
+                    ebsVolumes,
+                    function (name) {
+                        createChart(
+                            {
+                                title : {
+                                    text : 'aws-ebs/vol-' + name + '/Activity'
+                                },
+                                yAxis : [
+                                    {
+                                        title : {
+                                            text : 'bytes'
+                                        }
+                                    },
+                                    {
+                                        title : {
+                                            text : 'operations'
+                                        },
+                                        opposite : true
+                                    }
+                                ],
+                                series : [
+                                    {
+                                        name : 'bytes-read',
+                                        data : gatherStats('aws-ebs/vol-' + name + '/VolumeReadBytes')
+                                    },
+                                    {
+                                        name : 'bytes-write',
+                                        data : gatherStats('aws-ebs/vol-' + name + '/VolumeWriteBytes').map(function (v) { v[1] = 0 - v[1]; return v; })
+                                    },
+                                    {
+                                        name : 'ops-read',
+                                        data : gatherStats('aws-ebs/vol-' + name + '/VolumeReadOps'),
+                                        type : 'spline',
+                                        yAxis : 1
+                                    },
+                                    {
+                                        name : 'ops-write',
+                                        data : gatherStats('aws-ebs/vol-' + name + '/VolumeWriteOps').map(function (v) { v[1] = 0 - v[1]; return v; }),
+                                        type : 'spline',
+                                        yAxis : 1
+                                    }
+                                ]
+                            }
+                        );
+
+                        createChart(
+                            {
+                                title : {
+                                    text : 'aws-ebs/vol-' + name + '/Timing'
+                                },
+                                yAxis : {
+                                    title : {
+                                        text : 'seconds'
+                                    }
+                                },
+                                series : [
+                                    {
+                                        name : 'read',
+                                        data : gatherStats('aws-ebs/vol-' + name + '/VolumeTotalReadTime')
+                                    },
+                                    {
+                                        name : 'write',
+                                        data : gatherStats('aws-ebs/vol-' + name + '/VolumeTotalWriteTime').map(function (v) { v[1] = 0 - v[1]; return v; })
+                                    }
+                                ]
+                            }
+                        );
+
+                        createChart(
+                            {
+                                title : {
+                                    text : 'aws-ebs/vol-' + name + '/VolumeQueueLength'
+                                },
+                                yAxis : {
+                                    title : {
+                                        text : 'count'
+                                    }
+                                },
+                                series : [
+                                    {
+                                        name : 'value',
+                                        data : gatherStats('aws-ebs/vol-' + name + '/VolumeQueueLength')
+                                    }
+                                ]
+                            }
+                        );
+                    }
+                );
+
+                Array.each(
+                    localDisks,
+                    function (name) {
+                        createChart(
+                            {
+                                title : {
+                                    text : 'collectd/disk-' + name + '/Activity'
+                                },
+                                yAxis : [
+                                    {
+                                        title : {
+                                            text : 'bytes'
+                                        }
+                                    },
+                                    {
+                                        title : {
+                                            text : 'operations'
+                                        },
+                                        opposite : true
+                                    }
+                                ],
+                                series : [
+                                    {
+                                        name : 'bytes-read',
+                                        data : gatherStats('collectd/disk-' + name + '/disk_octets/read')
+                                    },
+                                    {
+                                        name : 'bytes-write',
+                                        data : gatherStats('collectd/disk-' + name + '/disk_octets/write').map(function (v) { v[1] = 0 - v[1]; return v; })
+                                    },
+                                    {
+                                        name : 'ops-read',
+                                        data : gatherStats('collectd/disk-' + name + '/disk_ops/read'),
+                                        type : 'spline',
+                                        yAxis : 1
+                                    },
+                                    {
+                                        name : 'ops-write',
+                                        data : gatherStats('collectd/disk-' + name + '/disk_ops/write').map(function (v) { v[1] = 0 - v[1]; return v; }),
+                                        type : 'spline',
+                                        yAxis : 1
+                                    }
+                                ]
+                            }
+                        );
+
+                        createChart(
+                            {
+                                chart : {
+                                    type : 'line'
+                                },
+                                title : {
+                                    text : 'collectd/disk-' + name + '/Merged'
+                                },
+                                yAxis : {
+                                    title : {
+                                        text : 'operations'
+                                    }
+                                },
+                                series : [
+                                    {
+                                        name : 'read',
+                                        data : gatherStats('collectd/disk-' + name + '/disk_merged/read')
+                                    },
+                                    {
+                                        name : 'write',
+                                        data : gatherStats('collectd/disk-' + name + '/disk_merged/write').map(function (v) { v[1] = 0 - v[1]; return v; })
+                                    }
+                                ]
+                            }
+                        );
+
+                        createChart(
+                            {
+                                title : {
+                                    text : 'collectd/disk-' + name + '/Timing'
+                                },
+                                yAxis : {
+                                    title : {
+                                        text : 'milliseconds'
+                                    }
+                                },
+                                series : [
+                                    {
+                                        name : 'read',
+                                        data : gatherStats('collectd/disk-' + name + '/disk_time/read')
+                                    },
+                                    {
+                                        name : 'write',
+                                        data : gatherStats('collectd/disk-' + name + '/disk_time/write').map(function (v) { v[1] = 0 - v[1]; return v; })
+                                    }
+                                ]
+                            }
+                        );
+                    }
+                );
+
+                createChart(
+                    {
+                        title : {
+                            text : 'aws-ec2/NetworkActivity'
+                        },
+                        series : [
+                            {
+                                name : 'bytes-tx',
+                                data : gatherStats('aws-ec2/NetworkOut')
+                            },
+                            {
+                                name : 'bytes-rx',
+                                data : gatherStats('aws-ec2/NetworkIn').map(function (v) { v[1] = 0 - v[1]; return v; })
+                            }
+                        ]
+                    }
+                );
+
+                Array.each(
+                    localInterfaces,
+                    function (name) {
+                        createChart(
+                            {
+                                title : {
+                                    text : 'collectd/interface-' + name + '/Activity'
+                                },
+                                yAxis : [
+                                    {
+                                        title : {
+                                            text : 'bytes'
+                                        }
+                                    },
+                                    {
+                                        title : {
+                                            text : 'packets'
+                                        },
+                                        opposite : true
+                                    }
+                                ],
+                                series : [
+                                    {
+                                        name : 'bytes-rx',
+                                        data : gatherStats('collectd/interface/if_octets-' + name + '/rx')
+                                    },
+                                    {
+                                        name : 'bytes-tx',
+                                        data : gatherStats('collectd/interface/if_octets-' + name + '/tx').map(function (v) { v[1] = 0 - v[1]; return v; })
+                                    },
+                                    {
+                                        name : 'packets-rx',
+                                        data : gatherStats('collectd/interface/if_packets-' + name + '/rx'),
+                                        type : 'spline',
+                                        yAxis : 1
+                                    },
+                                    {
+                                        name : 'packets-tx',
+                                        data : gatherStats('collectd/interface/if_packets-' + name + '/tx').map(function (v) { v[1] = 0 - v[1]; return v; }),
+                                        type : 'spline',
+                                        yAxis : 1
+                                    }
+                                ]
+                            }
+                        );
+                    }
+                );
+            }
+        </script>
+    </body>
+</html>
