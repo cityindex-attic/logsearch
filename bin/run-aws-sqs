@@ -1,0 +1,84 @@
+#!/bin/bash
+
+# script for polling an sqs endpoint and importing archived log files
+# arguments: sqs-queue-url, logstash-rake-command
+
+set -e
+
+#!/bin/bash
+
+. /app/.env
+
+TMPDIR=aws-sqs-`date +%N`
+mkdir $APP_TMP_DIR/$TMPDIR
+cd $APP_TMP_DIR/$TMPDIR/
+
+while true ; do
+    APIRES=`aws sqs receive-message --queue-url "$1"`
+
+    if [ $? -gt 0 ] ; then
+        exit $?
+    fi
+
+    if ( echo "$APIRES" | grep '"MessageId": "' > /dev/null ) ; then
+        echo ''
+
+        MSGID=`echo $APIRES | sed -r 's/.*"MessageId": "([^"]+)".*/\1/'`
+        MSGRCPT=`echo $APIRES | sed -r 's/.*"ReceiptHandle": "([^"]+)".*/\1/'`
+        MSGBODY=`echo $APIRES | sed -r 's/.*"Body": "([^"]+)".*/\1/'`
+    
+        aws sqs delete-message --queue-url "$1" --receipt-handle "$MSGRCPT"
+    
+        echo "====> $MSGID"
+        echo "====> $MSGBODY"
+    
+        TASK_LOGSTASH_TYPE=`echo "$MSGBODY" | awk -F';' '{ print $1 }'`
+        TASK_S3_BUCKET=`echo "$MSGBODY" | awk -F';' '{ print $2 }'`
+        TASK_S3_KEY=`echo "$MSGBODY" | awk -F';' '{ print $3 }'`
+    
+    
+        rm -fr *
+
+        echo '====> Downloading data...'
+        
+        aws s3 get-object --bucket "$TASK_S3_BUCKET" --key "$TASK_S3_KEY" `basename $TASK_S3_KEY`
+        
+        ls -al *
+        
+        
+        echo '====> Expanding data...'
+        
+        if ( echo $TASK_S3_KEY | grep -E '\.zip$' > /dev/null) ; then
+            unzip *.zip
+            rm *.zip
+        else
+            echo '====> Unknown file type'
+        
+            exit 1
+        fi
+        
+        ls -al *
+        wc -l *
+    
+        
+        echo '====> start:' `date -u +%Y-%m-%dT%TZ`
+        
+        (cd /app/app ; rake logstash:$2[$TASK_LOGSTASH_TYPE,$APP_TMP_DIR/$TMPDIR/*])
+        
+        echo '====> end:' `date -u +%Y-%m-%dT%TZ`
+
+        echo '====> waiting for queue to drain...'
+
+        QUEUELEN='1234'
+
+        while [ $QUEUELEN -gt 1000 ]; do
+            QUEUELEN=`/app/vendor/redis/src/redis-cli -h $APP_CONFIG_REDIS_IPADDRESS --raw llen logstash | awk '{ print $0 }'`
+
+            sleep 2
+        done
+    else
+        echo -n '.'
+
+        sleep 60
+    fi
+done

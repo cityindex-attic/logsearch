@@ -4,7 +4,8 @@ input {
     file {
         type => "<%= @args[:logstash_type] %>"
         format => "<%= @args[:logstash_format] || 'plain' %>"
-        sincedb => "<%= Dir.getwd %>/logstash_position.db"
+        path => "<%= @args[:path] %>"
+        sincedb_path => "<%= Dir.getwd %>/logstash_position.db"
         sincedb_write_interval => 10
         start_position => "beginning"
     }
