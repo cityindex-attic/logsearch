@@ -81,7 +81,7 @@
         "SecurityGroup": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
-                "GroupDescription": "Stackato Security Group",
+                "GroupDescription": "Elasticsearch Security Group",
                 "SecurityGroupIngress": [{
                     "IpProtocol": "icmp",
                     "FromPort": "3",
@@ -274,8 +274,8 @@
                             [
                                 "#!/bin/bash", "\n",
                                 "apt-get update", "\n",
-                                "apt-get -y install python-setuptools", "\n",
-                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
+                                "apt-get -y install python-pip", "\n",
+                                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
                                 "cfn-init --verbose ",
                                 " --region ", { "Ref": "AWS::Region" },
                                 " --stack ", { "Ref": "AWS::StackName" },
@@ -402,8 +402,8 @@
                             [
                                 "#!/bin/bash", "\n",
                                 "apt-get update", "\n",
-                                "apt-get -y install python-setuptools", "\n",
-                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
+                                "apt-get -y install python-pip", "\n",
+                                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
                                 "cfn-init --verbose ",
                                 " --region ", { "Ref": "AWS::Region" },
                                 " --stack ", { "Ref": "AWS::StackName" },
@@ -512,8 +512,8 @@
                             [
                                 "#!/bin/bash", "\n",
                                 "apt-get update", "\n",
-                                "apt-get -y install python-setuptools", "\n",
-                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
+                                "apt-get -y install python-pip", "\n",
+                                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
                                 "cfn-init --verbose ",
                                 " --region ", { "Ref": "AWS::Region" },
                                 " --stack ", { "Ref": "AWS::StackName" },
@@ -621,8 +621,8 @@
                             [
                                 "#!/bin/bash", "\n",
                                 "apt-get update", "\n",
-                                "apt-get -y install python-setuptools", "\n",
-                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
+                                "apt-get -y install python-pip", "\n",
+                                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
                                 "cfn-init --verbose ",
                                 " --region ", { "Ref": "AWS::Region" },
                                 " --stack ", { "Ref": "AWS::StackName" },
@@ -630,11 +630,26 @@
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
                                 "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh logstash ", { "Ref": "RepositoryBranch" }, "\n",
-                                "/app/app/.build/dev_server/extra.sh", "\n"
+                                "/app/app/.build/dev_server/extra.sh", "\n",
+                                "# Signal success\n",
+                                "cfn-signal --exit-code 0 --reason 'Elasticsearch cluster setup complete' '", { "Ref": "ClusterWaitConditionHandle" }, "'\n"
                             ]
                         ]
                     }
                 }
+            }
+        },
+        "ClusterWaitConditionHandle": {
+            "Type": "AWS::CloudFormation::WaitConditionHandle"
+        },
+        "ClusterWaitCondition": {
+            "Type": "AWS::CloudFormation::WaitCondition",
+            "DependsOn": "ShipperInstance",
+            "Properties": {
+                "Handle": {
+                    "Ref": "ClusterWaitConditionHandle"
+                },
+                "Timeout": "480"
             }
         }
     },
