@@ -63,6 +63,11 @@
             "Description": "Size of a dedicated EBS volume to be attached to the EC2 instance.",
             "Type": "Number",
             "Default": "64"
+        },
+        "RepositoryBranch": {
+            "Description": "Repository branch to bootstrap from.",
+            "Type": "String",
+            "Default": "master"
         }
     },
     "Mappings": {
@@ -164,6 +169,7 @@
                                     "Fn::Join" : [
                                         "",
                                         [
+                                            "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
                                             "export APP_ROOT_DIR=/app", "\n",
                                             "export APP_APP_DIR=/app/app", "\n",
                                             "export APP_VENDOR_DIR=/app/vendor", "\n",
@@ -199,7 +205,16 @@
                                 "mode" : "000555"
                             },
                             "/home/ubuntu/bootstrap" : {
-                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "source" : {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "https://raw.github.com/cityindex/elasticsearch-development-flow/",
+                                            { "Ref": "RepositoryBranch" },
+                                            "/bin/bootstrap"
+                                        ]
+                                    ]
+                                },
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
                                 "mode" : "000555"
@@ -267,7 +282,7 @@
                                 " --resource ElasticsearchPrimaryInstance ",
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch", "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch ", { "Ref": "RepositoryBranch" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n"
                             ]
                         ]
@@ -286,6 +301,7 @@
                                     "Fn::Join" : [
                                         "",
                                         [
+                                            "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
                                             "export APP_ROOT_DIR=/app", "\n",
                                             "export APP_APP_DIR=/app/app", "\n",
                                             "export APP_VENDOR_DIR=/app/vendor", "\n",
@@ -304,8 +320,35 @@
                                 "owner" : "ubuntu",
                                 "mode" : "000755"
                             },
+                            "/home/ubuntu/provision" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "#!/bin/bash", "\n",
+                                            "set -e", "\n",
+                                            "/app/app/.build/ubuntu-12/provision.sh", "\n",
+                                            "mkdir -p /mnt/app-data", "\n",
+                                            "chown ubuntu:ubuntu /mnt/app-data", "\n",
+                                            "ln -s /app/data /mnt/app-data", "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
+                            },
                             "/home/ubuntu/bootstrap" : {
-                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "source" : {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "https://raw.github.com/cityindex/elasticsearch-development-flow/",
+                                            { "Ref": "RepositoryBranch" },
+                                            "/bin/bootstrap"
+                                        ]
+                                    ]
+                                },
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
                                 "mode" : "000555"
@@ -367,7 +410,7 @@
                                 " --resource ElasticsearchReplicaInstance ",
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh elasticsearch,kibana", "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh elasticsearch,kibana ", { "Ref": "RepositoryBranch" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n"
                             ]
                         ]
@@ -386,6 +429,7 @@
                                     "Fn::Join" : [
                                         "",
                                         [
+                                            "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
                                             "export APP_ROOT_DIR=/app", "\n",
                                             "export APP_APP_DIR=/app/app", "\n",
                                             "export APP_VENDOR_DIR=/app/vendor", "\n",
@@ -405,7 +449,16 @@
                                 "mode" : "000755"
                             },
                             "/home/ubuntu/bootstrap" : {
-                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "source" : {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "https://raw.github.com/cityindex/elasticsearch-development-flow/",
+                                            { "Ref": "RepositoryBranch" },
+                                            "/bin/bootstrap"
+                                        ]
+                                    ]
+                                },
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
                                 "mode" : "000555"
@@ -467,7 +520,7 @@
                                 " --resource BrokerInstance ",
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh logstash,redis,logstash_redis", "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh logstash,redis,logstash_redis ", { "Ref": "RepositoryBranch" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n"
                             ]
                         ]
@@ -486,6 +539,7 @@
                                     "Fn::Join" : [
                                         "",
                                         [
+                                            "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
                                             "export APP_ROOT_DIR=/app", "\n",
                                             "export APP_APP_DIR=/app/app", "\n",
                                             "export APP_VENDOR_DIR=/app/vendor", "\n",
@@ -504,7 +558,16 @@
                                 "mode" : "000755"
                             },
                             "/home/ubuntu/bootstrap" : {
-                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "source" : {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "https://raw.github.com/cityindex/elasticsearch-development-flow/",
+                                            { "Ref": "RepositoryBranch" },
+                                            "/bin/bootstrap"
+                                        ]
+                                    ]
+                                },
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
                                 "mode" : "000555"
@@ -566,7 +629,7 @@
                                 " --resource ShipperInstance ",
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh logstash", "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh logstash ", { "Ref": "RepositoryBranch" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n"
                             ]
                         ]
