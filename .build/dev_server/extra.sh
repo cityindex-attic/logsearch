@@ -19,9 +19,10 @@ if ! (which aws 1>/dev/null 2>&1) ; then
     sudo pip install awscli
 fi
 
-if ! (which munin 1>/dev/null 2>&1) ; then
-    sudo apt-get install -y munin
-    # normally this steals cpu
-    sudo sh -c 'sed -i "s/#graph_strategy cgi/graph_strategy cgi/" /etc/munin/munin.conf'
-    sudo service munin-node restart
+if ! (which collectd 1>/dev/null 2>&1) ; then
+    sudo apt-get install -y collectd
+    sudo service collectd stop
+    sudo sh -c 'sed -i "s/#Interval 10/Interval 60/" /etc/collectd/collectd.conf'
+    sudo rm -fr /var/lib/collectd/rrd/*
+    sudo service collectd start
 fi

@@ -1,33 +1,48 @@
 namespace :logstash do
-  namespace :input do
-    desc "Run logstash off a redis queue"
-    task :redis do
-      process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/redis.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/redis.conf")
+  desc "Run logstash off a redis queue"
+  task :redis_to_elasticsearch do
+    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/redis_to_elasticsearch.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/redis_to_elasticsearch.conf")
       
-      sh "/usr/bin/java -Djava.io.tmpdir='#{ENV['APP_TMP_DIR']}' -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/redis.conf'"
-    end
+    sh "/usr/bin/java -Djava.io.tmpdir='#{ENV['APP_TMP_DIR']}' -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/redis_to_elasticsearch.conf'"
+  end
 
-    desc "Run logstash off stdin"
-    task :stdin, :logstash_type, :path do |t, args|
-      do_import(args)
-    end
+  desc "Run logstash off stdin"
+  task :pv_to_elasticsearch, :logstash_type, :path do |t, args|
+    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf", args)
+    sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf'"
+  end
 
-    desc "Run logstash off a file"
-    task :file, :logstash_type, :path do |t, args|
-      do_import(args)
-    end
+  desc "Run logstash off a file"
+  task :file_to_elasticsearch, :logstash_type, :path do |t, args|
+    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_elasticsearch.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_elasticsearch.conf", args)
+    sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_elasticsearch.conf'"
+  end
 
-    desc "Run logstash off json file"
-    task :jsonfile, :logstash_type, :path do |t, args|
-      do_import(args.to_hash.merge({ :logstash_format => "json" }))
-    end
+  desc "Run logstash off a file and send it to redis"
+  task :file_to_redis, :logstash_type, :path do |t, args|
+    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_redis.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_redis.conf", args)
+    sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_redis.conf'"
+  end
 
-    # use only when you want super, super inefficient imports (only used by the tests)
-    task :slow, :subcall, :logstash_type, :path do |t, args|
-      $bug_679_flush_size = 1
+  desc "Run logstash off stdin"
+  task :pv_to_redis, :logstash_type, :path do |t, args|
+    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_redis.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_redis.conf", args)
+    sh "/usr/bin/pv -ept #{args[:path]} | /usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_redis.conf'"
+  end
+
+  desc "Run logstash off json file via stdin"
+  task :pv_jsonfile_to_elasticsearch, :logstash_type, :path do |t, args|
+    args = args.merge({ :logstash_format => "json" })
+
+    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf", args)
+    sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf'"
+  end
+
+  # use only when you want super, super inefficient imports (only used by the tests)
+  task :slow, :subcall, :logstash_type, :path do |t, args|
+    $bug_679_flush_size = 1
   
-      Rake::Task["logstash:input:#{args[:subcall]}"].invoke(args[:logstash_type], args[:path])
-    end
+    Rake::Task["logstash:input:#{args[:subcall]}"].invoke(args[:logstash_type], args[:path])
   end
 
   namespace :test do
@@ -92,16 +107,6 @@ namespace :logstash do
 end
 
 class ElasticsearchNotRunning < RuntimeError; end
-
-def do_import(args)
-  puts "==> Verifying that elasticsearch is ready to recieve data..."
-  if !system("nc -vz #{ENV['APP_CONFIG_ES_IPADDRESS']} 9200 2>/dev/null") then raise ElasticsearchNotRunning end
-
-  puts "==> Importing data from file..."
-
-  process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/stdin.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/stdin.conf", args)
-  sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/stdin.conf'"
-end
 
 def run_integration_test(type, task = "file")
     pid = fork do

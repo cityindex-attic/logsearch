@@ -3,7 +3,7 @@
 # before using, you'll want to ensure the /app/.env file has been written
 # call this as the application user (not root) to bootstrap a base ubuntu system
 #
-# args: provisioner, csv-of-service-names-to-provision
+# args: provisioner, csv-of-service-names-to-provision, optional:repo-branch
 
 set -e
 
@@ -16,6 +16,10 @@ fi
 
 if [ ! -d /app/app ]; then
     git clone https://github.com/cityindex/elasticsearch-development-flow.git /app/app
+
+    if [[ "$3" != "" ]]; then
+        (cd /app/app ; echo "$3")
+    fi
 fi
 
 cd /app/app/

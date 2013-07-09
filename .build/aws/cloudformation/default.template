@@ -7,9 +7,39 @@
             "Description": "Availability Zone (AZ) to start the cluster in.",
             "Default": "us-east-1c"
         },
+        "DisableApiTermination": {
+            "Type": "String",
+            "Description": "Prevent EC2 instance termination (if active, requires to active enable it to successfully delete the stack).",
+            "Default": "false"
+        },
         "InstanceProfile": {
             "Type": "String",
             "Description": "IAM instance profile to use within the cluster."
+        },
+        "InstanceType": {
+            "Description": "EC2 instance type",
+            "Type": "String",
+            "Default": "t1.micro",
+            "AllowedValues": [
+                "t1.micro",
+                "m1.small",
+                "m1.medium",
+                "m1.large",
+                "m1.xlarge",
+                "m2.xlarge",
+                "m2.2xlarge",
+                "m2.4xlarge",
+                "m3.xlarge",
+                "m3.2xlarge",
+                "c1.medium",
+                "c1.xlarge",
+                "cc2.8xlarge",
+                "cr1.8xlarge",
+                "cg1.4xlarge",
+                "hi1.4xlarge",
+                "hs1.8xlarge"
+            ],
+            "ConstraintDescription": "must be a valid EC2 instance type."
         },
         "KeyName": {
             "Description": "Name of an existing EC2 key pair to enable remote access to the EC2 instance.",
@@ -33,6 +63,11 @@
             "Description": "Size of a dedicated EBS volume to be attached to the EC2 instance.",
             "Type": "Number",
             "Default": "64"
+        },
+        "RepositoryBranch": {
+            "Description": "Repository branch to bootstrap from.",
+            "Type": "String",
+            "Default": "master"
         }
     },
     "Mappings": {
@@ -104,8 +139,8 @@
                     "Ref": "SecurityGroup"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "4379",
-                "ToPort": "4379",
+                "FromPort": "6379",
+                "ToPort": "6379",
                 "SourceSecurityGroupName": {
                     "Ref": "SecurityGroup"
                 }
@@ -134,6 +169,7 @@
                                     "Fn::Join" : [
                                         "",
                                         [
+                                            "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
                                             "export APP_ROOT_DIR=/app", "\n",
                                             "export APP_APP_DIR=/app/app", "\n",
                                             "export APP_VENDOR_DIR=/app/vendor", "\n",
@@ -169,7 +205,16 @@
                                 "mode" : "000555"
                             },
                             "/home/ubuntu/bootstrap" : {
-                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "source" : {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "https://raw.github.com/cityindex/elasticsearch-development-flow/",
+                                            { "Ref": "RepositoryBranch" },
+                                            "/bin/bootstrap"
+                                        ]
+                                    ]
+                                },
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
                                 "mode" : "000555"
@@ -182,7 +227,9 @@
                 "AvailabilityZone": {
                     "Ref": "AvailabilityZone"
                 },
-                "DisableApiTermination": "true",
+                "DisableApiTermination": {
+                    "Ref": "DisableApiTermination"
+                },
                 "ImageId": {
                     "Fn::FindInMap": ["RegionMap",
                     {
@@ -192,7 +239,9 @@
                 "IamInstanceProfile": {
                     "Ref": "InstanceProfile"
                 },
-                "InstanceType": "t1.micro",
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
                 "KeyName": {
                     "Ref": "KeyName"
                 },
@@ -233,7 +282,7 @@
                                 " --resource ElasticsearchPrimaryInstance ",
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch", "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch ", { "Ref": "RepositoryBranch" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n"
                             ]
                         ]
@@ -252,6 +301,7 @@
                                     "Fn::Join" : [
                                         "",
                                         [
+                                            "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
                                             "export APP_ROOT_DIR=/app", "\n",
                                             "export APP_APP_DIR=/app/app", "\n",
                                             "export APP_VENDOR_DIR=/app/vendor", "\n",
@@ -270,8 +320,35 @@
                                 "owner" : "ubuntu",
                                 "mode" : "000755"
                             },
+                            "/home/ubuntu/provision" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "#!/bin/bash", "\n",
+                                            "set -e", "\n",
+                                            "/app/app/.build/ubuntu-12/provision.sh", "\n",
+                                            "mkdir -p /mnt/app-data", "\n",
+                                            "chown ubuntu:ubuntu /mnt/app-data", "\n",
+                                            "ln -s /app/data /mnt/app-data", "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
+                            },
                             "/home/ubuntu/bootstrap" : {
-                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "source" : {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "https://raw.github.com/cityindex/elasticsearch-development-flow/",
+                                            { "Ref": "RepositoryBranch" },
+                                            "/bin/bootstrap"
+                                        ]
+                                    ]
+                                },
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
                                 "mode" : "000555"
@@ -284,7 +361,9 @@
                 "AvailabilityZone": {
                     "Ref": "AvailabilityZone"
                 },
-                "DisableApiTermination": "true",
+                "DisableApiTermination": {
+                    "Ref": "DisableApiTermination"
+                },
                 "ImageId": {
                     "Fn::FindInMap": ["RegionMap",
                     {
@@ -294,7 +373,9 @@
                 "IamInstanceProfile": {
                     "Ref": "InstanceProfile"
                 },
-                "InstanceType": "t1.micro",
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
                 "KeyName": {
                     "Ref": "KeyName"
                 },
@@ -329,7 +410,7 @@
                                 " --resource ElasticsearchReplicaInstance ",
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh elasticsearch,kibana", "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh elasticsearch,kibana ", { "Ref": "RepositoryBranch" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n"
                             ]
                         ]
@@ -348,6 +429,7 @@
                                     "Fn::Join" : [
                                         "",
                                         [
+                                            "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
                                             "export APP_ROOT_DIR=/app", "\n",
                                             "export APP_APP_DIR=/app/app", "\n",
                                             "export APP_VENDOR_DIR=/app/vendor", "\n",
@@ -367,7 +449,16 @@
                                 "mode" : "000755"
                             },
                             "/home/ubuntu/bootstrap" : {
-                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "source" : {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "https://raw.github.com/cityindex/elasticsearch-development-flow/",
+                                            { "Ref": "RepositoryBranch" },
+                                            "/bin/bootstrap"
+                                        ]
+                                    ]
+                                },
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
                                 "mode" : "000555"
@@ -380,7 +471,9 @@
                 "AvailabilityZone": {
                     "Ref": "AvailabilityZone"
                 },
-                "DisableApiTermination": "true",
+                "DisableApiTermination": {
+                    "Ref": "DisableApiTermination"
+                },
                 "ImageId": {
                     "Fn::FindInMap": ["RegionMap",
                     {
@@ -390,7 +483,9 @@
                 "IamInstanceProfile": {
                     "Ref": "InstanceProfile"
                 },
-                "InstanceType": "t1.micro",
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
                 "KeyName": {
                     "Ref": "KeyName"
                 },
@@ -404,7 +499,7 @@
                             "-",
                             [
                                 { "Ref" : "ClusterName" },
-                                "broker-p0"
+                                "broker-n0"
                             ]
                         ]
                     },
@@ -425,7 +520,116 @@
                                 " --resource BrokerInstance ",
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh logstash,redis,logstash_redis", "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh logstash,redis,logstash_redis ", { "Ref": "RepositoryBranch" }, "\n",
+                                "/app/app/.build/dev_server/extra.sh", "\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "ShipperInstance": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata" : {
+                "AWS::CloudFormation::Init" : {
+                    "config" : {
+                        "files" : {
+                            "/app/.env" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
+                                            "export APP_ROOT_DIR=/app", "\n",
+                                            "export APP_APP_DIR=/app/app", "\n",
+                                            "export APP_VENDOR_DIR=/app/vendor", "\n",
+                                            "export APP_LOG_DIR=/app/var/log", "\n",
+                                            "export APP_RUN_DIR=/app/var/run", "\n",
+                                            "export APP_TMP_DIR=/app/tmp", "\n",
+                                            "export APP_DATA_DIR=/app/data", "\n",
+                                            "export APP_USER=ubuntu", "\n",
+                                            "export APP_CONFIG_REDIS_IPADDRESS=", { "Fn::GetAtt" : [ "BrokerInstance", "PrivateIp" ] }, "\n",
+                                            "export APP_CONFIG_REDIS_KEY=logstash", "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000755"
+                            },
+                            "/home/ubuntu/bootstrap" : {
+                                "source" : {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "https://raw.github.com/cityindex/elasticsearch-development-flow/",
+                                            { "Ref": "RepositoryBranch" },
+                                            "/bin/bootstrap"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone"
+                },
+                "DisableApiTermination": {
+                    "Ref": "DisableApiTermination"
+                },
+                "ImageId": {
+                    "Fn::FindInMap": ["RegionMap",
+                    {
+                        "Ref": "AWS::Region"
+                    }, "AMI"]
+                },
+                "IamInstanceProfile": {
+                    "Ref": "InstanceProfile"
+                },
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SecurityGroups": [{
+                    "Ref": "SecurityGroup"
+                }],
+                "Tags": [{
+                    "Key": "Name",
+                    "Value": {
+                        "Fn::Join": [
+                            "-",
+                            [
+                                { "Ref" : "ClusterName" },
+                                "shipper-n0"
+                            ]
+                        ]
+                    },
+                    "PropagateAtLaunch": "true"
+                }],
+                "UserData" : {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash", "\n",
+                                "apt-get update", "\n",
+                                "apt-get -y install python-setuptools", "\n",
+                                "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
+                                "cfn-init --verbose ",
+                                " --region ", { "Ref": "AWS::Region" },
+                                " --stack ", { "Ref": "AWS::StackName" },
+                                " --resource ShipperInstance ",
+                                " || error_exit 'Failed to run cfn-init'", "\n",
+                                "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh logstash ", { "Ref": "RepositoryBranch" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n"
                             ]
                         ]
@@ -436,7 +640,7 @@
     },
     "Outputs": {
         "WebInterface": {
-            "Description": "The web address for Kibana.",
+            "Description": "Access the Kibana frontend.",
             "Value": {
                 "Fn::Join": [
                     "",
@@ -444,6 +648,18 @@
                         "http://",
                         { "Fn::GetAtt" : [ "ElasticsearchReplicaInstance", "PublicDnsName" ] },
                         "/"
+                    ]
+                ]
+            }
+        },
+        "LogShipper": {
+            "Description": "Ship log messages into the system.",
+            "Value": {
+                "Fn::Join": [
+                    "",
+                    [
+                        "ssh ubuntu@",
+                        { "Fn::GetAtt" : [ "ShipperInstance", "PublicDnsName" ] }
                     ]
                 ]
             }

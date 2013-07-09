@@ -31,31 +31,40 @@ done
     done
 done
 
-for RRD_FILE in /var/lib/munin/localdomain/localhost.localdomain-*.rrd ; do
-    RRD_NAME=$(echo $RRD_FILE | sed 's#^/var/lib/munin/localdomain/localhost.localdomain-\(.*\)\.rrd$#\1#')
+for RRD_FILE in $(find /var/lib/collectd/rrd -name *.rrd) ; do
+    RRD_NAME=$(echo $RRD_FILE | sed -r 's#^/var/lib/collectd/rrd/[^/]+/([^/]+)/(.*)\.rrd$#\1/\2#')
+    RRD_VALUE_MATCH=': '
 
-    echo $JSON_PREFIX_L0 "\"munin/$RRD_NAME\":{"
-    JSON_PREFIX_L1=''
+    for RRD_INDEX in $(rrdtool info $RRD_FILE | grep '.index = ' | sed -r 's/^ds\[([^\]+)].*/\1/') ; do
+        echo $JSON_PREFIX_L0 "\"collectd/$RRD_NAME/$RRD_INDEX\":{"
 
-    rrdtool fetch $RRD_FILE AVERAGE -r 60 -s $(date --date="$SESSION_START" +%s) -e $(date --date="$SESSION_END" +%s) | while read RRD_LINE ; do
-        if [ "" != "$RRD_LINE" ] && [ "42" != "$RRD_LINE" ]; then
-            echo $JSON_PREFIX_L1
+        JSON_PREFIX_L1=''
+        RRD_HEADER=''
+    
+        rrdtool fetch $RRD_FILE AVERAGE -r 60 -s $(date --date="$SESSION_START" +%s) -e $(date --date="$SESSION_END" +%s) | while read RRD_LINE ; do
+            if [ "" != "$RRD_LINE" ] && [ "found" == "$RRD_HEADER" ]; then
+                echo $JSON_PREFIX_L1
+    
+                RRD_DATE=`echo $RRD_LINE | awk -F ':' '{ system("date --date=\"@" $1 "\" +%Y-%m-%dT%H:%M:%SZ") }'`
+    
+                echo -n "    \"$RRD_DATE\": "
+    
+                if [[ `echo $RRD_LINE | grep -E "$RRD_VALUE_MATCH-nan(\$| )"` ]] ; then
+                    echo -n "null"
+                else
+                    (echo -n "print eval " ; echo $RRD_LINE | sed -r "s/.*$RRD_VALUE_MATCH([^ ]+)(\$| ).*/\1/" ) | perl
+                fi
 
-            RRD_DATE=`echo $RRD_LINE | awk -F ':' '{ system("date --date=\"@" $1 "\" +%Y-%m-%dT%H:%M:%SZ") }'`
-
-            echo -n "    \"$RRD_DATE\": "
-
-            if [[ `echo $RRD_LINE | grep -E ': -nan$'` ]] ; then
-                echo "null"
-            else
-                echo $RRD_LINE | awk -F ': ' '{ system("echo \"print eval " $2 "\" | perl") }'
+                JSON_PREFIX_L1=','
             fi
 
-            JSON_PREFIX_L1=','
-        fi
-    done
+            RRD_HEADER=found
+        done
 
-    echo "}"
+        RRD_VALUE_MATCH="$RRD_VALUE_MATCH[^ ]+ "
+    
+        echo "}"
+    done
 
     JSON_PREFIX_L0=','
 done
