@@ -38,17 +38,66 @@
                         },
                         yAxis : {
                             min : 0,
-                            max : 100
+                            max : localCpus.length * 100
                         },
                         series : Array.map(
                             [ 'idle', 'interrupt', 'nice', 'softirq', 'steal', 'system', 'user', 'wait' ],
                             function (cat) {
+                                var merged = {};
+
+                                Array.each(
+                                    localCpus,
+                                    function (name) {
+                                        Array.each(
+                                            gatherStats('collectd/cpu-' + name + '/cpu-' + cat + '/value'),
+                                            function (v) {
+                                                if (!merged[v[0]]) {
+                                                    merged[v[0]] = v;
+                                                } else {
+                                                    merged[v[0]][1] += v[1];
+                                                }
+                                            }
+                                        );
+                                    }
+                                );
+
                                 return {
                                     name : cat,
-                                    data : gatherStats('collectd/cpu-0/cpu-' + cat + '/value')
+                                    data : Object.values(merged)
                                 };
                             }
                         )
+                    }
+                );
+
+                Array.each(
+                    localCpus,
+                    function (name) {
+                        createChart(
+                            {
+                                title : {
+                                    text : 'collectd/cpu' + name + '-utilization'
+                                },
+                                plotOptions : {
+                                    areaspline : {
+                                        stacking : 'normal'
+                                    }
+                                },
+                                yAxis : {
+                                    min : 0,
+                                    max : 100
+                                },
+                                series : Array.map(
+                                    [ 'idle', 'interrupt', 'nice', 'softirq', 'steal', 'system', 'user', 'wait' ],
+                                    function (cat) {
+                                        return {
+                                            name : cat,
+                                            data : gatherStats('collectd/cpu-' + name + '/cpu-' + cat + '/value')
+                                        };
+                                    }
+                                )
+                            }
+                        );
                     }
                 );
 
@@ -59,10 +108,6 @@
                         },
                         title : {
                             text : 'collectd/irq'
-                        },
-                        yAxis : {
-                            min : 0,
-                            max : 100
                         },
                         series : localInterrupts.map(
                             function (v) {

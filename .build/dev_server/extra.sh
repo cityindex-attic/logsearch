@@ -23,6 +23,6 @@ if ! (which collectd 1>/dev/null 2>&1) ; then
     sudo apt-get install -y collectd
     sudo service collectd stop
     sudo sh -c 'sed -i "s/#Interval 10/Interval 60/" /etc/collectd/collectd.conf'
-    rm -fr /var/lib/collectd/rrd/*
+    sudo rm -fr /var/lib/collectd/rrd/*
     sudo service collectd start
 fi

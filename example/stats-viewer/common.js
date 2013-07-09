@@ -1,5 +1,6 @@
 var stats = null;
 var ebsVolumes;
+var localCpus;
 var localMounts;
 var localDisks;
 var localInterfaces;
@@ -29,9 +30,9 @@ document.addEvent(
             }
         );
 
-        if (window.location.hash.substring(1)) {
+        if (window.location.search && window.location.search.substring(1)) {
             $('datasource')
-                .set('value', window.location.hash.substring(1))
+                .set('value', window.location.search.substring(1))
                 .fireEvent('blur')
             ;
         }
@@ -110,7 +111,10 @@ function createChart(obj) {
                 },
                 plotOptions: {
                     series: {
-                        animation: false
+                        animation: false,
+                        marker: {
+                            enabled: false
+                        }
                     }
                 },
                 xAxis: {
@@ -147,6 +151,8 @@ function init() {
         )
     ;
 
+    localMounts.sort();
+
     localDisks = Object.keys(stats)
         .filter(
             function (v) {
@@ -162,6 +168,26 @@ function init() {
             }
         )
     ;
+
+    localDisks.sort();
+
+    localCpus = Object.keys(stats)
+        .filter(
+            function (v) {
+                return v.match(/collectd\/cpu-.*/);
+            }
+        ).map(
+            function (v) {
+                return v.replace(/collectd\/cpu-([^\/]+)\/.*/, '$1');
+            }
+        ).filter(
+            function (v, i, arr) {
+                return arr.lastIndexOf(v) === i;
+            }
+        )
+    ;
+    
+    localCpus.sort();
 
     localInterfaces = Object.keys(stats)
         .filter(
@@ -179,6 +205,8 @@ function init() {
         )
     ;
 
+    localInterfaces.sort();
+
     localInterrupts = Object.keys(stats)
         .filter(
             function (v) {
@@ -194,6 +222,8 @@ function init() {
             }
         )
     ;
+
+    localInterrupts.sort();
     
     ebsVolumes = Object.keys(stats)
         .filter(
@@ -210,6 +240,8 @@ function init() {
             }
         )
     ;
+
+    ebsVolumes.sort();
 
     redraw();
 }

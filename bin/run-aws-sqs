@@ -66,6 +66,16 @@ while true ; do
         (cd /app/app ; rake logstash:$2[$TASK_LOGSTASH_TYPE,$APP_TMP_DIR/$TMPDIR/*])
         
         echo '====> end:' `date -u +%Y-%m-%dT%TZ`
+
+        echo '====> waiting for queue to drain...'
+
+        QUEUELEN='1234'
+
+        while [ $QUEUELEN -gt 1000 ]; do
+            QUEUELEN=`/app/vendor/redis/src/redis-cli -h $APP_CONFIG_REDIS_IPADDRESS --raw llen logstash | awk '{ print $0 }'`
+
+            sleep 2
+        done
     else
         echo -n '.'
 
