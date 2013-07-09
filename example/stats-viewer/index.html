@@ -224,6 +224,11 @@
                                 title : {
                                     text : 'collectd/df/df-' + disk
                                 },
+                                plotOptions : {
+                                    areaspline : {
+                                        stacking : 'normal'
+                                    }
+                                },
                                 series : [
                                     {
                                         name : 'free',
