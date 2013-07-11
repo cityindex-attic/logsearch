@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# gather stats and upload them to S3
+# uses the stack and instance name
+# args: bucket, key-prefix, gather-stats-start, gather-stats-end
+
+set -e
+
+export AWS_DEFAULT_REGION=us-east-1
+RES=$(aws ec2 describe-tags --filter name="resource-id",values="$(ec2metadata --instance-id)")
+REF_NAME=$(echo $RES | sed -r 's/.*"Value": "([^"]+)", "Key": "Name".*/\1/')
+
+if echo $REF_STACK | grep 'aws:cloudformation:stack-name' ; then
+    REF_STACK=$(echo $RES | sed -r 's/.*"Value": "([^"]+)", "Key": "aws:cloudformation:stack-name".*/\1/')
+    REF_NAME=$(echo $REF_NAME | cut -c $(echo $REF_STACK | wc -c)- | cut -c 2-)
+else
+    REF_STACK=unknown
+fi
+
+/app/app/bin/gather-stats $3 $4 > /tmp/gather-stats-$$.json
+aws s3 put-object --bucket $1 --key "$2$REF_STACK/$REF_NAME.json" --acl public-read --body /tmp/gather-stats-$$.json
+rm /tmp/gather-stats-$$.json
