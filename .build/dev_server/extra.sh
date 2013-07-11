@@ -20,9 +20,24 @@ if ! (which aws 1>/dev/null 2>&1) ; then
 fi
 
 if ! (which collectd 1>/dev/null 2>&1) ; then
-    sudo apt-get install -y collectd
-    sudo service collectd stop
-    sudo sh -c 'sed -i "s/#Interval 10/Interval 60/" /etc/collectd/collectd.conf'
-    sudo rm -fr /var/lib/collectd/rrd/*
-    sudo service collectd start
+    sudo /bin/bash <<EOF
+        apt-get install -y collectd
+        service collectd stop
+        sed -i "s/#Interval 10/Interval 60/" /etc/collectd/collectd.conf
+        mkdir -p /opt/collectd/lib/collectd/plugins/python
+
+        (
+            echo '<LoadPlugin python>'
+            echo '    Globals true'
+            echo '</LoadPlugin>'
+            echo ''
+            echo '<Plugin python>'
+            echo '    ModulePath "/opt/collectd/lib/collectd/plugins/python"'
+            echo '    # python-placeholder'
+            echo '</Plugin>'
+        ) >> /etc/collectd/collectd.conf
+    
+        rm -fr /var/lib/collectd/rrd/*
+        service collectd start
+EOF
 fi
