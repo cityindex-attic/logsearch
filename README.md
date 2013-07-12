@@ -24,8 +24,8 @@ A development environment with logstash + ElasticSearch + Kibana 3.
 
 **Backfill data** - once the elasticsearch server has started, you can backfill logs if you have them laying around.
 
-    rake logstash:input:file[nginx_combined,/on_vm/path/to/logs/labs.cityindex.com.nginx.logs/access.log*]
-    rake logstash:input:file[iis_default,/on_vm/path/to/logs/ciapipreprod.IIS7.logs/u_ex130605.log]
+    rake logstash:pv_to_elasticsearch[nginx_combined,/on_vm/path/to/logs/labs.cityindex.com.nginx.logs/access.log*]
+    rake logstash:pv_to_elasticsearch[iis_default,/on_vm/path/to/logs/ciapipreprod.IIS7.logs/u_ex130605.log]
 
 
 ### Configuration
@@ -81,7 +81,7 @@ vagrant$ cd /app/app
 vagrant$ rake run
 ```
 
-Access Kibana via http://{public-hostname}:8080/
+Access Kibana via http://{public-hostname}/
 
 ##### Runtime default settings
 
@@ -99,14 +99,12 @@ By default, the application loads the environment from `/app/.env`. The followin
  * Elasticsearch service
     * `APP_CONFIG_ES_CLUSTER` - name of the elasticsearch cluster (e.g. `default`, [learn more](http://www.elasticsearch.org/guide/reference/modules/discovery/))
     * `APP_CONFIG_ES_IPADDRESS` - the IP address to bind to (e.g. `127.0.0.1`)
-    * `APP_CONFIG_ES_AWS_ACCESS_KEY` - an AWS access key to enable elasticsearch cloud clustering ([learn more](http://www.elasticsearch.org/guide/reference/modules/discovery/ec2/))
-    * `APP_CONFIG_ES_AWS_SECRET_KEY` - an AWS secret key to enable elasticsearch cloud clustering ([learn more](http://www.elasticsearch.org/guide/reference/modules/discovery/ec2/))
+    * `APP_CONFIG_ES_AWS_ACCESS_KEY` - an AWS access key to enable elasticsearch cloud clustering; if missing, IAM roles will be attempted ([learn more](http://www.elasticsearch.org/guide/reference/modules/discovery/ec2/))
+    * `APP_CONFIG_ES_AWS_SECRET_KEY` - an AWS secret key to enable elasticsearch cloud clustering; if missing, IAM roles will be attempted ([learn more](http://www.elasticsearch.org/guide/reference/modules/discovery/ec2/))
     * `APP_CONFIG_ES_AWS_EC2_GROUP` - an AWS EC2 security group to restrict clustered nodes ([learn more](http://www.elasticsearch.org/guide/reference/modules/discovery/ec2/))
  * Redis service
     * `APP_CONFIG_REDIS_IPADDRESS` - the IP address to bind to (e.g. `127.0.0.1`)
     * `APP_CONFIG_REDIS_KEY` - the name of redis list or channel (e.g. `logstash`)
- * importqueue service
-    * `APP_CONFIG_IMPORTQUEUE_KEY` - the name of redis list or channel (e.g. `importqueue`)
 
 
 ### Supported Log Formats
@@ -152,6 +150,21 @@ Fields:
 Example:
 
     2013-05-14 00:08:15.6680000	System_ComputerName	AMAZONA-123456
+
+
+#### ci_log4net
+
+Fields:
+
+ * `level`
+ * `datetime`
+ * `thread`
+ * `logger`
+ * `message`
+
+Example:
+
+    INFO  2013-06-20 08:59:59,996 Margin_4 MarginCalculation Order: 483553318 filtered
 
 
 #### iis_default
