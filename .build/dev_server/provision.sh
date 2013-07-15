@@ -6,6 +6,7 @@ set -e
 # system-wide deps
 #
 /app/app/.build/ubuntu-12/provision.sh
+/app/app/.build/dev_server/extra.sh
 
 
 #
