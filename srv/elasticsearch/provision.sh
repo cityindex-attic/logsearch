@@ -49,5 +49,5 @@ if (which collectd 1>/dev/null 2>&1) ; then
         </Module>@' /etc/collectd/collectd.conf
             service collectd restart
         fi
-    EOF
+EOF
 fi
