@@ -123,6 +123,28 @@
                 createChart(
                     {
                         title : {
+                            text : 'collectd/process-state'
+                        },
+                        plotOptions : {
+                            areaspline : {
+                                stacking : 'normal'
+                            }
+                        },
+                        series : Array.map(
+                            [ 'paging', 'zombies', 'stopped', 'running', 'sleeping', 'blocked' ],
+                            function (v) {
+                                return {
+                                    name : v,
+                                    data : gatherStats('collectd/processes/ps_state-' + v + '/value')
+                                };
+                            }
+                        )
+                    }
+                );
+
+                createChart(
+                    {
+                        title : {
                             text : 'collectd/memory'
                         },
                         plotOptions : {
@@ -496,6 +518,291 @@
                         );
                     }
                 );
+
+                if ('collectd/elasticsearch-elasticsearch/bytes-jvm.mem.heap-committed/value' in stats) {
+                    // looks like a useful elasticsearch node
+                    createChart(
+                        {
+                            title : {
+                                text : 'collectd/elasticsearch/jvm/heap'
+                            },
+                            yAxis : {
+                                title : {
+                                    text : 'bytes'
+                                }
+                            },
+                            series : [
+                                {
+                                    name : 'committed',
+                                    data : gatherStats('collectd/elasticsearch-elasticsearch/bytes-jvm.mem.heap-committed/value')
+                                },
+                                {
+                                    name : 'used',
+                                    data : gatherStats('collectd/elasticsearch-elasticsearch/bytes-jvm.mem.heap-used/value')
+                                }
+                            ]
+                        }
+                    );
+
+                    createChart(
+                        {
+                            title : {
+                                text : 'collectd/elasticsearch/jvm/non-heap'
+                            },
+                            yAxis : {
+                                title : {
+                                    text : 'bytes'
+                                }
+                            },
+                            series : [
+                                {
+                                    name : 'committed',
+                                    data : gatherStats('collectd/elasticsearch-elasticsearch/bytes-jvm.mem.non-heap-committed/value')
+                                },
+                                {
+                                    name : 'used',
+                                    data : gatherStats('collectd/elasticsearch-elasticsearch/bytes-jvm.mem.non-heap-used/value')
+                                }
+                            ]
+                        }
+                    );
+
+                    createChart(
+                        {
+                            title : {
+                                text : 'collectd/elasticsearch/jvm/threads'
+                            },
+                            yAxis : {
+                                title : {
+                                    text : 'count'
+                                }
+                            },
+                            series : [
+                                {
+                                    name : 'threads',
+                                    data : gatherStats('collectd/elasticsearch-elasticsearch/gauge-jvm.threads.count/value')
+                                }
+                            ]
+                        }
+                    );
+
+                    createChart(
+                        {
+                            title : {
+                                text : 'collectd/elasticsearch/jvm/gc'
+                            },
+                            yAxis : [
+                                {
+                                    title : {
+                                        text : 'milliseconds'
+                                    }
+                                },
+                                {
+                                    title : {
+                                        text : 'count'
+                                    },
+                                    opposite : true
+                                }
+                            ],
+                            series : [
+                                {
+                                    name : 'time',
+                                    data : gatherStats('collectd/elasticsearch-elasticsearch/counter-jvm.gc.time/value')
+                                },
+                                {
+                                    name : 'count',
+                                    data : gatherStats('collectd/elasticsearch-elasticsearch/counter-jvm.gc.count/value'),
+                                    yAxis : 1
+                                }
+                            ]
+                        }
+                    );
+
+                    createChart(
+                        {
+                            title : {
+                                text : 'collectd/elasticsearch/process/open-file-descriptors'
+                            },
+                            yAxis : {
+                                title : {
+                                    text : 'count'
+                                }
+                            },
+                            series : [
+                                {
+                                    name : 'fds',
+                                    data : gatherStats('collectd/elasticsearch-elasticsearch/gauge-process.open_file_descriptors/value')
+                                }
+                            ]
+                        }
+                    );
+
+                    createChart(
+                        {
+                            title : {
+                                text : 'collectd/elasticsearch/indices/search/query'
+                            },
+                            yAxis : [
+                                {
+                                    title : {
+                                        text : 'milliseconds'
+                                    }
+                                },
+                                {
+                                    title : {
+                                        text : 'count'
+                                    },
+                                    opposite : true
+                                }
+                            ],
+                            series : [
+                                {
+                                    name : 'time',
+                                    data : gatherStats('collectd/elasticsearch-elasticsearch/counter-indices.search.query-time/value')
+                                },
+                                {
+                                    name : 'total',
+                                    data : gatherStats('collectd/elasticsearch-elasticsearch/counter-indices.search.query-total/value'),
+                                    yAxis : 1
+                                }
+                            ]
+                        }
+                    );
+
+                    createChart(
+                        {
+                            title : {
+                                text : 'collectd/elasticsearch/indices/indexing/index'
+                            },
+                            yAxis : [
+                                {
+                                    title : {
+                                        text : 'milliseconds'
+                                    }
+                                },
+                                {
+                                    title : {
+                                        text : 'count'
+                                    },
+                                    opposite : true
+                                }
+                            ],
+                            series : [
+                                {
+                                    name : 'time',
+                                    data : gatherStats('collectd/elasticsearch-elasticsearch/counter-indices.indexing.index-time/value')
+                                },
+                                {
+                                    name : 'total',
+                                    data : gatherStats('collectd/elasticsearch-elasticsearch/counter-indices.indexing.index-total/value'),
+                                    yAxis : 1
+                                }
+                            ]
+                        }
+                    );
+
+                    createChart(
+                        {
+                            title : {
+                                text : 'collectd/elasticsearch/indices/docs'
+                            },
+                            yAxis : {
+                                title : {
+                                    text : 'count'
+                                }
+                            },
+                            series : [
+                                {
+                                    name : 'docs',
+                                    data : gatherStats('collectd/elasticsearch-elasticsearch/gauge-indices.docs.count/value')
+                                }
+                            ]
+                        }
+                    );
+                }
+
+                if ('collectd/elasticsearch-elasticsearch/bytes-jvm.mem.heap-committed/value' in stats) {
+                    // looks like a useful redis node
+                    createChart(
+                        {
+                            title : {
+                                text : 'collectd/redis/clients'
+                            },
+                            yAxis : {
+                                title : {
+                                    text : 'count'
+                                }
+                            },
+                            series : [
+                                {
+                                    name : 'connected',
+                                    data : gatherStats('collectd/redis_info/gauge-connected_clients/value')
+                                },
+                                {
+                                    name : 'blocked',
+                                    data : gatherStats('collectd/redis_info/gauge-blocked_clients/value')
+                                }
+                            ]
+                        }
+                    );
+
+                    createChart(
+                        {
+                            title : {
+                                text : 'collectd/redis/commands'
+                            },
+                            yAxis : {
+                                title : {
+                                    text : 'count'
+                                }
+                            },
+                            series : [
+                                {
+                                    name : 'commands',
+                                    data : gatherStats('collectd/redis_info/counter-commands_processed/value')
+                                }
+                            ]
+                        }
+                    );
+
+                    createChart(
+                        {
+                            title : {
+                                text : 'collectd/redis/changes-since-save'
+                            },
+                            yAxis : {
+                                title : {
+                                    text : 'count'
+                                }
+                            },
+                            series : [
+                                {
+                                    name : 'changes',
+                                    data : gatherStats('collectd/redis_info/gauge-changes_since_last_save/value')
+                                }
+                            ]
+                        }
+                    );
+
+                    createChart(
+                        {
+                            title : {
+                                text : 'collectd/redis/memory'
+                            },
+                            yAxis : {
+                                title : {
+                                    text : 'bytes'
+                                }
+                            },
+                            series : [
+                                {
+                                    name : 'used',
+                                    data : gatherStats('collectd/redis_info/bytes-used_memory/value')
+                                }
+                            ]
+                        }
+                    );
+                }
             }
         </script>
     </body>
