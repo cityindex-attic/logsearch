@@ -37,15 +37,17 @@ fi
 # sudo-dependent
 #
 
-sudo /bin/bash <<EOF
-    if ! grep 'Import elasticsearch' /etc/collectd/collectd.conf ; then
-        wget -qO /opt/collectd/lib/collectd/plugins/python/elasticsearch.py 'https://raw.github.com/phobos182/collectd-elasticsearch/master/elasticsearch.py'
-        sed -ri 's@(^    # python-placeholder)@\1\n\
-    Import "elasticsearch"\n\
-    <Module elasticsearch>\n\
-        Host "$APP_CONFIG_ES_IPADDRESS"\n\
-        Port 9200\n\
-    </Module>@' /etc/collectd/collectd.conf
-        service collectd restart
-    fi
-EOF
+if (which collectd 1>/dev/null 2>&1) ; then
+    sudo /bin/bash <<EOF
+        if ! grep 'Import elasticsearch' /etc/collectd/collectd.conf ; then
+            wget -qO /opt/collectd/lib/collectd/plugins/python/elasticsearch.py 'https://raw.github.com/phobos182/collectd-elasticsearch/master/elasticsearch.py'
+            sed -ri 's@(^    # python-placeholder)@\1\n\
+        Import "elasticsearch"\n\
+        <Module elasticsearch>\n\
+            Host "$APP_CONFIG_ES_IPADDRESS"\n\
+            Port 9200\n\
+        </Module>@' /etc/collectd/collectd.conf
+            service collectd restart
+        fi
+    EOF
+fi

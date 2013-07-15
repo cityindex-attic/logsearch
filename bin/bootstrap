@@ -25,6 +25,7 @@ fi
 cd /app/app/
 
 sudo $1
+sudo /app/app/.build/dev_server/extra.sh
 
 # ruby dotenv doesn't handle dynamic assignments, so overwrite any dynamic properties (like `ec2metadata` calls)
 [ -f /app/.env-prior ] && rm -f /app/.env-prior
