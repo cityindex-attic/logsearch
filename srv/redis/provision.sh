@@ -36,9 +36,19 @@ if (which collectd 1>/dev/null 2>&1) ; then
         <Module redis_info>\n\
             Host "$APP_CONFIG_REDIS_IPADDRESS"\n\
             Port 6379\n\
-            Verbose false\n\
         </Module>@' /etc/collectd/collectd.conf
-            service collectd restart
         fi
+
+        if ! grep 'Import redis_logstash' /etc/collectd/collectd.conf ; then
+            cp /app/app/example/collectd/redis_logstash.py /opt/collectd/lib/collectd/plugins/python/redis_logstash.py
+            sed -ri 's@(^    # python-placeholder)@\1\n\
+        Import "redis_logstash"\n\
+        <Module redis_logstash>\n\
+            Host "$APP_CONFIG_REDIS_IPADDRESS"\n\
+            Port 6379\n\
+        </Module>@' /etc/collectd/collectd.conf
+        fi
+
+        service collectd restart
 EOF
 fi
