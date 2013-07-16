@@ -45,17 +45,14 @@ bundle install
 
 sudo rake install_system_services
 
-for srv in srv/* ; do
-    if [ -d "$srv" ] ; then
-        if [[ "$2" =~ (^|,)`basename $srv`(,|$) ]] ; then
-            if [ -e "$srv/provision.sh" ] ; then
-                ./$srv/provision.sh
-            fi
-
-            # this might be ubuntu-specific...
-            if [ -e "/etc/init/app-`basename $srv`.conf" ] ; then
-                sudo start app-`basename $srv` || true # true in case it's already running
-            fi
+for SRV in $(echo $2 | sed 's/,/\n/g') ; do
+    if [ -d "srv/$SRV" ] ; then
+        if [ -e "srv/$SRV/provision.sh" ] ; then
+            ./srv/$SRV/provision.sh
         fi
+    fi
+
+    if [ -e "/etc/init/app-$SRV.conf" ] ; then
+        sudo start app-$SRV || true # true in case it's already running
     fi
 done
