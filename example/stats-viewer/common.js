@@ -5,6 +5,7 @@ var localMounts;
 var localDisks;
 var localInterfaces;
 var localInterrupts;
+var localElasticsearch;
 
 document.addEvent(
     'domready',
@@ -233,6 +234,24 @@ function init() {
         ).map(
             function (v) {
                 return v.replace(/aws-ebs\/vol-([^\/]+)\/.*/, '$1');
+            }
+        ).filter(
+            function (v, i, arr) {
+                return arr.lastIndexOf(v) === i;
+            }
+        )
+    ;
+
+    ebsVolumes.sort();
+    
+    localElasticsearch = Object.keys(stats)
+        .filter(
+            function (v) {
+                return v.match(/collectd\/elasticsearch-.*/);
+            }
+        ).map(
+            function (v) {
+                return v.replace(/collectd\/elasticsearch-([^\/]+)\/.*/, '$1');
             }
         ).filter(
             function (v, i, arr) {
