@@ -7,39 +7,6 @@ var localInterfaces;
 var localInterrupts;
 var localElasticsearch;
 
-document.addEvent(
-    'domready',
-    function () {
-        $('datasource').addEvent(
-            'blur',
-            function () {
-                if (!this.value) {
-                    return;
-                }
-
-                new Request.JSON(
-                    {
-                        url : this.value,
-                        method : 'get',
-                        onSuccess : function (data) {
-                            stats = data;
-                
-                            init();
-                        }
-                    }
-                ).send();
-            }
-        );
-
-        if (window.location.search && window.location.search.substring(1)) {
-            $('datasource')
-                .set('value', window.location.search.substring(1))
-                .fireEvent('blur')
-            ;
-        }
-    }
-);
-
 function makeDate(str) {
     // assumes format of %Y-%m-%dT%TZ
     return Date.UTC(
@@ -50,6 +17,35 @@ function makeDate(str) {
         str.substring(14, 16),
         str.substring(17, 19)
     );
+}
+
+// http://codeaid.net/javascript/convert-size-in-bytes-to-human-readable-format-(javascript)
+function convertBytes(bytes)
+{  
+    var precision = 1;
+    var kilobyte = 1024;
+    var megabyte = kilobyte * 1024;
+    var gigabyte = megabyte * 1024;
+    var terabyte = gigabyte * 1024;
+   
+    if ((bytes >= 0) && (bytes < kilobyte)) {
+        return bytes.toFixed(precision) + ' B';
+ 
+    } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+        return (bytes / kilobyte).toFixed(precision) + ' KB';
+ 
+    } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+        return (bytes / megabyte).toFixed(precision) + ' MB';
+ 
+    } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+        return (bytes / gigabyte).toFixed(precision) + ' GB';
+ 
+    } else if (bytes >= terabyte) {
+        return (bytes / terabyte).toFixed(precision) + ' TB';
+ 
+    } else {
+        return bytes + ' B';
+    }
 }
 
 function gatherStats(name) {
@@ -88,6 +84,68 @@ function gatherStats(name) {
     );
 
     return parsed;
+}
+
+function gatherStatsAggregate(merge) {
+    var merged = {};
+
+    Array.each(
+        merge,
+        function (mergev) {
+            Array.each(
+                mergev,
+                function (v) {
+                    if (!merged[v[0]]) {
+                        merged[v[0]] = v;
+                    } else {
+                        merged[v[0]][1] += v[1];
+                    }
+                }
+            );
+        }
+    );
+
+    return Object.values(merged);
+}
+
+function gatherStatsRate(name) {
+    var stats = gatherStats(name);
+    var last = stats[Object.keys(stats)[0]][1];
+
+    Object.each(
+        stats,
+        function (v, k) {
+            var tmp = stats[k][1];
+            stats[k][1] = stats[k][1] - last;
+            last = tmp;
+        }
+    );
+
+    return stats;
+}
+
+function statisticalSum(subset) {
+    var c = 0;
+
+    Object.values(subset).each(
+        function (s) {
+            c += s[1];
+        }
+    );
+
+    return c;
+}
+
+function statisticalAvg(subset) {
+    return statisticalSum(subset) / Object.values(subset).length;
+}
+
+function statisticalMin(subset) {
+    return Math.min.apply(null, Object.values(subset).map(function (v) { return v[1]; }));
+}
+
+function statisticalMax(subset) {
+    return Math.max.apply(null, Object.values(subset).map(function (v) { return v[1]; }));
 }
 
 function createChart(obj) {
@@ -134,8 +192,6 @@ function createChart(obj) {
 }
 
 function init() {
-    $('charts').empty();
-
     localMounts = Object.keys(stats)
         .filter(
             function (v) {

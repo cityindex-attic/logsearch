@@ -1,0 +1,187 @@
+<html>
+    <head>
+        <title>gather-stats viewer</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"></script>
+        <script src="http://code.highcharts.com/adapters/mootools-adapter.js"></script>
+        <script src="http://code.highcharts.com/highcharts.js"></script>
+        <script src="common.js"></script>
+    </head>
+    <body>
+        <textarea id="datasources" style="width:100%;"></textarea>
+        <button id="load">Reload</button>
+        <hr />
+        <pre><code id="results"></code></pre>
+        <hr />
+        <div id="charts"></div>
+        <script type="text/javascript">
+            function append(line) {
+                $('results').innerText += ((line || '') + "\n");
+            }
+
+            function statreload(sources) {
+                sources.each(
+                    function (source) {
+                        append('[' + source.replace(/^.*\/([^\/]+)\.json$/, '$1') + '](http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/index.html?' + source + ')');
+
+                        new Request.JSON(
+                            {
+                                async : false,
+                                url : source,
+                                method : 'get',
+                                onSuccess : function (data) {
+                                    stats = data;
+
+                                    init();
+                                }
+                            }
+                        ).send();
+
+                        append();
+                    }
+                );
+            }
+
+            function redraw() {
+                append();
+
+                append(' * cpu');
+
+                Array.each(
+                    [ 'idle', 'wait' ],
+                    function (cat) {
+                        var merge = [];
+
+                        Array.each(
+                            localCpus,
+                            function (name) {
+                                merge.push(gatherStats('collectd/cpu-' + name + '/cpu-' + cat + '/value'));
+                            }
+                        );
+
+                        var merged = gatherStatsAggregate(merge);
+
+                        append(
+                            '    * ' + cat + ' -- '
+                            + 'min ' + (Math.round(1000 * statisticalMin(merged)) / 1000) + ' / '
+                            + 'avg ' + (Math.round(1000 * statisticalAvg(merged)) / 1000) + ' / '
+                            + 'max ' + (Math.round(1000 * statisticalMax(merged)) / 1000)
+                        );
+                    }
+                );
+
+                append(' * memory');
+
+                Array.each(
+                    [ 'free', 'cached', 'used' ],
+                    function (cat) {
+                        var subset = gatherStats('collectd/memory/memory-' + cat + '/value');
+
+                        append(
+                            '    * ' + cat + ' -- '
+                            + 'min ' + convertBytes(statisticalMin(subset)) + ' / '
+                            + 'avg ' + convertBytes(statisticalAvg(subset)) + ' / '
+                            + 'max ' + convertBytes(statisticalMax(subset))
+                        );
+                    }
+                );
+
+                append(' * network');
+
+                Array.each(
+                    localInterfaces,
+                    function (name) {
+                        if ('lo' == name) return;
+
+                        append('    * ' + name);
+
+                        var subset = gatherStats('collectd/interface/if_octets-' + name + '/rx');
+
+                        append(
+                            '       * bytes-rx -- '
+                            + 'sum ' + convertBytes(statisticalSum(subset))
+                        );
+
+                        append(
+                            '       * bytes-rx/min -- '
+                            + 'min ' + convertBytes(statisticalMin(subset)) + ' / '
+                            + 'avg ' + convertBytes(statisticalAvg(subset)) + ' / '
+                            + 'max ' + convertBytes(statisticalMax(subset))
+                        );
+
+                        var subset = gatherStats('collectd/interface/if_octets-' + name + '/tx');
+
+                        append(
+                            '       * bytes-tx -- '
+                            + 'sum ' + convertBytes(statisticalSum(subset))
+                        );
+
+                        append(
+                            '       * bytes-tx/min -- '
+                            + 'min ' + convertBytes(statisticalMin(subset)) + ' / '
+                            + 'avg ' + convertBytes(statisticalAvg(subset)) + ' / '
+                            + 'max ' + convertBytes(statisticalMax(subset))
+                        );
+                    }
+                );
+
+                if (localElasticsearch.length) {
+                    append(' * elasticsearch');
+
+                    var name = localElasticsearch[0];
+
+                    var subset = gatherStatsRate('collectd/elasticsearch-' + name + '/gauge-indices.docs.count/value');
+
+                    append(
+                        '    * docs ' + ' -- '
+                            + 'sum ' + statisticalSum(subset)
+                    );
+
+                    var subset = gatherStatsRate('collectd/elasticsearch-' + name + '/gauge-indices.docs.count/value');
+
+                    append(
+                        '    * docs/min ' + ' -- '
+                            + 'min ' + (Math.round(1000 * statisticalMin(subset)) / 1000) + ' / '
+                            + 'avg ' + (Math.round(1000 * statisticalAvg(subset)) / 1000) + ' / '
+                            + 'max ' + (Math.round(1000 * statisticalMax(subset)) / 1000)
+                    );
+                }
+
+                if ('collectd/redis_info/gauge-connected_clients/value' in stats) {
+                    append(' * redis');
+
+                    var subset = gatherStats('collectd/redis_info/counter-commands_processed/value');
+
+                    append(
+                        '    * cmd ' + ' -- '
+                            + 'sum ' + (Math.round(1000 * statisticalSum(subset)) / 1000)
+                    );
+
+                    var subset = gatherStatsRate('collectd/redis_info/counter-commands_processed/value');
+
+                    append(
+                        '    * cmd/min ' + ' -- '
+                            + 'min ' + (Math.round(1000 * statisticalMin(subset)) / 1000) + ' / '
+                            + 'avg ' + (Math.round(1000 * statisticalAvg(subset)) / 1000) + ' / '
+                            + 'max ' + (Math.round(1000 * statisticalMax(subset)) / 1000)
+                    );
+
+                    var subset = gatherStatsRate('collectd/redis_logstash/gauge-llen_logstash/value');
+
+                    append(
+                        '    * logstash/min ' + ' -- '
+                            + 'min ' + (Math.round(1000 * statisticalMin(subset)) / 1000) + ' / '
+                            + 'avg ' + (Math.round(1000 * statisticalAvg(subset)) / 1000) + ' / '
+                            + 'max ' + (Math.round(1000 * statisticalMax(subset)) / 1000)
+                    );
+                }
+            }
+
+            document.addEvent(
+                'domready',
+                function () {
+                    $('load').addEvent('click', function () {statreload($('datasources').value.split("\n"))});
+                }
+            );
+        </script>
+    </body>
+</html>
