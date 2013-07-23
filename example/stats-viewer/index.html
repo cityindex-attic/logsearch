@@ -12,6 +12,8 @@
         <div id="charts"></div>
         <script type="text/javascript">
             function redraw() {
+                $('charts').empty();
+
                 createChart(
                     {
                         title : {
@@ -43,27 +45,18 @@
                         series : Array.map(
                             [ 'idle', 'interrupt', 'nice', 'softirq', 'steal', 'system', 'user', 'wait' ],
                             function (cat) {
-                                var merged = {};
+                                var merge = [];
 
                                 Array.each(
                                     localCpus,
                                     function (name) {
-                                        Array.each(
-                                            gatherStats('collectd/cpu-' + name + '/cpu-' + cat + '/value'),
-                                            function (v) {
-                                                if (!merged[v[0]]) {
-                                                    merged[v[0]] = v;
-                                                } else {
-                                                    merged[v[0]][1] += v[1];
-                                                }
-                                            }
-                                        );
+                                        merge.push(gatherStats('collectd/cpu-' + name + '/cpu-' + cat + '/value'));
                                     }
                                 );
 
                                 return {
                                     name : cat,
-                                    data : Object.values(merged)
+                                    data : gatherStatsAggregate(merge)
                                 };
                             }
                         )
@@ -720,6 +713,25 @@
                                 ]
                             }
                         );
+    
+                        createChart(
+                            {
+                                title : {
+                                    text : 'collectd/elasticsearch/indices/docs/rate'
+                                },
+                                yAxis : {
+                                    title : {
+                                        text : 'count'
+                                    }
+                                },
+                                series : [
+                                    {
+                                        name : 'docs',
+                                        data : gatherStatsRate('collectd/elasticsearch-' + name + '/gauge-indices.docs.count/value')
+                                    }
+                                ]
+                            }
+                        );
                     }
                 );
 
@@ -826,8 +838,60 @@
                             ]
                         }
                     );
+
+                    createChart(
+                        {
+                            title : {
+                                text : 'collectd/redis_logstash/llen-logstash/rate'
+                            },
+                            yAxis : {
+                                title : {
+                                    text : 'count'
+                                }
+                            },
+                            series : [
+                                {
+                                    name : 'items',
+                                    data : gatherStatsRate('collectd/redis_logstash/gauge-llen_logstash/value')
+                                }
+                            ]
+                        }
+                    );
                 }
             }
+
+            document.addEvent(
+                'domready',
+                function () {
+                    $('datasource').addEvent(
+                        'blur',
+                        function () {
+                            if (!this.value) {
+                                return;
+                            }
+            
+                            new Request.JSON(
+                                {
+                                    url : this.value,
+                                    method : 'get',
+                                    onSuccess : function (data) {
+                                        stats = data;
+                            
+                                        init();
+                                    }
+                                }
+                            ).send();
+                        }
+                    );
+            
+                    if (window.location.search && window.location.search.substring(1)) {
+                        $('datasource')
+                            .set('value', window.location.search.substring(1))
+                            .fireEvent('blur')
+                        ;
+                    }
+                }
+            );
         </script>
     </body>
 </html>
