@@ -76,6 +76,17 @@ echo "stackato:$(stackato --version)"
 
 
 #
+# system: ntpd
+#
+
+if ! (which ntpd 1>/dev/null 2>&1) ; then
+    echo "Installing ntpd..."
+
+    sudo apt-get install -y ntp
+fi
+
+
+#
 # system: java
 #
 
