@@ -107,6 +107,19 @@ By default, the application loads the environment from `/app/.env`. The followin
     * `APP_CONFIG_REDIS_KEY` - the name of redis list or channel (e.g. `logstash`)
 
 
+### Helpful Hints
+
+
+#### Debug Parsing
+
+If you need to investigate how log messages are being parsed, try the following:
+
+    cat | rake logstash:debug[$LOGSTASH_TYPE] | while read line ; do echo $line | python -mjson.tool ; done
+
+You can interactively paste log lines and they'll be output in pretty JSON format for you to inspect. Press `Ctrl D` to
+exit cleanly.
+
+
 ### Supported Log Formats
 
 The following formats have been configured for parsing. Fields are generally named favoring vendor-defined terminology.
