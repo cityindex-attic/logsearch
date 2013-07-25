@@ -75,6 +75,21 @@ filter {
     }
 <% end %>
 
+    alter {
+        type => "ci_log4net"
+        coalesce => [
+            "@source_tz",
+            "%{@source_tz}",
+            # NOTE! this is applying a business-specific non-UTC timezone
+            "+01:00"
+        ]
+    }
+
+    mutate {
+        type => "ci_log4net"
+        add_field => [ "datetime_tz", "%{datetime}%{@source_tz}" ]
+    }
+
     #
     # specify the date field names for various types
     #
@@ -116,23 +131,19 @@ filter {
         match => [ "time", "YYYY-MM-dd HH:mm:ss.SSSSSSS" ]
     }
 
-    #default real_tzoffset to +01:00
-    alter {
-        type => "ci_log4net"
-        coalesce => [
-             "real_tzoffset", "%{real_tzoffset}", "+01:00"
-        ]
-    }
-
     date {
         type => "ci_log4net"
-        match => [ "datetime", "YYYY-MM-dd HH:mm:ss,SSS%{real_tzoffset} " ]
+        match => [ "datetime_tz", "YYYY-MM-dd HH:mm:ss,SSSZ" ]
     }
-
 
     #
     # type-casting for more advanced searches
     #
+
+    mutate {
+        type => "ci_log4net"
+        remove => [ "datetime_tz" ]
+    }
 
     mutate {
         convert => [ "status", "integer" ]
