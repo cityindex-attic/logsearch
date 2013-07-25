@@ -12,6 +12,16 @@ class SimpleCiLog4netTest < Test::Unit::TestCase
     assert_equal 1, res['hits']['total']
   end
 
+  def test_timestamps_are_converted_from_localtime_to_utc
+    res = eslog_simple_search(
+      nil,
+      '@fields.level:ERROR'
+    )
+
+    assert_equal '2013-06-21 08:00:00,012', res['hits']['hits'][0]['_source']['@timestamp'][0]
+    assert_equal '2013-06-21 08:00:00,012', res['hits']['hits'][0]['_source']['@fields']['datetime'][0]
+  end
+
   def test_no_events_inferred_today
     assert_raise RuntimeError do
       eslog_simple_search("logstash-#{Time.new.strftime('%Y-%m-%d')}")

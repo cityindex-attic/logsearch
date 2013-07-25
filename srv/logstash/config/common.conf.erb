@@ -116,10 +116,27 @@ filter {
         match => [ "time", "YYYY-MM-dd HH:mm:ss.SSSSSSS" ]
     }
 
+    #default real_tzoffset to +01:00
+    mutate {
+        type => "ci_log4net"
+        add_field => [ "real_tzoffset", "+01:00" ]
+        exclude_tags => [ "real_tzoffset" ]
+    }
+
+    mutate {
+        type => "ci_log4net"
+        gsub => [
+          # inject the log's timezone
+          "message", "^(.....) ([^ ]) (.*)$", "^%{1} %{2}{@real_tzoffset} %{3}",
+        ]
+        remove => [ "real_tzoffset" 
+    }
+
     date {
         type => "ci_log4net"
-        match => [ "datetime", "YYYY-MM-dd HH:mm:ss,SSS" ]
+        match => [ "datetime", "YYYY-MM-dd HH:mm:ss,SSSZ" ]
     }
+
 
     #
     # type-casting for more advanced searches
