@@ -1,0 +1,13 @@
+<%= ERB.new(File.read("#{ENV['APP_APP_DIR']}/srv/logstash/config/common.conf.erb")).result(binding) %>
+
+input {
+    stdin {
+        type => "<%= @args[:logstash_type] %>"
+        format => "<%= @args[:logstash_format] || 'plain' %>"
+    }
+}
+
+output {
+    # uncomment for debugging
+    stdout { debug => true debug_format => "json"}
+}

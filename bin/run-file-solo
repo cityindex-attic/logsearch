@@ -66,7 +66,7 @@ sleep 300
 echo '====> Starting profile...'
 echo '====> start:' `date -u +%Y-%m-%dT%TZ`
 
-(cd /app/app ; rake logstash:input:file[$1,$SOLODIR/*])
+(cd /app/app ; rake logstash:pv_to_elasticsearch[$1,$SOLODIR/*])
 sudo stop app-elasticsearch
 # ensure elasticsearch has written out
 sleep 10

@@ -32,9 +32,15 @@ namespace :logstash do
 
   desc "Run logstash off json file via stdin"
   task :pv_jsonfile_to_elasticsearch, :logstash_type, :path do |t, args|
-    args = args.merge({ :logstash_format => "json" })
-
-    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf", args)
+    process_erb(
+        "#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf.erb",
+        "#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf",
+        {
+            :logstash_format => "json",
+            :logstash_type => args[:logstash_type],
+            :path => args[:path]
+        }
+    )
     sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf'"
   end
 
@@ -42,7 +48,13 @@ namespace :logstash do
   task :slow, :subcall, :logstash_type, :path do |t, args|
     $bug_679_flush_size = 1
   
-    Rake::Task["logstash:input:#{args[:subcall]}"].invoke(args[:logstash_type], args[:path])
+    Rake::Task["logstash:#{args[:subcall]}"].invoke(args[:logstash_type], args[:path])
+  end
+
+  desc "Parse STDIN and dump the result to STDOUT"
+  task :debug, :logstash_type do |t, args|
+    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/debug.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/debug.conf", args)
+    sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/debug.conf'"
   end
 
   namespace :test do
@@ -65,42 +77,42 @@ namespace :logstash do
     namespace :type do
       desc "Run nginx_combined tests"
       task :nginx_combined => :erase do
-        run_integration_test("nginx_combined", "file")
+        run_integration_test("nginx_combined", "pv_to_elasticsearch")
       end
 
       desc "Run iis_default tests"
       task :iis_default => :erase do
-        run_integration_test("iis_default", "file")
+        run_integration_test("iis_default", "pv_to_elasticsearch")
       end
 
       desc "Run iis_tradingapi tests"
       task :iis_tradingapi => :erase do
-        run_integration_test("iis_tradingapi", "file")
+        run_integration_test("iis_tradingapi", "pv_to_elasticsearch")
       end
 
       desc "Run stackato_apptail tests"
       task :stackato_apptail => :erase do
-        run_integration_test("stackato_apptail", "jsonfile")
+        run_integration_test("stackato_apptail", "pv_jsonfile_to_elasticsearch")
       end
 
       desc "Run stackato_event tests"
       task :stackato_event => :erase do
-        run_integration_test("stackato_event", "jsonfile")
+        run_integration_test("stackato_event", "pv_jsonfile_to_elasticsearch")
       end
 
       desc "Run stackato_systail tests"
       task :stackato_systail => :erase do
-        run_integration_test("stackato_systail", "jsonfile")
+        run_integration_test("stackato_systail", "pv_jsonfile_to_elasticsearch")
       end
 
       desc "Run ci_appmetrics tests"
       task :ci_appmetrics => :erase do
-        run_integration_test("ci_appmetrics", "file")
+        run_integration_test("ci_appmetrics", "pv_to_elasticsearch")
       end
 
       desc "Run ci_log4net tests"
       task :ci_log4net => :erase do
-        run_integration_test("ci_log4net", "file")
+        run_integration_test("ci_log4net", "pv_to_elasticsearch")
       end
     end
   end
