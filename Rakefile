@@ -26,7 +26,8 @@ end
 
 desc "Install the foreman tasks as system services (requires sudo)"
 task :install_system_services do
-    sh "foreman export --app app --user #{ENV['APP_USER']} --env /app/.env upstart /etc/init"
+    sh "foreman export --app app --user #{ENV['APP_USER']} upstart /etc/init"
+    sh "sed -i '1s/^/limit nofile 32000 64000\\n/' /etc/init/app-elasticsearch-1.conf"
 end
 
 def process_erb(input, output, args = nil)
