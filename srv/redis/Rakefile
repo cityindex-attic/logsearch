@@ -1,6 +1,8 @@
 namespace :redis do
   desc "Run Redis service"
   task :run do
-    sh "#{ENV['APP_VENDOR_DIR']}/redis/src/redis-server --bind #{ENV['APP_CONFIG_REDIS_IPADDRESS'] || '127.0.0.1'} --pidfile #{ENV['APP_RUN_DIR']}/redis.pid --dbfilename #{ENV['APP_DATA_DIR']}/redis.rdb"
+    process_erb("#{ENV['APP_APP_DIR']}/srv/redis/config/config.conf.erb", "#{ENV['APP_APP_DIR']}/srv/redis/config/config.conf")
+
+    sh "#{ENV['APP_VENDOR_DIR']}/redis/src/redis-server #{ENV['APP_APP_DIR']}/srv/redis/config/config.conf"
   end
 end
