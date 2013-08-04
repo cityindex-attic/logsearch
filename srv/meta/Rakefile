@@ -1,0 +1,15 @@
+namespace :meta do
+  desc "Forward system app logs to elasticsearch"
+  task :system_app_elasticsearch do
+    process_erb("#{ENV['APP_APP_DIR']}/srv/meta/config/elasticsearch.conf.erb", "#{ENV['APP_APP_DIR']}/srv/meta/config/elasticsearch.conf")
+      
+    sh "/usr/bin/java -Djava.io.tmpdir='#{ENV['APP_TMP_DIR']}' -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/srv/meta/config/elasticsearch.conf'"
+  end
+
+  desc "Forward system app logs to loggly"
+  task :system_app_loggly, :loggly_key do
+    process_erb("#{ENV['APP_APP_DIR']}/srv/meta/config/loggly.conf.erb", "#{ENV['APP_APP_DIR']}/srv/meta/config/loggly.conf")
+      
+    sh "/usr/bin/java -Djava.io.tmpdir='#{ENV['APP_TMP_DIR']}' -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/srv/meta/config/loggly.conf'"
+  end
+end
