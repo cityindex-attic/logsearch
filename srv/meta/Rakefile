@@ -7,8 +7,8 @@ namespace :meta do
   end
 
   desc "Forward system app logs to loggly"
-  task :system_app_loggly, :loggly_key do
-    process_erb("#{ENV['APP_APP_DIR']}/srv/meta/config/loggly.conf.erb", "#{ENV['APP_APP_DIR']}/srv/meta/config/loggly.conf")
+  task :system_app_loggly, :loggly_key do |t, args|
+    process_erb("#{ENV['APP_APP_DIR']}/srv/meta/config/loggly.conf.erb", "#{ENV['APP_APP_DIR']}/srv/meta/config/loggly.conf", args)
       
     sh "/usr/bin/java -Djava.io.tmpdir='#{ENV['APP_TMP_DIR']}' -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/srv/meta/config/loggly.conf'"
   end
