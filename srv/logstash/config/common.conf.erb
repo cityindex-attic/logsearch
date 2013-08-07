@@ -26,7 +26,7 @@ filter {
 <% ["iis_default","iis_tradingapi"].each do |type| %>
     grok {
         type => "<%=type%>"
-        pattern => "%{DATESTAMP:datetime} %{HOST:s_sitename} %{HOST:s_computername} %{IP:s_ip} %{WORD:cs_method} %{URIPATHPARAM:cs_uri_stem} (?:%{NOTSPACE:cs_uri_query}|-) %{POSINT:s_port} (?:%{USER:cs_username}|-) %{IP:c_ip} (?:HTTP/%{NUMBER:cs_version}|-) (?:%{NOTSPACE:cs_user_agent}|-) (?:%{NOTSPACE:cs_cookie}|-) (?:%{URI:cs_referer}|-) (?:%{IPORHOST:cs_host}|-) %{POSINT:sc_status} %{INT:sc_substatus} %{INT:win32_status} %{NONNEGINT:sc_bytes} %{NONNEGINT:cs_bytes} %{NONNEGINT:time_taken}"
+        pattern => "%{DATESTAMP:datetime} %{HOST:s_sitename} %{HOST:s_computername} %{IP:s_ip} %{WORD:cs_method} %{URIPATHPARAM:cs_uri_stem} (?:%{NOTSPACE:cs_uri_query}|-) %{POSINT:s_port} (?:%{USER:cs_username}|-) %{IP:c_ip} (?:HTTP/%{NUMBER:cs_version}|-) (?:%{NOTSPACE:cs_user_agent}|-) (?:%{NOTSPACE:cs_cookie}|-) (?:%{URI:cs_referer}|-) (?:%{URIHOST:cs_host}|-) %{POSINT:sc_status} %{INT:sc_substatus} %{INT:win32_status} %{NONNEGINT:sc_bytes} %{NONNEGINT:cs_bytes} %{NONNEGINT:time_taken}"
         add_tag => "iis"
         add_tag => "<%=type%>"
     }
