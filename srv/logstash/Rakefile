@@ -122,8 +122,7 @@ class ElasticsearchNotRunning < RuntimeError; end
 
 def run_integration_test(type, task = "file")
     pid = fork do
-        exec "rake elasticsearch:run_nodeps > /dev/null 2>&1"
-        Kernel.exit!
+        exec "rake elasticsearch:run > /dev/null 2>&1"
     end
 
     # dependencies would have marked these to not run again, so reset that
