@@ -77,7 +77,7 @@ namespace :logstash do
 
     namespace :common do
         task :trimming do
-            sh "#{ENV['APP_APP_DIR']}/srv/logstash/test/common-trimming.sh"
+            sh "#{ENV['APP_APP_DIR']}/srv/logstash/test/common-trimming.sh #{$LOGSTASH_MESSAGE_MAXSIZE}"
         end
     end
 
