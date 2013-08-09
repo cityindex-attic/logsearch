@@ -62,6 +62,7 @@ namespace :logstash do
     task :all_types do
       puts "==> Running logstash tests"
 
+      Rake::Task["logstash:test:common:trimming"].invoke
       Rake::Task["logstash:test:type:nginx_combined"].invoke
       Rake::Task["logstash:test:type:iis_default"].invoke
       Rake::Task["logstash:test:type:iis_tradingapi"].invoke
@@ -72,6 +73,12 @@ namespace :logstash do
       Rake::Task["logstash:test:type:ci_log4net"].invoke
 
       puts "==> All tests completed successfully :)"
+    end
+
+    namespace :common do
+        task :trimming do
+            sh "#{ENV['APP_APP_DIR']}/srv/logstash/test/common-trimming.sh"
+        end
     end
 
     namespace :type do
