@@ -98,6 +98,11 @@ filter {
         add_field => [ "datetime_tz", "%{datetime}%{@source_tz}" ]
     }
 
+    csv {
+        type => "ci_ip_diagnostics"
+        columns => ["timestamp_counter", "level", "trade_type", "timestamp_time", "measure_1", "measure_2", "measure_3"]
+    }
+
     #
     # specify the date field names for various types
     #
