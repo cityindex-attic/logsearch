@@ -28,7 +28,11 @@
         "DisableApiTermination": {
             "Type": "String",
             "Description": "Prevent EC2 instance termination (if true, requires to actively enable it to successfully delete the stack).",
-            "Default": "false"
+            "Default": "false",
+            "AllowedValues": [
+                "false",
+                "true"
+            ]
         },
         "EsEbsSnapshotId": {
             "Type": "String",
