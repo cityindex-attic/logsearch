@@ -105,6 +105,8 @@ By default, the application loads the environment from `/app/.env`. The followin
  * Redis service
     * `APP_CONFIG_REDIS_IPADDRESS` - the IP address to bind to (e.g. `127.0.0.1`)
     * `APP_CONFIG_REDIS_KEY` - the name of redis list or channel (e.g. `logstash`)
+ * Kibana service
+    * `APP_CONFIG_KIBANA_GATRACKINGID` - an optional [Google Analytics](http://www.google.com/analytics/) Tracking ID (e.g. `UA-12345678-9`)
 
 
 ### Helpful Hints
