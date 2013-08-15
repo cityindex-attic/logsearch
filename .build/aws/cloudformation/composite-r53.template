@@ -62,15 +62,10 @@
             "Type": "String",
             "Default": "master"
         },
-        "S3BucketName": {
-            "Description": "S3 bucket name to compose template source from.",
+        "S3StackBase": {
+            "Description": "S3 bucket base URL to compose template source from.",
             "Type": "String",
-            "Default": "ci-elasticsearch-development-flow"
-        },
-        "S3BucketPrefix": {
-            "Description": "S3 bucket prefix to compose template source from.",
-            "Type": "String",
-            "Default": "aws-cloudformation"
+            "Default": "https://s3.amazonaws.com/ci-elasticsearch-development-flow/aws-cloudformation/master"
         }
     },
     "Resources": {
@@ -81,10 +76,7 @@
                     "Fn::Join": [
                     "/",
                     [
-                        "https://s3.amazonaws.com",
-                        { "Ref": "S3BucketName" },
-                        { "Ref": "S3BucketPrefix" },
-                        { "Ref": "RepositoryBranch" },
+                        { "Ref": "S3StackBase" },
                         "secgrp-single-default.template"
                     ]
                     ]
@@ -101,10 +93,7 @@
                     "Fn::Join": [
                     "/",
                     [
-                        "https://s3.amazonaws.com",
-                        { "Ref": "S3BucketName" },
-                        { "Ref": "S3BucketPrefix" },
-                        { "Ref": "RepositoryBranch" },
+                        { "Ref": "S3StackBase" },
                         "node-es-ebs-default.template"
                     ]
                     ]
@@ -130,10 +119,7 @@
                     "Fn::Join": [
                     "/",
                     [
-                        "https://s3.amazonaws.com",
-                        { "Ref": "S3BucketName" },
-                        { "Ref": "S3BucketPrefix" },
-                        { "Ref": "RepositoryBranch" },
+                        { "Ref": "S3StackBase" },
                         "node-es-ephemeral-default.template"
                     ]
                     ]
@@ -158,10 +144,7 @@
                     "Fn::Join": [
                     "/",
                     [
-                        "https://s3.amazonaws.com",
-                        { "Ref": "S3BucketName" },
-                        { "Ref": "S3BucketPrefix" },
-                        { "Ref": "RepositoryBranch" },
+                        { "Ref": "S3StackBase" },
                         "node-broker-default.template"
                     ]
                     ]
