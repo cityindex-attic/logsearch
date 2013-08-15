@@ -61,13 +61,34 @@
             "Description": "Repository branch to bootstrap from.",
             "Type": "String",
             "Default": "master"
+        },
+        "S3BucketName": {
+            "Description": "S3 bucket name to compose template source from.",
+            "Type": "String",
+            "Default": "ci-elasticsearch-development-flow"
+        },
+        "S3BucketPrefix": {
+            "Description": "S3 bucket prefix to compose template source from.",
+            "Type": "String",
+            "Default": "aws-cloudformation"
         }
     },
     "Resources": {
         "SecurityGroup": {
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
-                "TemplateURL" : "https://s3.amazonaws.com/ci-elasticsearch-development-flow/aws-cloudformation/master/secgrp-single-default.template",
+                "TemplateURL" : {
+                    "Fn::Join": [
+                    "/",
+                    [
+                        "https://s3.amazonaws.com",
+                        { "Ref": "S3BucketName" },
+                        { "Ref": "S3BucketPrefix" },
+                        { "Ref": "RepositoryBranch" },
+                        "secgrp-single-default.template"
+                    ]
+                    ]
+                },
                 "Parameters" : {
                     "CidrRange"         : { "Ref" : "CidrRange" }
                 }
@@ -76,7 +97,18 @@
         "ElasticsearchEbs0" : {
             "Type" : "AWS::CloudFormation::Stack",
             "Properties" : {
-                "TemplateURL" : "https://s3.amazonaws.com/ci-elasticsearch-development-flow/aws-cloudformation/master/node-es-ebs-default.template",
+                "TemplateURL" : {
+                    "Fn::Join": [
+                    "/",
+                    [
+                        "https://s3.amazonaws.com",
+                        { "Ref": "S3BucketName" },
+                        { "Ref": "S3BucketPrefix" },
+                        { "Ref": "RepositoryBranch" },
+                        "node-es-ebs-default.template"
+                    ]
+                    ]
+                },
                 "Parameters" : {
                     "AlarmTopic"       : { "Ref" : "AlarmTopic" },
                     "AvailabilityZone" : { "Ref" : "AvailabilityZone" },
@@ -94,7 +126,18 @@
         "ElasticsearchEphemeral0" : {
             "Type" : "AWS::CloudFormation::Stack",
             "Properties" : {
-                "TemplateURL" : "https://s3.amazonaws.com/ci-elasticsearch-development-flow/aws-cloudformation/master/node-es-ephemeral-default.template",
+                "TemplateURL" : {
+                    "Fn::Join": [
+                    "/",
+                    [
+                        "https://s3.amazonaws.com",
+                        { "Ref": "S3BucketName" },
+                        { "Ref": "S3BucketPrefix" },
+                        { "Ref": "RepositoryBranch" },
+                        "node-es-ephemeral-default.template"
+                    ]
+                    ]
+                },
                 "Parameters" : {
                     "AlarmTopic"       : { "Ref" : "AlarmTopic" },
                     "AvailabilityZone" : { "Ref" : "AvailabilityZone" },
@@ -111,7 +154,18 @@
         "Broker0" : {
             "Type" : "AWS::CloudFormation::Stack",
             "Properties" : {
-                "TemplateURL" : "https://s3.amazonaws.com/ci-elasticsearch-development-flow/aws-cloudformation/master/node-broker-default.template",
+                "TemplateURL" : {
+                    "Fn::Join": [
+                    "/",
+                    [
+                        "https://s3.amazonaws.com",
+                        { "Ref": "S3BucketName" },
+                        { "Ref": "S3BucketPrefix" },
+                        { "Ref": "RepositoryBranch" },
+                        "node-broker-default.template"
+                    ]
+                    ]
+                },
                 "Parameters" : {
                     "AlarmTopic"        : { "Ref" : "AlarmTopic" },
                     "AvailabilityZone"  : { "Ref" : "AvailabilityZone" },
