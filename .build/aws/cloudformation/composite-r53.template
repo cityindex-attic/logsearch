@@ -61,13 +61,26 @@
             "Description": "Repository branch to bootstrap from.",
             "Type": "String",
             "Default": "master"
+        },
+        "S3StackBase": {
+            "Description": "S3 bucket base URL to compose template source from.",
+            "Type": "String",
+            "Default": "https://s3.amazonaws.com/ci-elasticsearch-development-flow/aws-cloudformation/master"
         }
     },
     "Resources": {
         "SecurityGroup": {
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
-                "TemplateURL" : "https://s3.amazonaws.com/ci-elasticsearch-development-flow/aws-cloudformation/master/secgrp-single-default.template",
+                "TemplateURL" : {
+                    "Fn::Join": [
+                    "/",
+                    [
+                        { "Ref": "S3StackBase" },
+                        "secgrp-single-default.template"
+                    ]
+                    ]
+                },
                 "Parameters" : {
                     "CidrRange"         : { "Ref" : "CidrRange" }
                 }
@@ -76,7 +89,15 @@
         "ElasticsearchEbs0" : {
             "Type" : "AWS::CloudFormation::Stack",
             "Properties" : {
-                "TemplateURL" : "https://s3.amazonaws.com/ci-elasticsearch-development-flow/aws-cloudformation/master/node-es-ebs-default.template",
+                "TemplateURL" : {
+                    "Fn::Join": [
+                    "/",
+                    [
+                        { "Ref": "S3StackBase" },
+                        "node-es-ebs-default.template"
+                    ]
+                    ]
+                },
                 "Parameters" : {
                     "AlarmTopic"       : { "Ref" : "AlarmTopic" },
                     "AvailabilityZone" : { "Ref" : "AvailabilityZone" },
@@ -94,7 +115,15 @@
         "ElasticsearchEphemeral0" : {
             "Type" : "AWS::CloudFormation::Stack",
             "Properties" : {
-                "TemplateURL" : "https://s3.amazonaws.com/ci-elasticsearch-development-flow/aws-cloudformation/master/node-es-ephemeral-default.template",
+                "TemplateURL" : {
+                    "Fn::Join": [
+                    "/",
+                    [
+                        { "Ref": "S3StackBase" },
+                        "node-es-ephemeral-default.template"
+                    ]
+                    ]
+                },
                 "Parameters" : {
                     "AlarmTopic"       : { "Ref" : "AlarmTopic" },
                     "AvailabilityZone" : { "Ref" : "AvailabilityZone" },
@@ -111,7 +140,15 @@
         "Broker0" : {
             "Type" : "AWS::CloudFormation::Stack",
             "Properties" : {
-                "TemplateURL" : "https://s3.amazonaws.com/ci-elasticsearch-development-flow/aws-cloudformation/master/node-broker-default.template",
+                "TemplateURL" : {
+                    "Fn::Join": [
+                    "/",
+                    [
+                        { "Ref": "S3StackBase" },
+                        "node-broker-default.template"
+                    ]
+                    ]
+                },
                 "Parameters" : {
                     "AlarmTopic"        : { "Ref" : "AlarmTopic" },
                     "AvailabilityZone"  : { "Ref" : "AvailabilityZone" },
