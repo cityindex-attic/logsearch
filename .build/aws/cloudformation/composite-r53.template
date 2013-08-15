@@ -34,10 +34,25 @@
                 "true"
             ]
         },
-        "EsEbsSnapshotId": {
+        "ElasticsearchEbsSnapshotId": {
             "Type": "String",
             "Description": "Snapshot to use for the EBS-based elasticsearch node.",
             "AllowedPattern": "snap-([0-9a-f]{8})"
+        },
+        "ElasticsearchEbs0InstanceType": {
+            "Type": "String",
+            "Description": "Instance type for the EBS-based elasticsearch node.",
+            "Default" : "m1.large"
+        },
+        "ElasticsearchEphemeral0InstanceType": {
+            "Type": "String",
+            "Description": "Instance type for the ephemeral-based elasticsearch node.",
+            "Default" : "m1.large"
+        },
+        "Broker0InstanceType": {
+            "Type": "String",
+            "Description": "Instance type for the broker node.",
+            "Default" : "c1.medium"
         },
         "InstanceProfile": {
             "Type": "String",
@@ -108,10 +123,10 @@
                     "ClusterName"           : { "Ref" : "ClusterName" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-                    "InstanceType"          : "m1.large",
+                    "InstanceType"          : { "Ref" : "ElasticsearchEbs0InstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
                     "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
-                    "SnapshotId"            : { "Ref" : "EsEbsSnapshotId" },
+                    "SnapshotId"            : { "Ref" : "ElasticsearchEbsSnapshotId" },
                     "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup", "Outputs.SecurityGroup0" ] }
                 }
             }
@@ -134,7 +149,7 @@
                     "ClusterName"           : { "Ref" : "ClusterName" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-                    "InstanceType"          : "m1.xlarge",
+                    "InstanceType"          : { "Ref" : "ElasticsearchEphemeral0InstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
                     "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
                     "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup", "Outputs.SecurityGroup0" ] }
@@ -168,7 +183,7 @@
                         ]
                     },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-                    "InstanceType"          : "c1.medium",
+                    "InstanceType"          : { "Ref" : "Broker0InstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
                     "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
                     "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup", "Outputs.SecurityGroup0" ] }
