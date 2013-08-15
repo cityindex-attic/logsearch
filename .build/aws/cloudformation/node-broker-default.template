@@ -9,7 +9,7 @@
         "AvailabilityZone": {
             "Type": "String",
             "Description": "Availability Zone to start the node in.",
-            "Default": "us-east-1"
+            "Default": "us-east-1a"
         },
         "ClusterName": {
             "Type": "String",
