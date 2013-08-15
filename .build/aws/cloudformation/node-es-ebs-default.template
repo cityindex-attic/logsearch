@@ -1,0 +1,321 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "A default EBS-backed elasticsearch node.",
+    "Parameters": {
+        "AlarmTopic": {
+            "Type": "String",
+            "Description": "An SNS ARN for alarms to notify."
+        },
+        "AvailabilityZone": {
+            "Type": "String",
+            "Description": "Availability Zone to start the node in.",
+            "Default": "us-east-1"
+        },
+        "ClusterName": {
+            "Type": "String",
+            "Description": "The cluster name the node is registered to.",
+            "MinLength" : "1"
+        },
+        "InstanceProfile": {
+            "Type": "String",
+            "Description": "An IAM role for the node."
+        },
+        "InstanceType": {
+            "Default": "m1.large",
+            "Type": "String",
+            "Description": "The instance type to create the node on.",
+            "MinLength" : "1"
+        },
+        "KeyName": {
+            "Type": "String",
+            "Description": "A key pair name for configuring the node.",
+            "Default": "default"
+        },
+        "RepositoryBranch": {
+            "Default" : "master",
+            "Type": "String",
+            "Description": "A branch to use for bootstrapping."
+        },
+        "SnapshotId": {
+            "Type": "String",
+            "Description": "A Snapshot ID to start the node from.",
+            "AllowedPattern": "snap-([0-9a-f]{8})"
+        },
+        "SecurityGroup": {
+            "Type": "String",
+            "Description": "A security group to create the node in.",
+            "Default" : "default",
+            "MinLength" : "1"
+        }
+    },
+    "Mappings": {
+        "RegionMap": {
+            "us-east-1": {
+                "AMI": "ami-d0f89fb9"
+            },
+            "us-west-2": {
+                "AMI": "ami-70f96e40"
+            },
+            "us-west-1": {
+                "AMI": "ami-fe002cbb"
+            },
+            "eu-west-1": {
+                "AMI": "ami-ce7b6fba"
+            },
+            "ap-southeast-1": {
+                "AMI": "ami-64084736"
+            },
+            "ap-northeast-1": {
+                "AMI": "ami-fe6ceeff"
+            },
+            "ap-southeast-2": {
+                "AMI": "ami-04ea7a3e"
+            },
+            "sa-east-1": {
+                "AMI": "ami-a3da00be"
+            }
+        }
+    },
+    "Resources": {
+        "Volume0": {
+            "Type": "AWS::EC2::Volume",
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone"
+                },
+                "SnapshotId": {
+                    "Ref": "SnapshotId"
+                }
+            },
+            "DeletionPolicy": "Snapshot"
+        },
+        "Instance0": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata" : {
+                "AWS::CloudFormation::Init" : {
+                    "config" : {
+                        "files" : {
+                            "/app/.env" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "export ES_HEAP_SIZE=4G", "\n",
+                                            "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
+                                            "export APP_ROOT_DIR=/app", "\n",
+                                            "export APP_APP_DIR=/app/app", "\n",
+                                            "export APP_VENDOR_DIR=/app/vendor", "\n",
+                                            "export APP_LOG_DIR=/app/var/log", "\n",
+                                            "export APP_RUN_DIR=/app/var/run", "\n",
+                                            "export APP_TMP_DIR=/app/tmp", "\n",
+                                            "export APP_DATA_DIR=/app/data", "\n",
+                                            "export APP_USER=ubuntu", "\n",
+                                            "export APP_CONFIG_ES_CLUSTER=", { "Ref" : "ClusterName" }, "\n",
+                                            "export APP_CONFIG_ES_IPADDRESS=`ec2metadata --local-ipv4`", "\n",
+                                            "export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup" }, "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000755"
+                            },
+                            "/home/ubuntu/provision" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "#!/bin/bash", "\n",
+                                            "set -e", "\n",
+                                            "/app/app/.build/ubuntu-12/provision.sh", "\n",
+                                            "/app/app/bin/data-mount-device xvdf ", { "Ref" : "Volume0" }, " ubuntu", "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
+                            },
+                            "/home/ubuntu/bootstrap" : {
+                                "source" : {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "https://raw.github.com/cityindex/logsearch-development-flow/",
+                                            { "Ref": "RepositoryBranch" },
+                                            "/bin/bootstrap"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
+                            },
+                            "/home/ubuntu/cron.conf" : {
+                                "content" : {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "* * * * * (. /app/.env ; /app/app/example/aws-cloudwatch/push-latest-rrd.sh ",
+                                            { "Ref": "ClusterName" },
+                                            " /var/lib/collectd/rrd/$(/bin/hostname --fqdn)/elasticsearch_logstash/gauge-lag.rrd IndexLag) >> /app/var/log/cron.log 2>&1",
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone"
+                },
+                "DisableApiTermination": "false",
+                "Monitoring": "true",
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "RegionMap",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "AMI"
+                    ]
+                },
+                "IamInstanceProfile": {
+                    "Ref": "InstanceProfile"
+                },
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SecurityGroups": [{
+                    "Ref": "SecurityGroup"
+                }],
+                "Volumes": [
+                    {
+                        "VolumeId": {
+                            "Ref": "Volume0"
+                        },
+                        "Device": "/dev/sdf"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref" : "AWS::StackName"
+                        },
+                        "PropagateAtLaunch": "true"
+                    }
+                ],
+                "UserData" : {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash", "\n",
+                                "# Error handling helper function\n",
+                                "function error_exit\n",
+                                "{\n",
+                                " cfn-signal --exit-code $? --reason \"$1\" '", { "Ref": "WaitConditionHandle" }, "'\n",
+                                " exit $?\n",
+                                "}\n",
+                                "apt-get update", "\n",
+                                "apt-get -y install python-pip", "\n",
+                                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
+                                "cfn-init --verbose ",
+                                " --region ", { "Ref": "AWS::Region" },
+                                " --stack ", { "Ref": "AWS::StackName" },
+                                " --resource Instance0",
+                                " || error_exit 'Failed to run cfn-init'", "\n",
+                                "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch ", { "Ref": "RepositoryBranch" }, "\n",
+                                "/app/app/.build/dev_server/extra.sh", "\n",
+                                "sudo -H -u ubuntu crontab /home/ubuntu/cron.conf", "\n",
+                                "cfn-signal --exit-code 0 --reason 'Provisioning complete' '", { "Ref": "WaitConditionHandle" }, "'\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "Instance0StatusAlarm": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmDescription": "Alarm if the system or instance status checks are failing.",
+                "Namespace": "AWS/EC2",
+                "MetricName": "StatusCheckFailed",
+                "Dimensions": [
+                    {
+                        "Name": "InstanceId",
+                        "Value" : { "Ref" : "Instance0" }
+                    }
+                ],
+                "Statistic": "Maximum",
+                "Period": "300",
+                "EvaluationPeriods": "2",
+                "Threshold": "1",
+                "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+                "AlarmActions": [
+                    {
+                        "Ref": "AlarmTopic"
+                    }
+                ]
+            }
+        },
+        "WaitConditionHandle": {
+            "Type": "AWS::CloudFormation::WaitConditionHandle"
+        },
+        "WaitCondition": {
+            "Type": "AWS::CloudFormation::WaitCondition",
+            "DependsOn": "Instance0",
+            "Properties": {
+                "Handle": {
+                    "Ref": "WaitConditionHandle"
+                },
+                "Timeout": "900"
+            }
+        }
+    },
+    "Outputs" : {
+        "Volume0Id" : {
+            "Description" : "Volume ID used for persistent storage.",
+            "Value" : {
+                "Ref" : "Volume0"
+            }
+        },
+        "Instance0Id" : {
+            "Description" : "The physical ID of the created instance.",
+            "Value" : {
+                "Ref" : "Instance0"
+            }
+        },
+        "Instance0PrivateIp" : {
+            "Description" : "Private IP Address of the instance.",
+            "Value" : {
+                "Fn::GetAtt" :
+                [
+                    "Instance0",
+                    "PrivateIp"
+                ]
+            }
+        },
+        "Instance0PublicIp" : {
+            "Description" : "Public IP Address of the instance.",
+            "Value" : {
+                "Fn::GetAtt" :
+                [
+                    "Instance0",
+                    "PublicIp"
+                ]
+            }
+        }
+    }
+}

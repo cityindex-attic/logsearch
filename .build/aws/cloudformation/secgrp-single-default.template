@@ -1,0 +1,105 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "A default single security group.",
+    "Parameters": {
+        "CidrRange": {
+            "Description": "The management CIDR for remote access via tcp:22, tcp:80, tcp:443.",
+            "Type": "String",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "0.0.0.0/0",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
+        }
+    },
+    "Resources": {
+        "SecurityGroup0": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "logsearch-single-default",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "icmp",
+                        "FromPort": "3",
+                        "ToPort": "4",
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": {
+                            "Ref": "CidrRange"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "80",
+                        "ToPort": "80",
+                        "CidrIp": {
+                            "Ref": "CidrRange"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "443",
+                        "ToPort": "443",
+                        "CidrIp": {
+                            "Ref": "CidrRange"
+                        }
+                    }
+                ]
+            }
+        },
+        "SecurityGroup0InterElasticsearch9200": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupName": {
+                    "Ref": "SecurityGroup0"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "9200",
+                "ToPort": "9299",
+                "SourceSecurityGroupName": {
+                    "Ref": "SecurityGroup0"
+                }
+            }
+        },
+       "SecurityGroup0InterElasticsearch9300": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupName": {
+                    "Ref": "SecurityGroup0"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "9300",
+                "ToPort": "9399",
+                "SourceSecurityGroupName": {
+                    "Ref": "SecurityGroup0"
+                }
+            }
+        },
+        "SecurityGroup0InterRedis": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupName": {
+                    "Ref": "SecurityGroup0"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "6379",
+                "ToPort": "6379",
+                "SourceSecurityGroupName": {
+                    "Ref": "SecurityGroup0"
+                }
+            }
+        }
+    },
+    "Outputs" : {
+        "SecurityGroup0" : {
+            "Description" : "The physical ID of the created security group.",
+            "Value" : {
+                "Ref" : "SecurityGroup0"
+            }
+        }
+    }
+}
