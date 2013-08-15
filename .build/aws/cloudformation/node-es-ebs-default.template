@@ -77,6 +77,59 @@
         }
     },
     "Mappings": {
+        "InstanceMemoryMap" : {
+            "t1.micro" : {
+                "ElasticsearchHeapSize" : "256M"
+            },
+            "m1.small" : {
+                "ElasticsearchHeapSize" : "896M"
+            },
+            "m1.medium" : {
+                "ElasticsearchHeapSize" : "1536M"
+            },
+            "m1.large" : {
+                "ElasticsearchHeapSize" : "4G"
+            },
+            "m1.xlarge" : {
+                "ElasticsearchHeapSize" : "8G"
+            },
+            "m2.xlarge" : {
+                "ElasticsearchHeapSize" : "9G"
+            },
+            "m2.2xlarge" : {
+                "ElasticsearchHeapSize" : "17G"
+            },
+            "m2.4xlarge" : {
+                "ElasticsearchHeapSize" : "35G"
+            },
+            "m3.xlarge" : {
+                "ElasticsearchHeapSize" : "8G"
+            },
+            "m3.2xlarge" : {
+                "ElasticsearchHeapSize" : "15G"
+            },
+            "c1.medium" : {
+                "ElasticsearchHeapSize" : "896M"
+            },
+            "c1.xlarge" : {
+                "ElasticsearchHeapSize" : "3584M"
+            },
+            "cc2.8xlarge" : {
+                "ElasticsearchHeapSize" : "30G"
+            },
+            "cr1.8xlarge" : {
+                "ElasticsearchHeapSize" : "122G"
+            },
+            "cg1.4xlarge" : {
+                "ElasticsearchHeapSize" : "12G"
+            },
+            "hi1.4xlarge" : {
+                "ElasticsearchHeapSize" : "31G"
+            },
+            "hs1.8xlarge" : {
+                "ElasticsearchHeapSize" : "59G"
+            }
+        },
         "RegionMap": {
             "us-east-1": {
                 "AMI": "ami-d0f89fb9"
@@ -128,7 +181,17 @@
                                     "Fn::Join" : [
                                         "",
                                         [
-                                            "export ES_HEAP_SIZE=4G", "\n",
+                                            "export ES_HEAP_SIZE=",
+                                            {
+                                                "Fn::FindInMap": [
+                                                    "InstanceMemoryMap",
+                                                    {
+                                                        "Ref": "InstanceType"
+                                                    },
+                                                    "ElasticsearchHeapSize"
+                                                ]
+                                            },
+                                            "\n",
                                             "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
                                             "export APP_ROOT_DIR=/app", "\n",
                                             "export APP_APP_DIR=/app/app", "\n",
