@@ -16,6 +16,11 @@
             "Description": "The cluster name the node is registered to.",
             "MinLength" : "1"
         },
+        "DisableApiTermination": {
+            "Type": "String",
+            "Description": "Prevent EC2 instance termination (if true, requires to actively enable it to successfully delete the stack).",
+            "Default": "false"
+        },
         "ElasticsearchHost": {
             "Type": "String",
             "Description": "An elasticsearch host to send messages to.",
@@ -169,7 +174,9 @@
                 "AvailabilityZone": {
                     "Ref": "AvailabilityZone"
                 },
-                "DisableApiTermination": "false",
+                "DisableApiTermination": {
+                    "Ref": "DisableApiTermination"
+                },
                 "Monitoring": "true",
                 "ImageId": {
                     "Fn::FindInMap": [

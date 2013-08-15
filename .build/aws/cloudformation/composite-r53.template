@@ -25,6 +25,11 @@
             "Description": "A unique name for the cluster.",
             "Default": "logsearch-test"
         },
+        "DisableApiTermination": {
+            "Type": "String",
+            "Description": "Prevent EC2 instance termination (if true, requires to actively enable it to successfully delete the stack).",
+            "Default": "false"
+        },
         "EsEbsSnapshotId": {
             "Type": "String",
             "Description": "Snapshot to use for the EBS-based elasticsearch node.",
@@ -76,6 +81,7 @@
                     "AlarmTopic"       : { "Ref" : "AlarmTopic" },
                     "AvailabilityZone" : { "Ref" : "AvailabilityZone" },
                     "ClusterName"      : { "Ref" : "ClusterName" },
+                    "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "InstanceProfile"  : { "Ref" : "InstanceProfile" },
                     "InstanceType"     : "m1.large",
                     "KeyName"          : { "Ref" : "KeyName" },
@@ -93,6 +99,7 @@
                     "AlarmTopic"       : { "Ref" : "AlarmTopic" },
                     "AvailabilityZone" : { "Ref" : "AvailabilityZone" },
                     "ClusterName"      : { "Ref" : "ClusterName" },
+                    "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "InstanceProfile"  : { "Ref" : "InstanceProfile" },
                     "InstanceType"     : "m1.xlarge",
                     "KeyName"          : { "Ref" : "KeyName" },
@@ -109,6 +116,7 @@
                     "AlarmTopic"        : { "Ref" : "AlarmTopic" },
                     "AvailabilityZone"  : { "Ref" : "AvailabilityZone" },
                     "ClusterName"       : { "Ref" : "ClusterName" },
+                    "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "ElasticsearchHost" : {
                         "Fn::Join" : [
                             "",
