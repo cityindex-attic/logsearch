@@ -2,7 +2,7 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "Create a basic elasticsearch/kibana cluster environment.",
     "Parameters": {
-        "AlarmTopic" : {
+        "AlarmTopicArn" : {
             "Type" : "String",
             "Description" : "An SNS Topic ARN to publish stability alarms to."
         },
@@ -103,16 +103,16 @@
                     ]
                 },
                 "Parameters" : {
-                    "AlarmTopic"       : { "Ref" : "AlarmTopic" },
-                    "AvailabilityZone" : { "Ref" : "AvailabilityZone" },
-                    "ClusterName"      : { "Ref" : "ClusterName" },
+                    "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
+                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
+                    "ClusterName"           : { "Ref" : "ClusterName" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
-                    "InstanceProfile"  : { "Ref" : "InstanceProfile" },
-                    "InstanceType"     : "m1.large",
-                    "KeyName"          : { "Ref" : "KeyName" },
-                    "RepositoryBranch" : { "Ref" : "RepositoryBranch" },
-                    "SnapshotId"       : { "Ref" : "EsEbsSnapshotId" },
-                    "SecurityGroup"    : { "Fn::GetAtt" : [ "SecurityGroup", "Outputs.SecurityGroup0" ] }
+                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
+                    "InstanceType"          : "m1.large",
+                    "KeyName"               : { "Ref" : "KeyName" },
+                    "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
+                    "SnapshotId"            : { "Ref" : "EsEbsSnapshotId" },
+                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup", "Outputs.SecurityGroup0" ] }
                 }
             }
         },
@@ -129,15 +129,15 @@
                     ]
                 },
                 "Parameters" : {
-                    "AlarmTopic"       : { "Ref" : "AlarmTopic" },
-                    "AvailabilityZone" : { "Ref" : "AvailabilityZone" },
-                    "ClusterName"      : { "Ref" : "ClusterName" },
+                    "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
+                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
+                    "ClusterName"           : { "Ref" : "ClusterName" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
-                    "InstanceProfile"  : { "Ref" : "InstanceProfile" },
-                    "InstanceType"     : "m1.xlarge",
-                    "KeyName"          : { "Ref" : "KeyName" },
-                    "RepositoryBranch" : { "Ref" : "RepositoryBranch" },
-                    "SecurityGroup"    : { "Fn::GetAtt" : [ "SecurityGroup", "Outputs.SecurityGroup0" ] }
+                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
+                    "InstanceType"          : "m1.xlarge",
+                    "KeyName"               : { "Ref" : "KeyName" },
+                    "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
+                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup", "Outputs.SecurityGroup0" ] }
                 }
             }
         },
@@ -154,9 +154,9 @@
                     ]
                 },
                 "Parameters" : {
-                    "AlarmTopic"        : { "Ref" : "AlarmTopic" },
-                    "AvailabilityZone"  : { "Ref" : "AvailabilityZone" },
-                    "ClusterName"       : { "Ref" : "ClusterName" },
+                    "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
+                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
+                    "ClusterName"           : { "Ref" : "ClusterName" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "ElasticsearchHost" : {
                         "Fn::Join" : [
@@ -167,11 +167,11 @@
                             ]
                         ]
                     },
-                    "InstanceProfile"   : { "Ref" : "InstanceProfile" },
-                    "InstanceType"      : "c1.medium",
-                    "KeyName"           : { "Ref" : "KeyName" },
-                    "RepositoryBranch"  : { "Ref" : "RepositoryBranch" },
-                    "SecurityGroup"     : { "Fn::GetAtt" : [ "SecurityGroup", "Outputs.SecurityGroup0" ] }
+                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
+                    "InstanceType"          : "c1.medium",
+                    "KeyName"               : { "Ref" : "KeyName" },
+                    "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
+                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup", "Outputs.SecurityGroup0" ] }
                 }
             }
         },
@@ -263,7 +263,7 @@
                 "ComparisonOperator": "GreaterThanThreshold",
                 "AlarmActions": [
                     {
-                        "Ref": "AlarmTopic"
+                        "Ref": "AlarmTopicArn"
                     }
                 ]
             }
@@ -291,7 +291,7 @@
                 "ComparisonOperator": "GreaterThanThreshold",
                 "AlarmActions": [
                     {
-                        "Ref": "AlarmTopic"
+                        "Ref": "AlarmTopicArn"
                     }
                 ]
             }

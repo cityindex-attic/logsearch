@@ -2,7 +2,7 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "A default ephemeral-backed elasticsearch + kibana node.",
     "Parameters": {
-        "AlarmTopic": {
+        "AlarmTopicArn": {
             "Type": "String",
             "Description": "An SNS ARN for alarms to notify."
         },
@@ -318,7 +318,7 @@
                 "ComparisonOperator": "GreaterThanOrEqualToThreshold",
                 "AlarmActions": [
                     {
-                        "Ref": "AlarmTopic"
+                        "Ref": "AlarmTopicArn"
                     }
                 ]
             }
