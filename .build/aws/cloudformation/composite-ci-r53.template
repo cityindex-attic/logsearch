@@ -1,0 +1,354 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create a basic elasticsearch/kibana cluster environment.",
+    "Parameters": {
+        "AlarmTopicArn" : {
+            "Type" : "String",
+            "Description" : "An SNS Topic ARN to publish stability alarms to."
+        },
+        "AvailabilityZone": {
+            "Type": "String",
+            "Description": "Availability Zone (AZ) to start the cluster in.",
+            "Default": "us-east-1a"
+        },
+        "CidrRange0": {
+            "Description": "The CIDR range for remote access to advertised services like tcp:22, tcp:80, tcp:443.",
+            "Type": "String",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "127.0.0.1/32",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
+        },
+        "CidrRange1": {
+            "Description": "The CIDR range for secondary remote access to advertised services like tcp:22, tcp:80, tcp:443.",
+            "Type": "String",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "127.0.0.1/32",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
+        },
+        "ClusterName": {
+            "Type": "String",
+            "Description": "A unique name for the cluster.",
+            "Default": "logsearch-test"
+        },
+        "DisableApiTermination": {
+            "Type": "String",
+            "Description": "Prevent EC2 instance termination (if true, requires to actively enable it to successfully delete the stack).",
+            "Default": "false",
+            "AllowedValues": [
+                "false",
+                "true"
+            ]
+        },
+        "ElasticsearchEbsSnapshotId": {
+            "Type": "String",
+            "Description": "Snapshot to use for the EBS-based elasticsearch node.",
+            "AllowedPattern": "snap-([0-9a-f]{8})"
+        },
+        "ElasticsearchEbs0InstanceType": {
+            "Type": "String",
+            "Description": "Instance type for the EBS-based elasticsearch node.",
+            "Default" : "m1.large"
+        },
+        "ElasticsearchEphemeral0InstanceType": {
+            "Type": "String",
+            "Description": "Instance type for the ephemeral-based elasticsearch node.",
+            "Default" : "m1.large"
+        },
+        "Broker0InstanceType": {
+            "Type": "String",
+            "Description": "Instance type for the broker node.",
+            "Default" : "c1.medium"
+        },
+        "InstanceProfile": {
+            "Type": "String",
+            "Description": "IAM instance profile to use within the cluster.",
+            "Default": ""
+        },
+        "KeyName": {
+            "Description": "Name of an existing EC2 key pair to enable remote access to the EC2 instance.",
+            "Type": "String",
+            "Default": "default"
+        },
+        "R53HostName": {
+            "Type": "String",
+            "Description": "Hostname for registration in the Route 53 Hosted Zone",
+            "Default": "logsearch"
+        },
+        "R53ZoneName": {
+            "Type": "String",
+            "Description": "Route 53 Hosted Zone for domain registration.",
+            "Default": "example.com.",
+            "AllowedPattern": "(.*)\\.",
+            "ConstraintDescription": "must be a FQDN ending in a period."
+        },
+        "RepositoryBranch": {
+            "Description": "Repository branch to bootstrap from.",
+            "Type": "String",
+            "Default": "master"
+        },
+        "S3StackBase": {
+            "Description": "S3 base URL to compose template source from.",
+            "Type": "String",
+            "Default": "https://s3.amazonaws.com/ci-elasticsearch-development-flow/aws-cloudformation/master"
+        }
+    },
+    "Resources": {
+        "SecurityGroup0": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL" : {
+                    "Fn::Join": [
+                    "/",
+                    [
+                        { "Ref": "S3StackBase" },
+                        "secgrp-single-default.template"
+                    ]
+                    ]
+                },
+                "Parameters" : {
+                    "CidrRange"         : { "Ref" : "CidrRange0" }
+                }
+            }
+        },
+        "SecurityGroup0Cidr1Ingress0" : {
+            "Type" : "AWS::EC2::SecurityGroupIngress",
+            "Properties" : {
+                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
+                "CidrIp" : { "Ref" : "CidrRange1" },
+                "IpProtocol" : "tcp",
+                "FromPort" : "22",
+                "ToPort" : "22"
+            }
+        },
+        "SecurityGroup0Cidr1Ingress1" : {
+            "Type" : "AWS::EC2::SecurityGroupIngress",
+            "Properties" : {
+                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
+                "CidrIp" : { "Ref" : "CidrRange1" },
+                "IpProtocol" : "tcp",
+                "FromPort" : "80",
+                "ToPort" : "80"
+            }
+        },
+        "SecurityGroup0Cidr1Ingress2" : {
+            "Type" : "AWS::EC2::SecurityGroupIngress",
+            "Properties" : {
+                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
+                "CidrIp" : { "Ref" : "CidrRange1" },
+                "IpProtocol" : "tcp",
+                "FromPort" : "443",
+                "ToPort" : "443"
+            }
+        },
+        "ElasticsearchEbs0" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "Properties" : {
+                "TemplateURL" : {
+                    "Fn::Join": [
+                    "/",
+                    [
+                        { "Ref": "S3StackBase" },
+                        "node-es-ebs-default.template"
+                    ]
+                    ]
+                },
+                "Parameters" : {
+                    "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
+                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
+                    "ClusterName"           : { "Ref" : "ClusterName" },
+                    "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
+                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
+                    "InstanceType"          : { "Ref" : "ElasticsearchEbs0InstanceType" },
+                    "KeyName"               : { "Ref" : "KeyName" },
+                    "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
+                    "SnapshotId"            : { "Ref" : "ElasticsearchEbsSnapshotId" },
+                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
+                }
+            }
+        },
+        "ElasticsearchEphemeral0" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "Properties" : {
+                "TemplateURL" : {
+                    "Fn::Join": [
+                    "/",
+                    [
+                        { "Ref": "S3StackBase" },
+                        "node-es-ephemeral-default.template"
+                    ]
+                    ]
+                },
+                "Parameters" : {
+                    "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
+                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
+                    "ClusterName"           : { "Ref" : "ClusterName" },
+                    "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
+                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
+                    "InstanceType"          : { "Ref" : "ElasticsearchEphemeral0InstanceType" },
+                    "KeyName"               : { "Ref" : "KeyName" },
+                    "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
+                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
+                }
+            }
+        },
+        "Broker0" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "Properties" : {
+                "TemplateURL" : {
+                    "Fn::Join": [
+                    "/",
+                    [
+                        { "Ref": "S3StackBase" },
+                        "node-broker-default.template"
+                    ]
+                    ]
+                },
+                "Parameters" : {
+                    "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
+                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
+                    "ClusterName"           : { "Ref" : "ClusterName" },
+                    "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
+                    "ElasticsearchHost" : {
+                        "Fn::Join" : [
+                            "",
+                            [
+                                "elasticsearch.srv-int.",
+                                { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
+                            ]
+                        ]
+                    },
+                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
+                    "InstanceType"          : { "Ref" : "Broker0InstanceType" },
+                    "KeyName"               : { "Ref" : "KeyName" },
+                    "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
+                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
+                }
+            }
+        },
+        "DnsRefPublicPrimary": {
+            "Type": "AWS::Route53::RecordSet",
+            "Properties": {
+                "HostedZoneName" : { "Ref" : "R53ZoneName" },
+                "Name": {
+                    "Fn::Join" : [
+                        "",
+                        [
+                            { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
+                        ]
+                    ]
+                },
+                "Type" : "A",
+                "TTL" : "300",
+                "ResourceRecords" : [
+                    {
+                        "Fn::GetAtt" : [ "ElasticsearchEphemeral0", "Outputs.Instance0PublicIp" ]
+                    }
+                ]
+            }
+        },
+        "DnsRefPublicBroker": {
+            "Type": "AWS::Route53::RecordSet",
+            "Properties": {
+                "HostedZoneName" : { "Ref" : "R53ZoneName" },
+                "Name": {
+                    "Fn::Join" : [
+                        "",
+                        [
+                            "broker.",
+                            { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
+                        ]
+                    ]
+                },
+                "Type" : "A",
+                "TTL" : "300",
+                "ResourceRecords" : [
+                    {
+                        "Fn::GetAtt" : [ "Broker0", "Outputs.Instance0PublicIp" ]
+                    }
+                ]
+            }
+        },
+        "DnsSrvPrivateElasticsearch": {
+            "Type": "AWS::Route53::RecordSet",
+            "Properties": {
+                "HostedZoneName" : { "Ref" : "R53ZoneName" },
+                "Name": {
+                    "Fn::Join" : [
+                        "",
+                        [
+                            "elasticsearch.srv-int.",
+                            { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
+                        ]
+                    ]
+                },
+                "Type" : "A",
+                "TTL" : "900",
+                "ResourceRecords" : [
+                    {
+                        "Fn::GetAtt" : [ "ElasticsearchEbs0", "Outputs.Instance0PrivateIp" ]
+                    }
+                ]
+            }
+        },
+        "QueueSizeAlarm": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmDescription": "Alarm if queue size is greater than 50,000 messages.",
+                "Namespace": "logsearch",
+                "MetricName": "QueueSize",
+                "Dimensions": [
+                    {
+                        "Name": "ClusterName",
+                        "Value" : { "Ref" : "ClusterName" }
+                    },
+                    {
+                        "Name": "InstanceId",
+                        "Value" : { "Ref" : "Broker0" }
+                    }
+                ],
+                "Statistic": "Average",
+                "Period": "300",
+                "EvaluationPeriods": "1",
+                "Threshold": "50000",
+                "ComparisonOperator": "GreaterThanThreshold",
+                "AlarmActions": [
+                    {
+                        "Ref": "AlarmTopicArn"
+                    }
+                ]
+            }
+        },
+        "IndexLagAlarm": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmDescription": "Alarm if the index is consistently lagging more than 5 minutes.",
+                "Namespace": "logsearch",
+                "MetricName": "IndexLag",
+                "Dimensions": [
+                    {
+                        "Name": "ClusterName",
+                        "Value" : { "Ref" : "ClusterName" }
+                    },
+                    {
+                        "Name": "InstanceId",
+                        "Value" : { "Ref" : "ElasticsearchEbs0" }
+                    }
+                ],
+                "Statistic": "Average",
+                "Period": "300",
+                "EvaluationPeriods": "1",
+                "Threshold": "300",
+                "ComparisonOperator": "GreaterThanThreshold",
+                "AlarmActions": [
+                    {
+                        "Ref": "AlarmTopicArn"
+                    }
+                ]
+            }
+        }
+    }
+}
