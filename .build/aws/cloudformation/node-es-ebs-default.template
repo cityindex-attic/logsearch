@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "A default EBS-backed elasticsearch node.",
+    "Description": "A default EBS-backed elasticsearch + kibana node.",
     "Parameters": {
         "AlarmTopicArn": {
             "Type": "String",
@@ -329,7 +329,7 @@
                                 " --resource Instance0",
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch ", { "Ref": "RepositoryBranch" }, "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch,kibana ", { "Ref": "RepositoryBranch" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n",
                                 "sudo -H -u ubuntu crontab /home/ubuntu/cron.conf", "\n",
                                 "cfn-signal --exit-code 0 --reason 'Provisioning complete' '", { "Ref": "WaitConditionHandle" }, "'\n"
