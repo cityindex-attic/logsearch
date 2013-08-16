@@ -11,12 +11,21 @@
             "Description": "Availability Zone (AZ) to start the cluster in.",
             "Default": "us-east-1a"
         },
-        "CidrRange": {
-            "Description": "The CIDR range for remote access to public services tcp:22, tcp:80, tcp:443.",
+        "CidrRange0": {
+            "Description": "The CIDR range for remote access to advertised services like tcp:22, tcp:80, tcp:443.",
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
-            "Default": "0.0.0.0/0",
+            "Default": "127.0.0.1/0",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
+        },
+        "CidrRange1": {
+            "Description": "The CIDR range for secondary remote access to advertised services like tcp:22, tcp:80, tcp:443.",
+            "Type": "String",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "127.0.0.1/0",
             "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
             "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
         },
@@ -82,13 +91,13 @@
             "Default": "master"
         },
         "S3StackBase": {
-            "Description": "S3 bucket base URL to compose template source from.",
+            "Description": "S3 base URL to compose template source from.",
             "Type": "String",
             "Default": "https://s3.amazonaws.com/ci-elasticsearch-development-flow/aws-cloudformation/master"
         }
     },
     "Resources": {
-        "SecurityGroup": {
+        "SecurityGroup0": {
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
                 "TemplateURL" : {
@@ -101,8 +110,38 @@
                     ]
                 },
                 "Parameters" : {
-                    "CidrRange"         : { "Ref" : "CidrRange" }
+                    "CidrRange"         : { "Ref" : "CidrRange0" }
                 }
+            }
+        },
+        "SecurityGroup0Cidr1Ingress0" : {
+            "Type" : "AWS::EC2::SecurityGroupIngress",
+            "Properties" : {
+                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
+                "CidrIp" : { "Ref" : "CidrRange1" }
+                "IpProtocol" : "tcp",
+                "FromPort" : "22",
+                "ToPort" : "22"
+            }
+        },
+        "SecurityGroup0Cidr1Ingress1" : {
+            "Type" : "AWS::EC2::SecurityGroupIngress",
+            "Properties" : {
+                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
+                "CidrIp" : { "Ref" : "CidrRange1" }
+                "IpProtocol" : "tcp",
+                "FromPort" : "80",
+                "ToPort" : "80"
+            }
+        },
+        "SecurityGroup0Cidr1Ingress0" : {
+            "Type" : "AWS::EC2::SecurityGroupIngress",
+            "Properties" : {
+                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
+                "CidrIp" : { "Ref" : "CidrRange1" }
+                "IpProtocol" : "tcp",
+                "FromPort" : "443",
+                "ToPort" : "443"
             }
         },
         "ElasticsearchEbs0" : {
@@ -127,7 +166,7 @@
                     "KeyName"               : { "Ref" : "KeyName" },
                     "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
                     "SnapshotId"            : { "Ref" : "ElasticsearchEbsSnapshotId" },
-                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup", "Outputs.SecurityGroup0" ] }
+                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
                 }
             }
         },
@@ -152,7 +191,7 @@
                     "InstanceType"          : { "Ref" : "ElasticsearchEphemeral0InstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
                     "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
-                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup", "Outputs.SecurityGroup0" ] }
+                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
                 }
             }
         },
@@ -186,7 +225,7 @@
                     "InstanceType"          : { "Ref" : "Broker0InstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
                     "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
-                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup", "Outputs.SecurityGroup0" ] }
+                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
                 }
             }
         },
