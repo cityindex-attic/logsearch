@@ -118,7 +118,7 @@
             "Type" : "AWS::EC2::SecurityGroupIngress",
             "Properties" : {
                 "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                "CidrIp" : { "Ref" : "CidrRange1" }
+                "CidrIp" : { "Ref" : "CidrRange1" },
                 "IpProtocol" : "tcp",
                 "FromPort" : "22",
                 "ToPort" : "22"
@@ -128,17 +128,17 @@
             "Type" : "AWS::EC2::SecurityGroupIngress",
             "Properties" : {
                 "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                "CidrIp" : { "Ref" : "CidrRange1" }
+                "CidrIp" : { "Ref" : "CidrRange1" },
                 "IpProtocol" : "tcp",
                 "FromPort" : "80",
                 "ToPort" : "80"
             }
         },
-        "SecurityGroup0Cidr1Ingress0" : {
+        "SecurityGroup0Cidr1Ingress2" : {
             "Type" : "AWS::EC2::SecurityGroupIngress",
             "Properties" : {
                 "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                "CidrIp" : { "Ref" : "CidrRange1" }
+                "CidrIp" : { "Ref" : "CidrRange1" },
                 "IpProtocol" : "tcp",
                 "FromPort" : "443",
                 "ToPort" : "443"

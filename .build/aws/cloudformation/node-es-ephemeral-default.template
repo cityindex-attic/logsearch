@@ -290,7 +290,7 @@
                                 " --resource Instance0 ",
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh elasticsearch,kibana ", { "Ref": "RepositoryBranch" }, "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch,kibana ", { "Ref": "RepositoryBranch" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n",
                                 "cfn-signal --exit-code 0 --reason 'Provisioning complete' '", { "Ref": "WaitConditionHandle" }, "'\n"
                             ]
