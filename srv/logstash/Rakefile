@@ -27,7 +27,7 @@ namespace :logstash do
   desc "Run logstash off stdin"
   task :pv_to_redis, :logstash_type, :path do |t, args|
     process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_redis.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_redis.conf", args)
-    sh "/usr/bin/pv -ept #{args[:path]} | /usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_redis.conf'"
+    sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_redis.conf'"
   end
 
   desc "Run logstash off json file via stdin"
