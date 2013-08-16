@@ -8,8 +8,8 @@ A development environment with logstash + ElasticSearch + Kibana 3.
 
 **Initialize the application**
 
-    git clone git://github.com/cityindex/elasticsearch-development-flow.git
-    cd elasticsearch-development-flow/
+    git clone git://github.com/cityindex/logsearch-development-flow.git
+    cd logsearch-development-flow/
     vagrant up
 
 **Connect to the application**
