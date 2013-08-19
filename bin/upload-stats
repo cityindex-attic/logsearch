@@ -7,7 +7,7 @@
 set -e
 
 export AWS_DEFAULT_REGION=us-east-1
-RES=$(aws ec2 describe-tags --filter name="resource-id",values="$(ec2metadata --instance-id)")
+RES=$(aws ec2 describe-tags --filter Name="resource-id",Values="$(ec2metadata --instance-id)")
 REF_NAME=$(echo $RES | sed -r 's/.*"Value": "([^"]+)", "Key": "Name".*/\1/')
 
 if echo $REF_STACK | grep 'aws:cloudformation:stack-name' ; then
