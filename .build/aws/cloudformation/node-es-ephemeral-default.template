@@ -25,6 +25,11 @@
                 "true"
             ]
         },
+        "InstancePostScript": {
+            "Type": "String",
+            "Description": "A final command to run when provisioning instances.",
+            "Default": "/bin/true"
+        },
         "InstanceProfile": {
             "Type": "String",
             "Description": "An IAM role for the node."
@@ -292,6 +297,7 @@
                                 "\n",
                                 "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch,kibana ", { "Ref": "RepositoryBranch" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n",
+                                { "Ref" : "InstancePostScript" }, "\n",
                                 "cfn-signal --exit-code 0 --reason 'Provisioning complete' '", { "Ref": "WaitConditionHandle" }, "'\n"
                             ]
                         ]

@@ -63,6 +63,11 @@
             "Description": "Instance type for the broker node.",
             "Default" : "c1.medium"
         },
+        "InstancePostScript": {
+            "Type": "String",
+            "Description": "A final command to run when provisioning instances.",
+            "Default": "/bin/true"
+        },
         "InstanceProfile": {
             "Type": "String",
             "Description": "IAM instance profile to use within the cluster.",
@@ -161,6 +166,7 @@
                     "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
                     "ClusterName"           : { "Ref" : "ClusterName" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
+                    "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
                     "InstanceType"          : { "Ref" : "ElasticsearchEbs0InstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
@@ -187,6 +193,7 @@
                     "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
                     "ClusterName"           : { "Ref" : "ClusterName" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
+                    "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
                     "InstanceType"          : { "Ref" : "ElasticsearchEphemeral0InstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
@@ -221,6 +228,7 @@
                             ]
                         ]
                     },
+                    "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
                     "InstanceType"          : { "Ref" : "Broker0InstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },

@@ -30,6 +30,11 @@
             "Description": "An elasticsearch host to send messages to.",
             "MinLength" : "1"
         },
+        "InstancePostScript": {
+            "Type": "String",
+            "Description": "A final command to run when provisioning instances.",
+            "Default": "/bin/true"
+        },
         "InstanceProfile": {
             "Type": "String",
             "Description": "An IAM role for the node."
@@ -236,6 +241,7 @@
                                 "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh logstash,redis,logstash_redis ", { "Ref": "RepositoryBranch" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n",
                                 "sudo -H -u ubuntu crontab /home/ubuntu/cron.conf", "\n",
+                                { "Ref" : "InstancePostScript" }, "\n",
                                 "cfn-signal --exit-code 0 --reason 'Provisioning complete' '", { "Ref": "WaitConditionHandle" }, "'\n"
                             ]
                         ]
