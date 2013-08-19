@@ -100,9 +100,16 @@ filter {
 
     csv {
         type => "ci_ip_diagnostics"
-        columns => ["timestamp_counter", "level", "trade_type", "timestamp_time", "measure_1", "measure_2", "measure_3"]
+        columns => ["ci_ip_diagnostics-instruction_id", "ci_ip_diagnostics-level", "ci_ip_diagnostics-instruction_type", "ci_ip_diagnostics-time", "ci_ip_diagnostics-time_taken_ms", "ci_ip_diagnostics-percentage", "ci_ip_diagnostics-depth"]
     }
 
+    mutate {
+        convert => [ "ci_ip_diagnostics-time_taken_ms", "float" ]
+        convert => [ "ci_ip_diagnostics-percentage", "float" ]
+        convert => [ "ci_ip_diagnostics-depth", "integer" ]
+        type => "ci_ip_diagnostics"
+    }
+    
     #
     # specify the date field names for various types
     #
