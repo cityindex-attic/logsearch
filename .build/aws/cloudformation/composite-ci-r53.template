@@ -272,7 +272,7 @@
                     ]
                 },
                 "Type" : "A",
-                "TTL" : "300",
+                "TTL" : "90",
                 "ResourceRecords" : [
                     {
                         "Fn::GetAtt" : [ "Broker0", "Outputs.Instance0PublicIp" ]
@@ -294,7 +294,7 @@
                     ]
                 },
                 "Type" : "A",
-                "TTL" : "900",
+                "TTL" : "90",
                 "ResourceRecords" : [
                     {
                         "Fn::GetAtt" : [ "ElasticsearchEbs0", "Outputs.Instance0PrivateIp" ]
@@ -321,7 +321,7 @@
                 "Statistic": "Average",
                 "Period": "300",
                 "EvaluationPeriods": "1",
-                "Threshold": "50000",
+                "Threshold": "120000",
                 "ComparisonOperator": "GreaterThanThreshold",
                 "AlarmActions": [
                     {
