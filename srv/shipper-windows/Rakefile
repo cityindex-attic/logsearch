@@ -1,0 +1,21 @@
+namespace :package do
+  
+  desc "Package a windows shipper"
+  task :windows_shipper, :shipper_config_folder, :package_destination_folder do |t, args|
+    puts "Packaging #{args[:shipper_config_folder]} to #{args[:package_destination_folder]}"
+    dest="#{ENV['APP_APP_DIR']}/#{args[:package_destination_folder]}"
+    FileUtils.mkdir_p dest
+
+    puts "Provisioning..."
+    sh "APP_VENDOR_DIR='#{dest}' #{ENV['APP_APP_DIR']}/srv/shipper-windows/provision.sh"
+    
+    puts "Writing config"
+    process_erb("#{ENV['APP_APP_DIR']}/srv/shipper-windows/config/config.conf.erb", "#{dest}/config.conf")
+
+    puts "Creating Setup.cmd"
+    process_erb("#{ENV['APP_APP_DIR']}/srv/shipper-windows/config/Setup.cmd.erb", "#{dest}/Setup.cmd")
+
+    puts "Done.  Copy #{args[:package_destination_folder]} to a Windows machine and run Setup.cmd"
+  end
+
+ end

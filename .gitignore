@@ -10,3 +10,4 @@ srv/*/config/*
 !srv/*/config/*.erb
 
 Vagrantfile.local
+packages/
