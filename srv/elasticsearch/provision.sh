@@ -38,6 +38,10 @@ fi
 #
 
 if (which collectd 1>/dev/null 2>&1) ; then
+    if [ "$APP_CONFIG_ES_IPADDRESS" -eq '0.0.0.0' ] ; then
+        APP_CONFIG_ES_IPADDRESS="127.0.0.1"
+    fi
+
     sudo /bin/bash <<EOF
         if ! grep 'Import elasticsearch_logstash' /etc/collectd/collectd.conf ; then
             cp /app/app/example/collectd/elasticsearch_logstash.py /opt/collectd/lib/collectd/plugins/python/elasticsearch_logstash.py
