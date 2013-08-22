@@ -29,5 +29,20 @@ namespace :elasticsearch do
         sh "sudo chown #{ENV['APP_USER']}:#{ENV['APP_USER']} #{pt}"
       end
     end
+
+    if !ENV['ES_HEAP_SIZE']
+      # dynamically raise the heap size to about half the installed memory
+      mem = `cat /proc/meminfo | grep MemTotal | awk '{ print $2 $3 }'`
+
+      if mem =~ /^(\d+)kB$/
+        mem = $1.to_i * 1024
+      elsif mem =~ /^(\d+)MB$/
+        mem = $1.to_i * 1048576
+      elsif mem =~ /^(\d+)GB$/
+        mem = $1.to_i * 1073741824
+      end
+
+      ENV['ES_HEAP_SIZE'] = (mem * 0.46).floor.to_s
+    end
   end
 end
