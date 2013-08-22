@@ -1,22 +1,29 @@
 namespace :package do
   
   desc "Package a windows shipper"
-  task :windows_shipper, :shipper_config_folder, :package_destination_folder do |t, args|
-    puts "Packaging #{args[:shipper_config_folder]} to #{args[:package_destination_folder]}"
+  task :windows_shipper, :shipper_config_folder, :package_destination_folder, :version do |t, args|
+    ENV['version']=args[:version]||"v0.0"
+    puts "Packaging #{args[:shipper_config_folder]} #{ENV['version']} to #{args[:package_destination_folder]}"
     dest="#{ENV['APP_APP_DIR']}/#{args[:package_destination_folder]}"
     FileUtils.mkdir_p dest
 
-    puts "Provisioning..."
+    puts "------> Fetching executables"
     sh "DEST='#{dest}' #{ENV['APP_APP_DIR']}/srv/shipper-windows/provision.sh"
     
-    puts "Writing config"
+    puts "------> Writing config files"
     process_erb("#{ENV['APP_APP_DIR']}/srv/shipper-windows/config/config.conf.erb", "#{dest}/config.conf")
+    process_erb("#{ENV['APP_APP_DIR']}/srv/shipper-windows/config/windows-shipper-service.exe.config.erb", "#{dest}/windows-shipper-service.exe.config")
     process_erb("#{ENV['APP_APP_DIR']}/srv/shipper-windows/config/windows-shipper-service.xml.erb", "#{dest}/windows-shipper-service.xml")
 
-    puts "Creating Setup.cmd"
+    puts "------> Creating Start.cmd and Stop.cmd"
+    process_erb("#{ENV['APP_APP_DIR']}/srv/shipper-windows/config/Start.cmd.erb", "#{dest}/Start.cmd")
+    process_erb("#{ENV['APP_APP_DIR']}/srv/shipper-windows/config/Stop.cmd.erb", "#{dest}/Stop.cmd")
+
+    puts "------> Creating Setup.cmd"
     process_erb("#{ENV['APP_APP_DIR']}/srv/shipper-windows/config/Setup.cmd.erb", "#{dest}/Setup.cmd")
 
-    puts "Done.  Copy #{args[:package_destination_folder]} to a Windows machine and run Setup.cmd"
+    puts "------> Done!"
+    puts "Copy #{args[:package_destination_folder]} to a Windows machine and run Setup.cmd"
   end
 
  end

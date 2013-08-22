@@ -1,13 +1,16 @@
 <service>
   <id>windows-shipper</id>
-  <name>windows-shipper</name>
+  <name>windows-shipper <%=ENV['version']%></name>
   <description>Ships logs to LogSearch cluster (over a SSH tunnel)</description>
-  <env name="BASE_DIR" value="C:/Dev/cityindex/logsearch-on-aws/ppe-cluster"/>
-  <env name="PLINK" value="%BASE_DIR%/plink.exe"/>
-  <env name="LOGSTASH_JAR" value="%BASE_DIR%/bin/logstash-1.1.13-flatjar.jar"/>
-  <env name="LOGSTASH_CONFIG" value="%BASE_DIR%/logstash-from-ppe.conf"/>
-  <executable>java</executable>
-  <arguments>-jar "%LOGSTASH_JAR%" agent -f "%LOGSTASH_CONFIG%" -v</arguments>
+  <env name="PLINK" value="%BASE%/plink.exe"/>
+  <env name="LOGSTASH_JAR" value="%BASE%/logstash.jar"/>
+  <env name="LOGSTASH_CONFIG" value="%BASE%/config.conf"/>
+  <executable>Start.cmd</executable>
+  <startargument>%LOGSTASH_JAR%</startargument>
+  <startargument>%LOGSTASH_CONFIG%</startargument>
+  <stopexecutable>Stop.cmd</stopexecutable>
+  <stopargument>"%LOGSTASH_JAR%"</stopargument>  
+  <workingdirectory>%BASE%</workingdirectory>
   <log mode="reset"/>
   <onfailure action="restart" delay="30 sec" />
 </service>
