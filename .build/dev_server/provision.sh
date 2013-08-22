@@ -63,6 +63,17 @@ sudo -H -u $APP_USER /bin/bash << 'EOF'
     ./srv/redis/provision.sh
 EOF
 
+. /app/.env
+
+if [ ! -d $APP_TMP_DIR/heap-dump ] ; then
+    if [ -d /mnt ] ; then
+        sudo mkdir -p /mnt/app-tmp-heap-dump
+        sudo chown $APP_USER:$APP_USER /mnt/app-tmp-heap-dump
+        [ -e $APP_TMP_DIR/heap-dump ] || ln -s /mnt/app-tmp-heap-dump $APP_TMP_DIR/heap-dump
+    else
+        mkdir -p $APP_TMP_DIR/heap-dump
+    fi
+fi
 
 #
 # vagrant hacks

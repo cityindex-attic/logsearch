@@ -1,12 +1,12 @@
 namespace :elasticsearch do
   desc 'Run Elasticsearch service'
-  task :run do
+  task :run => :envdeps do
     process_erb("#{ENV['APP_APP_DIR']}/srv/elasticsearch/config/default.json.erb", "#{ENV['APP_APP_DIR']}/srv/elasticsearch/config/default.json")
 
     # now we need to startup elasticsearch so we can send it the configs we want to use
     pid = fork do
       # the term signal will cause an error, so suppress the output and prevent confusion
-      exec "'#{ENV['APP_VENDOR_DIR']}/elasticsearch/bin/elasticsearch' -f -Des.config='#{ENV['APP_APP_DIR']}/srv/elasticsearch/config/default.json' -Des.pidfile='#{ENV['APP_RUN_DIR']}/elasticsearch.pid'"
+      exec "'#{ENV['APP_VENDOR_DIR']}/elasticsearch/bin/elasticsearch' -f -XX:HeapDumpPath=#{ENV['APP_TMP_DIR']}/heap-dump/ -Des.config='#{ENV['APP_APP_DIR']}/srv/elasticsearch/config/default.json' -Des.pidfile='#{ENV['APP_RUN_DIR']}/elasticsearch.pid'"
 
       Kernel.exit!
     end
@@ -16,6 +16,18 @@ namespace :elasticsearch do
       sh "curl -sXPUT 'http://#{ENV['APP_CONFIG_ES_IPADDRESS']}:9200/_template/template_default' -d @#{ENV['APP_APP_DIR']}/srv/elasticsearch/templates/default.json > /dev/null"
     ensure
       Process.waitpid(pid)
+    end
+  end
+
+  task :envdeps do
+    if File.symlink?("#{ENV['APP_TMP_DIR']}/heap-dump")
+      # hacky; assumes sudo may be necessary (e.g. creating a root dir in /mnt on ec2)
+      pt = File.readlink("#{ENV['APP_TMP_DIR']}/heap-dump")
+
+      if !File.exists?(pt)
+        sh "sudo mkdir -p #{pt}"
+        sh "sudo chown #{ENV['APP_USER']}:#{ENV['APP_USER']} #{pt}"
+      end
     end
   end
 end
