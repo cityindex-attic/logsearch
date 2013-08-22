@@ -7,10 +7,11 @@ namespace :package do
     FileUtils.mkdir_p dest
 
     puts "Provisioning..."
-    sh "APP_VENDOR_DIR='#{dest}' #{ENV['APP_APP_DIR']}/srv/shipper-windows/provision.sh"
+    sh "DEST='#{dest}' #{ENV['APP_APP_DIR']}/srv/shipper-windows/provision.sh"
     
     puts "Writing config"
     process_erb("#{ENV['APP_APP_DIR']}/srv/shipper-windows/config/config.conf.erb", "#{dest}/config.conf")
+    process_erb("#{ENV['APP_APP_DIR']}/srv/shipper-windows/config/windows-shipper-service.xml.erb", "#{dest}/windows-shipper-service.xml")
 
     puts "Creating Setup.cmd"
     process_erb("#{ENV['APP_APP_DIR']}/srv/shipper-windows/config/Setup.cmd.erb", "#{dest}/Setup.cmd")
