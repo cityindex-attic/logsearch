@@ -30,6 +30,16 @@ namespace :elasticsearch do
       end
     end
 
+    if File.symlink?("#{ENV['APP_DATA_DIR']}")
+      # hacky; assumes sudo may be necessary (e.g. creating a root dir in /mnt on ec2)
+      pt = File.readlink("#{ENV['APP_DATA_DIR']}")
+
+      if !File.exists?(pt)
+        sh "sudo mkdir -p #{pt}"
+        sh "sudo chown #{ENV['APP_USER']}:#{ENV['APP_USER']} #{pt}"
+      end
+    end
+
     if !ENV['ES_HEAP_SIZE']
       # dynamically raise the heap size to about half the installed memory
       mem = `cat /proc/meminfo | grep MemTotal | awk '{ print $2 $3 }'`
