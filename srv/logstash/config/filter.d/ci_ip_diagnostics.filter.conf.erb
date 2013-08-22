@@ -1,0 +1,13 @@
+# Filter type => "ci_ip_diagnostics"
+
+csv {
+    type => "ci_ip_diagnostics"
+    columns => ["ci_ip_diagnostics-instruction_id", "ci_ip_diagnostics-level", "ci_ip_diagnostics-instruction_description", "ci_ip_diagnostics-arrival_time", "ci_ip_diagnostics-duration_ms", "ci_ip_diagnostics-percentage_of_total", "ci_ip_diagnostics-quotes_orders_affected"]
+}
+
+mutate {
+    convert => [ "ci_ip_diagnostics-duration_ms", "float" ]
+    convert => [ "ci_ip_diagnostics-percentage_of_total", "float" ]
+    convert => [ "ci_ip_diagnostics-quotes_orders_affected", "integer" ]
+    type => "ci_ip_diagnostics"
+}
