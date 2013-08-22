@@ -38,7 +38,7 @@ fi
 #
 
 if (which collectd 1>/dev/null 2>&1) ; then
-    if [ "$APP_CONFIG_ES_IPADDRESS" -eq '0.0.0.0' ] ; then
+    if [ "$APP_CONFIG_ES_IPADDRESS" == '0.0.0.0' ] ; then
         APP_CONFIG_ES_IPADDRESS="127.0.0.1"
     fi
 

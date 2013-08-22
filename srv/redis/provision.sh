@@ -28,7 +28,7 @@ echo "redis:$($APP_VENDOR_DIR/redis/src/redis-server -v | awk -F '=' '/v=/ { pri
 #
 
 if (which collectd 1>/dev/null 2>&1) ; then
-    if [ "$APP_CONFIG_REDIS_IPADDRESS" -eq '0.0.0.0' ] ; then
+    if [ "$APP_CONFIG_REDIS_IPADDRESS" == '0.0.0.0' ] ; then
         APP_CONFIG_REDIS_IPADDRESS="127.0.0.1"
     fi
 
