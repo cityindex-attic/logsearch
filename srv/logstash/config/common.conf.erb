@@ -102,18 +102,6 @@ filter {
         type => "ci_log4net"
         add_field => [ "datetime_tz", "%{datetime}%{@source_tz}" ]
     }
-
-    csv {
-        type => "ci_ip_diagnostics"
-        columns => ["ci_ip_diagnostics-instruction_id", "ci_ip_diagnostics-level", "ci_ip_diagnostics-instruction_type", "ci_ip_diagnostics-time", "ci_ip_diagnostics-time_taken_ms", "ci_ip_diagnostics-percentage", "ci_ip_diagnostics-depth"]
-    }
-
-    mutate {
-        convert => [ "ci_ip_diagnostics-time_taken_ms", "float" ]
-        convert => [ "ci_ip_diagnostics-percentage", "float" ]
-        convert => [ "ci_ip_diagnostics-depth", "integer" ]
-        type => "ci_ip_diagnostics"
-    }
     
     #
     # specify the date field names for various types

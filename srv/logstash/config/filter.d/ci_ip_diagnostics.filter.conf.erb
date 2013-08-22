@@ -2,12 +2,22 @@
 
 csv {
     type => "ci_ip_diagnostics"
-    columns => ["ci_ip_diagnostics-instruction_id", "ci_ip_diagnostics-level", "ci_ip_diagnostics-instruction_description", "ci_ip_diagnostics-arrival_time", "ci_ip_diagnostics-duration_ms", "ci_ip_diagnostics-percentage_of_total", "ci_ip_diagnostics-quotes_orders_affected"]
+    columns => ["instruction_id", "level", "instruction_description", "arrival_time", "duration_ms", "percentage_of_total", "quotes_orders_affected"]
+    target => "@fields.ci_ip_diagnostics"
 }
 
+csv {
+    type => "ci_ip_diagnostics"
+    source => "instruction_description"
+    target => "@fields.ci_ip_diagnostics.instruction_"
+    columns => ["type","status","source"]
+    separator => "/"
+}
+
+
 mutate {
-    convert => [ "ci_ip_diagnostics-duration_ms", "float" ]
-    convert => [ "ci_ip_diagnostics-percentage_of_total", "float" ]
-    convert => [ "ci_ip_diagnostics-quotes_orders_affected", "integer" ]
+    convert => [ "ci_ip_diagnostics.duration_ms", "float" ]
+    convert => [ "ci_ip_diagnostics.percentage_of_total", "float" ]
+    convert => [ "ci_ip_diagnostics.quotes_orders_affected", "integer" ]
     type => "ci_ip_diagnostics"
 }
