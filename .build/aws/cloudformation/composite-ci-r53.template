@@ -61,6 +61,16 @@
         "Broker0InstanceType": {
             "Type": "String",
             "Description": "Instance type for the broker node.",
+            "Default" : "m1.medium"
+        },
+        "LogstashGroupDesiredCapacity": {
+            "Type": "Number",
+            "Description": "Desired capacity of logstash auto scaling group within the cluster.",
+            "Default": "1"
+        },
+        "LogstashInstanceType": {
+            "Type": "String",
+            "Description": "Instance type for the logstash nodes.",
             "Default" : "c1.medium"
         },
         "InstancePostScript": {
@@ -219,6 +229,31 @@
                     "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
                     "ClusterName"           : { "Ref" : "ClusterName" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
+                    "InstancePostScript"    : { "Ref" : "InstancePostScript" },
+                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
+                    "InstanceType"          : { "Ref" : "Broker0InstanceType" },
+                    "KeyName"               : { "Ref" : "KeyName" },
+                    "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
+                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
+                }
+            }
+        },
+        "LogstashGroup" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "Properties" : {
+                "TemplateURL" : {
+                    "Fn::Join": [
+                    "/",
+                    [
+                        { "Ref": "S3StackBase" },
+                        "group-logstash-default.template"
+                    ]
+                    ]
+                },
+                "Parameters" : {
+                    "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
+                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
+                    "ClusterName"           : { "Ref" : "ClusterName" },
                     "ElasticsearchHost" : {
                         "Fn::Join" : [
                             "",
@@ -228,10 +263,20 @@
                             ]
                         ]
                     },
+                    "GroupDesiredCapacity"  : { "Ref" : "LogstashGroupDesiredCapacity" },
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-                    "InstanceType"          : { "Ref" : "Broker0InstanceType" },
+                    "InstanceType"          : { "Ref" : "LogstashInstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
+                    "RedisHost" : {
+                        "Fn::Join" : [
+                            "",
+                            [
+                                "broker.srv-int.",
+                                { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
+                            ]
+                        ]
+                    },
                     "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
                     "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
                 }
@@ -276,6 +321,28 @@
                 "ResourceRecords" : [
                     {
                         "Fn::GetAtt" : [ "Broker0", "Outputs.Instance0PublicIp" ]
+                    }
+                ]
+            }
+        },
+        "DnsSrvPrivateBroker": {
+            "Type": "AWS::Route53::RecordSet",
+            "Properties": {
+                "HostedZoneName" : { "Ref" : "R53ZoneName" },
+                "Name": {
+                    "Fn::Join" : [
+                        "",
+                        [
+                            "broker.srv-int.",
+                            { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
+                        ]
+                    ]
+                },
+                "Type" : "A",
+                "TTL" : "60",
+                "ResourceRecords" : [
+                    {
+                        "Fn::GetAtt" : [ "Broker0", "Outputs.Instance0PrivateIp" ]
                     }
                 ]
             }

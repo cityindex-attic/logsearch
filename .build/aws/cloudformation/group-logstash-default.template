@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "A default broker + parser node.",
+    "Description": "A default broker + parser node group.",
     "Parameters": {
         "AlarmTopicArn": {
             "Type": "String",
@@ -8,22 +8,28 @@
         },
         "AvailabilityZone": {
             "Type": "String",
-            "Description": "Availability Zone to start the node in.",
+            "Description": "Availability Zone to start the nodes in.",
             "Default": "us-east-1a"
         },
         "ClusterName": {
             "Type": "String",
-            "Description": "The cluster name the node is registered to.",
+            "Description": "The cluster name the nodes are registered to.",
             "MinLength" : "1"
         },
-        "DisableApiTermination": {
+        "ElasticsearchHost": {
             "Type": "String",
-            "Description": "Prevent EC2 instance termination (if true, requires to actively enable it to successfully delete the stack).",
-            "Default": "false",
-            "AllowedValues": [
-                "false",
-                "true"
-            ]
+            "Description": "An elasticsearch host to send messages to.",
+            "MinLength" : "1"
+        },
+        "GroupDesiredCapacity": {
+            "Type": "Number",
+            "Description": "Desired capacity of node auto scaling group within the cluster.",
+            "Default": "1"
+        },
+        "GroupMaxSize": {
+            "Type": "Number",
+            "Description": "Maximum size of node auto scaling group within the cluster.",
+            "Default": "4"
         },
         "InstancePostScript": {
             "Type": "String",
@@ -32,12 +38,12 @@
         },
         "InstanceProfile": {
             "Type": "String",
-            "Description": "An IAM role for the node."
+            "Description": "An IAM role for the nodes."
         },
         "InstanceType": {
             "Default": "m1.large",
             "Type": "String",
-            "Description": "The instance type to create the node on.",
+            "Description": "The instance type to create the nodes on.",
             "AllowedValues": [
                 "t1.micro",
                 "m1.small",
@@ -61,8 +67,13 @@
         },
         "KeyName": {
             "Type": "String",
-            "Description": "A key pair name for configuring the node.",
+            "Description": "A key pair name for configuring the nodes.",
             "Default": "default"
+        },
+        "RedisHost": {
+            "Type": "String",
+            "Description": "A redis host to receive messages from.",
+            "MinLength" : "1"
         },
         "RepositoryBranch": {
             "Default" : "master",
@@ -71,7 +82,7 @@
         },
         "SecurityGroup": {
             "Type": "String",
-            "Description": "A security group to create the node in.",
+            "Description": "A security group to create the nodes in.",
             "Default" : "default",
             "MinLength" : "1"
         }
@@ -105,9 +116,9 @@
         }
     },
     "Resources": {
-        "Instance0": {
-            "Type": "AWS::EC2::Instance",
-            "Metadata" : {
+        "LaunchConfiguration": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Metadata": {
                 "AWS::CloudFormation::Init" : {
                     "config" : {
                         "files" : {
@@ -125,8 +136,16 @@
                                             "export APP_TMP_DIR=/app/tmp", "\n",
                                             "export APP_DATA_DIR=/app/data", "\n",
                                             "export APP_USER=ubuntu", "\n",
+                                            "export APP_CONFIG_ES_IPADDRESS=",
+                                            {
+                                                "Ref": "ElasticsearchHost"
+                                            },
                                             "\n",
-                                            "export APP_CONFIG_REDIS_IPADDRESS=0.0.0.0", "\n",
+                                            "export APP_CONFIG_REDIS_IPADDRESS=",
+                                            {
+                                                "Ref": "RedisHost"
+                                            },
+                                            "\n",
                                             "export APP_CONFIG_REDIS_KEY=logstash", "\n"
                                         ]
                                     ]
@@ -171,13 +190,7 @@
                 }
             },
             "Properties": {
-                "AvailabilityZone": {
-                    "Ref": "AvailabilityZone"
-                },
-                "DisableApiTermination": {
-                    "Ref": "DisableApiTermination"
-                },
-                "Monitoring": "true",
+                "InstanceMonitoring": "true",
                 "ImageId": {
                     "Fn::FindInMap": [
                         "RegionMap",
@@ -199,15 +212,6 @@
                 "SecurityGroups": [{
                     "Ref": "SecurityGroup"
                 }],
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": {
-                            "Ref" : "AWS::StackName"
-                        },
-                        "PropagateAtLaunch": "true"
-                    }
-                ],
                 "UserData" : {
                     "Fn::Base64": {
                         "Fn::Join": [
@@ -226,10 +230,10 @@
                                 "cfn-init --verbose ",
                                 " --region ", { "Ref": "AWS::Region" },
                                 " --stack ", { "Ref": "AWS::StackName" },
-                                " --resource Instance0 ",
+                                " --resource LaunchConfiguration ",
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh redis ", { "Ref": "RepositoryBranch" }, "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh logstash,logstash_redis ", { "Ref": "RepositoryBranch" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n",
                                 "sudo -H -u ubuntu crontab /home/ubuntu/cron.conf", "\n",
                                 { "Ref" : "InstancePostScript" }, "\n",
@@ -240,26 +244,42 @@
                 }
             }
         },
-        "Instance0StatusAlarm": {
-            "Type": "AWS::CloudWatch::Alarm",
+        "AutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Version": "2009-05-15",
             "Properties": {
-                "AlarmDescription": "Alarm if the system or instance status checks are failing.",
-                "Namespace": "AWS/EC2",
-                "MetricName": "StatusCheckFailed",
-                "Dimensions": [
+                "AvailabilityZones": [
                     {
-                        "Name": "InstanceId",
-                        "Value" : { "Ref" : "Instance0" }
+                        "Ref": "AvailabilityZone"
                     }
                 ],
-                "Statistic": "Maximum",
-                "Period": "300",
-                "EvaluationPeriods": "2",
-                "Threshold": "1",
-                "ComparisonOperator": "GreaterThanOrEqualToThreshold",
-                "AlarmActions": [
+                "LaunchConfigurationName": {
+                    "Ref": "LaunchConfiguration"
+                },
+                "MinSize": "1",
+                "DesiredCapacity": {
+                    "Ref": "GroupDesiredCapacity"
+                },
+                "MaxSize": {
+                    "Ref": "GroupMaxSize"
+                },
+                "NotificationConfiguration" : {
+                    "TopicARN" : { "Ref" : "AlarmTopicArn" },
+                    "NotificationTypes" : [
+                        "autoscaling:TEST_NOTIFICATION",
+                        "autoscaling:EC2_INSTANCE_LAUNCH",
+                        "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+                        "autoscaling:EC2_INSTANCE_TERMINATE",
+                        "autoscaling:EC2_INSTANCE_TERMINATE_ERROR"
+                    ]
+                },
+                "Tags": [
                     {
-                        "Ref": "AlarmTopicArn"
+                        "Key": "Name",
+                        "Value": {
+                                "Ref": "AWS::StackName"
+                        },
+                        "PropagateAtLaunch": "true"
                     }
                 ]
             }
@@ -269,7 +289,7 @@
         },
         "WaitCondition": {
             "Type": "AWS::CloudFormation::WaitCondition",
-            "DependsOn": "Instance0",
+            "DependsOn": "AutoScalingGroup",
             "Properties": {
                 "Handle": {
                     "Ref": "WaitConditionHandle"
@@ -279,31 +299,5 @@
         }
     },
     "Outputs" : {
-        "Instance0Id" : {
-            "Description" : "The physical ID of the created instance.",
-            "Value" : {
-                "Ref" : "Instance0"
-            }
-        },
-        "Instance0PrivateIp" : {
-            "Description" : "Private IP Address of the instance.",
-            "Value" : {
-                "Fn::GetAtt" :
-                [
-                    "Instance0",
-                    "PrivateIp"
-                ]
-            }
-        },
-        "Instance0PublicIp" : {
-            "Description" : "Public IP Address of the instance.",
-            "Value" : {
-                "Fn::GetAtt" :
-                [
-                    "Instance0",
-                    "PublicIp"
-                ]
-            }
-        }
     }
 }
