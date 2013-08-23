@@ -11,11 +11,6 @@
             "Description": "Availability Zone to start the nodes in.",
             "Default": "us-east-1a"
         },
-        "ClusterName": {
-            "Type": "String",
-            "Description": "The cluster name the nodes are registered to.",
-            "MinLength" : "1"
-        },
         "ElasticsearchHost": {
             "Type": "String",
             "Description": "An elasticsearch host to send messages to.",
@@ -162,22 +157,6 @@
                                             "https://raw.github.com/cityindex/logsearch-development-flow/",
                                             { "Ref": "RepositoryBranch" },
                                             "/bin/bootstrap"
-                                        ]
-                                    ]
-                                },
-                                "group" : "ubuntu",
-                                "owner" : "ubuntu",
-                                "mode" : "000555"
-                            },
-                            "/home/ubuntu/cron.conf" : {
-                                "content" : {
-                                    "Fn::Join": [
-                                        "",
-                                        [
-                                            "* * * * * (. /app/.env ; /app/app/example/aws-cloudwatch/push-latest-rrd.sh ",
-                                            { "Ref": "ClusterName" },
-                                            " /var/lib/collectd/rrd/$(/bin/hostname --fqdn)/redis_logstash/gauge-llen_logstash.rrd  QueueSize) >> /app/var/log/cron.log 2>&1",
-                                            "\n"
                                         ]
                                     ]
                                 },

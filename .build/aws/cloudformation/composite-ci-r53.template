@@ -253,7 +253,6 @@
                 "Parameters" : {
                     "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
                     "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
-                    "ClusterName"           : { "Ref" : "ClusterName" },
                     "ElasticsearchHost" : {
                         "Fn::Join" : [
                             "",
