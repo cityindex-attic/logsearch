@@ -58,9 +58,9 @@
             "Description": "Instance type for the ephemeral-based elasticsearch node.",
             "Default" : "m1.large"
         },
-        "Broker0InstanceType": {
+        "Redis0InstanceType": {
             "Type": "String",
-            "Description": "Instance type for the broker node.",
+            "Description": "Instance type for the redis node.",
             "Default" : "m1.medium"
         },
         "LogstashGroupDesiredCapacity": {
@@ -212,7 +212,7 @@
                 }
             }
         },
-        "Broker0" : {
+        "Redis0" : {
             "Type" : "AWS::CloudFormation::Stack",
             "Properties" : {
                 "TemplateURL" : {
@@ -220,7 +220,7 @@
                     "/",
                     [
                         { "Ref": "S3StackBase" },
-                        "node-broker-default.template"
+                        "node-redis-default.template"
                     ]
                     ]
                 },
@@ -231,7 +231,7 @@
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-                    "InstanceType"          : { "Ref" : "Broker0InstanceType" },
+                    "InstanceType"          : { "Ref" : "Redis0InstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
                     "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
                     "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
@@ -270,7 +270,7 @@
                         "Fn::Join" : [
                             "",
                             [
-                                "broker.srv-int.",
+                                "redis.srv-int.",
                                 { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
                             ]
                         ]
@@ -301,7 +301,7 @@
                 ]
             }
         },
-        "DnsRefPublicBroker": {
+        "DnsRefPublicRedis": {
             "Type": "AWS::Route53::RecordSet",
             "Properties": {
                 "HostedZoneName" : { "Ref" : "R53ZoneName" },
@@ -309,7 +309,7 @@
                     "Fn::Join" : [
                         "",
                         [
-                            "broker.",
+                            "redis.",
                             { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
                         ]
                     ]
@@ -318,12 +318,12 @@
                 "TTL" : "60",
                 "ResourceRecords" : [
                     {
-                        "Fn::GetAtt" : [ "Broker0", "Outputs.Instance0PublicIp" ]
+                        "Fn::GetAtt" : [ "Redis0", "Outputs.Instance0PublicIp" ]
                     }
                 ]
             }
         },
-        "DnsSrvPrivateBroker": {
+        "DnsSrvPrivateRedis": {
             "Type": "AWS::Route53::RecordSet",
             "Properties": {
                 "HostedZoneName" : { "Ref" : "R53ZoneName" },
@@ -331,7 +331,7 @@
                     "Fn::Join" : [
                         "",
                         [
-                            "broker.srv-int.",
+                            "redis.srv-int.",
                             { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
                         ]
                     ]
@@ -340,7 +340,7 @@
                 "TTL" : "60",
                 "ResourceRecords" : [
                     {
-                        "Fn::GetAtt" : [ "Broker0", "Outputs.Instance0PrivateIp" ]
+                        "Fn::GetAtt" : [ "Redis0", "Outputs.Instance0PrivateIp" ]
                     }
                 ]
             }
@@ -380,7 +380,7 @@
                     },
                     {
                         "Name": "InstanceId",
-                        "Value" : { "Ref" : "Broker0" }
+                        "Value" : { "Ref" : "Redis0" }
                     }
                 ],
                 "Statistic": "Average",

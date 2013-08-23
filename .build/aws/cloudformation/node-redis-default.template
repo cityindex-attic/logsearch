@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "A default broker + parser node.",
+    "Description": "A default redis node.",
     "Parameters": {
         "AlarmTopicArn": {
             "Type": "String",
