@@ -209,7 +209,6 @@
                                 "\n",
                                 "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh logstash,logstash_redis ", { "Ref": "RepositoryBranch" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n",
-                                "sudo -H -u ubuntu crontab /home/ubuntu/cron.conf", "\n",
                                 { "Ref" : "InstancePostScript" }, "\n",
                                 "cfn-signal --exit-code 0 --reason 'Provisioning complete' '", { "Ref": "WaitConditionHandle" }, "'\n"
                             ]
