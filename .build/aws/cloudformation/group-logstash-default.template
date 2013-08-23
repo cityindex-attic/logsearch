@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "A default broker + parser node group.",
+    "Description": "A default logstash parser node group.",
     "Parameters": {
         "AlarmTopicArn": {
             "Type": "String",
@@ -221,11 +221,9 @@
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Version": "2009-05-15",
             "Properties": {
-                "AvailabilityZones": [
-                    {
-                        "Fn::GetAZs" : ""
-                    }
-                ],
+                "AvailabilityZones": {
+                    "Fn::GetAZs" : ""
+                },
                 "LaunchConfigurationName": {
                     "Ref": "LaunchConfiguration"
                 },
