@@ -252,7 +252,6 @@
                 },
                 "Parameters" : {
                     "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
-                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
                     "ElasticsearchHost" : {
                         "Fn::Join" : [
                             "",

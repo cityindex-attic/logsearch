@@ -6,11 +6,6 @@
             "Type": "String",
             "Description": "An SNS ARN for alarms to notify."
         },
-        "AvailabilityZone": {
-            "Type": "String",
-            "Description": "Availability Zone to start the nodes in.",
-            "Default": "us-east-1a"
-        },
         "ElasticsearchHost": {
             "Type": "String",
             "Description": "An elasticsearch host to send messages to.",
@@ -229,7 +224,7 @@
             "Properties": {
                 "AvailabilityZones": [
                     {
-                        "Ref": "AvailabilityZone"
+                        "Fn::GetAZs" : ""
                     }
                 ],
                 "LaunchConfigurationName": {
