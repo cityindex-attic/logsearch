@@ -252,29 +252,13 @@
                 },
                 "Parameters" : {
                     "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
-                    "ElasticsearchHost" : {
-                        "Fn::Join" : [
-                            "",
-                            [
-                                "elasticsearch.srv-int.",
-                                { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
-                            ]
-                        ]
-                    },
+                    "ElasticsearchHost"     : { "Ref" : "DnsSrvPrivateElasticsearch" },
                     "GroupDesiredCapacity"  : { "Ref" : "LogstashGroupDesiredCapacity" },
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
                     "InstanceType"          : { "Ref" : "LogstashInstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
-                    "RedisHost" : {
-                        "Fn::Join" : [
-                            "",
-                            [
-                                "redis.srv-int.",
-                                { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
-                            ]
-                        ]
-                    },
+                    "RedisHost"             : { "Ref" : "DnsSrvPrivateRedis" },
                     "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
                     "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
                 }
