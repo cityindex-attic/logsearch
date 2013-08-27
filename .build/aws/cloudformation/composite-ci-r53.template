@@ -88,11 +88,6 @@
             "Type": "String",
             "Default": "default"
         },
-        "R53HostName": {
-            "Type": "String",
-            "Description": "Hostname for registration in the Route 53 Hosted Zone",
-            "Default": "logsearch"
-        },
         "R53ZoneName": {
             "Type": "String",
             "Description": "Route 53 Hosted Zone for domain registration.",
@@ -272,7 +267,7 @@
                     "Fn::Join" : [
                         "",
                         [
-                            { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
+                            { "Ref": "AWS::StackName" }, ".", { "Ref" : "R53ZoneName" }
                         ]
                     ]
                 },
@@ -294,7 +289,7 @@
                         "",
                         [
                             "redis.",
-                            { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
+                            { "Ref": "AWS::StackName" }, ".", { "Ref" : "R53ZoneName" }
                         ]
                     ]
                 },
@@ -316,7 +311,7 @@
                         "",
                         [
                             "redis.srv-int.",
-                            { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
+                            { "Ref": "AWS::StackName" }, ".", { "Ref" : "R53ZoneName" }
                         ]
                     ]
                 },
@@ -338,7 +333,7 @@
                         "",
                         [
                             "elasticsearch.srv-int.",
-                            { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
+                            { "Ref": "AWS::StackName" }, ".", { "Ref" : "R53ZoneName" }
                         ]
                     ]
                 },
