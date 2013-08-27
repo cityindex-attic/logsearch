@@ -16,6 +16,11 @@
             "Description": "Desired capacity of node auto scaling group within the cluster.",
             "Default": "1"
         },
+        "GroupMinSize": {
+            "Type": "Number",
+            "Description": "Minimum size of node auto scaling group within the cluster.",
+            "Default": "1"
+        },
         "GroupMaxSize": {
             "Type": "Number",
             "Description": "Maximum size of node auto scaling group within the cluster.",
@@ -225,12 +230,14 @@
                     "Fn::GetAZs" : ""
                 },
                 "Cooldown": "300",
+                "DesiredCapacity": {
+                    "Ref": "GroupDesiredCapacity"
+                },
                 "LaunchConfigurationName": {
                     "Ref": "LaunchConfiguration"
                 },
-                "MinSize": "1",
-                "DesiredCapacity": {
-                    "Ref": "GroupDesiredCapacity"
+                "MinSize": {
+                    "Ref": "GroupMinSize"
                 },
                 "MaxSize": {
                     "Ref": "GroupMaxSize"
@@ -272,7 +279,7 @@
     },
     "Outputs" : {
         "AutoScalingGroupArn" : {
-            "Description" : "The Amazon Resource Name (ARN) of the created auto scaling  group.",
+            "Description" : "The Amazon Resource Name (ARN) of the created auto scaling group.",
             "Value" : {
                 "Ref" : "AutoScalingGroup"
             }
