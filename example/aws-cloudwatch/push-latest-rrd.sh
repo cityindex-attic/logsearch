@@ -26,8 +26,8 @@ if [[ ! `echo $RRD_LINE | grep -E ": -nan(\$| )"` ]] ; then
     {
         "Dimensions" : [
             {
-                "name" : "ClusterName",
-                "value" : "$CLUSTER_NAME"
+                "Name" : "ClusterName",
+                "Value" : "$CLUSTER_NAME"
             }
         ],
         "MetricName" : "$METRIC_NAME",
