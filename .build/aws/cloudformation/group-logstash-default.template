@@ -80,6 +80,11 @@
             "Description": "A security group to create the nodes in.",
             "Default" : "default",
             "MinLength" : "1"
+        },
+        "SpotPrice": {
+            "Type": "Number",
+            "Description": "The spot price for instances to create the nodes on.",
+            "Default": "0.08"
         }
     },
     "Mappings": {
@@ -191,6 +196,9 @@
                 "SecurityGroups": [{
                     "Ref": "SecurityGroup"
                 }],
+                "SpotPrice": {
+                    "Ref": "SpotPrice"
+                },
                 "UserData" : {
                     "Fn::Base64": {
                         "Fn::Join": [
