@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "A default logstash parser node group.",
+    "Description": "A default logstash parser node auto scaling group.",
     "Parameters": {
         "AlarmTopicArn": {
             "Type": "String",
@@ -270,5 +270,11 @@
         }
     },
     "Outputs" : {
+        "AutoScalingGroupArn" : {
+            "Description" : "The Amazon Resource Name (ARN) of the created auto scaling  group.",
+            "Value" : {
+                "Ref" : "AutoScalingGroup"
+            }
+        }
     }
 }
