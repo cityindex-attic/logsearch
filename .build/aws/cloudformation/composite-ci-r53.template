@@ -58,9 +58,19 @@
             "Description": "Instance type for the ephemeral-based elasticsearch node.",
             "Default" : "m1.large"
         },
-        "Broker0InstanceType": {
+        "Redis0InstanceType": {
             "Type": "String",
-            "Description": "Instance type for the broker node.",
+            "Description": "Instance type for the redis node.",
+            "Default" : "m1.medium"
+        },
+        "LogstashGroupDesiredCapacity": {
+            "Type": "Number",
+            "Description": "Desired capacity of logstash auto scaling group within the cluster.",
+            "Default": "1"
+        },
+        "LogstashInstanceType": {
+            "Type": "String",
+            "Description": "Instance type for the logstash nodes.",
             "Default" : "c1.medium"
         },
         "InstancePostScript": {
@@ -202,7 +212,7 @@
                 }
             }
         },
-        "Broker0" : {
+        "Redis0" : {
             "Type" : "AWS::CloudFormation::Stack",
             "Properties" : {
                 "TemplateURL" : {
@@ -210,7 +220,7 @@
                     "/",
                     [
                         { "Ref": "S3StackBase" },
-                        "node-broker-default.template"
+                        "node-redis-default.template"
                     ]
                     ]
                 },
@@ -219,19 +229,36 @@
                     "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
                     "ClusterName"           : { "Ref" : "ClusterName" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
-                    "ElasticsearchHost" : {
-                        "Fn::Join" : [
-                            "",
-                            [
-                                "elasticsearch.srv-int.",
-                                { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
-                            ]
-                        ]
-                    },
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-                    "InstanceType"          : { "Ref" : "Broker0InstanceType" },
+                    "InstanceType"          : { "Ref" : "Redis0InstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
+                    "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
+                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
+                }
+            }
+        },
+        "LogstashGroup" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "Properties" : {
+                "TemplateURL" : {
+                    "Fn::Join": [
+                    "/",
+                    [
+                        { "Ref": "S3StackBase" },
+                        "group-logstash-default.template"
+                    ]
+                    ]
+                },
+                "Parameters" : {
+                    "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
+                    "ElasticsearchHost"     : { "Ref" : "DnsSrvPrivateElasticsearch" },
+                    "GroupDesiredCapacity"  : { "Ref" : "LogstashGroupDesiredCapacity" },
+                    "InstancePostScript"    : { "Ref" : "InstancePostScript" },
+                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
+                    "InstanceType"          : { "Ref" : "LogstashInstanceType" },
+                    "KeyName"               : { "Ref" : "KeyName" },
+                    "RedisHost"             : { "Ref" : "DnsSrvPrivateRedis" },
                     "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
                     "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
                 }
@@ -258,7 +285,7 @@
                 ]
             }
         },
-        "DnsRefPublicBroker": {
+        "DnsRefPublicRedis": {
             "Type": "AWS::Route53::RecordSet",
             "Properties": {
                 "HostedZoneName" : { "Ref" : "R53ZoneName" },
@@ -266,7 +293,7 @@
                     "Fn::Join" : [
                         "",
                         [
-                            "broker.",
+                            "redis.",
                             { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
                         ]
                     ]
@@ -275,7 +302,29 @@
                 "TTL" : "60",
                 "ResourceRecords" : [
                     {
-                        "Fn::GetAtt" : [ "Broker0", "Outputs.Instance0PublicIp" ]
+                        "Fn::GetAtt" : [ "Redis0", "Outputs.Instance0PublicIp" ]
+                    }
+                ]
+            }
+        },
+        "DnsSrvPrivateRedis": {
+            "Type": "AWS::Route53::RecordSet",
+            "Properties": {
+                "HostedZoneName" : { "Ref" : "R53ZoneName" },
+                "Name": {
+                    "Fn::Join" : [
+                        "",
+                        [
+                            "redis.srv-int.",
+                            { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
+                        ]
+                    ]
+                },
+                "Type" : "A",
+                "TTL" : "60",
+                "ResourceRecords" : [
+                    {
+                        "Fn::GetAtt" : [ "Redis0", "Outputs.Instance0PrivateIp" ]
                     }
                 ]
             }
@@ -302,10 +351,10 @@
                 ]
             }
         },
-        "QueueSizeAlarm": {
+        "QueueSizeScaleDownAlarm": {
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
-                "AlarmDescription": "Alarm if queue size is greater than 50,000 messages.",
+                "AlarmDescription": "Alarm if average queue size is less than 1,000 messages for 50 minutes (scale down).",
                 "Namespace": "logsearch",
                 "MetricName": "QueueSize",
                 "Dimensions": [
@@ -315,7 +364,42 @@
                     },
                     {
                         "Name": "InstanceId",
-                        "Value" : { "Ref" : "Broker0" }
+                        "Value" : { "Ref" : "Redis0" }
+                    }
+                ],
+                "Statistic": "Average",
+                "Period": "300",
+                "EvaluationPeriods": "10",
+                "Threshold": "1000",
+                "ComparisonOperator": "LessThanThreshold",
+                "AlarmActions": [
+                    {
+                        "Ref": "QueueSizeScaleDownPolicy"
+                    }
+                ]
+            }
+        },
+        "QueueSizeScaleDownPolicy" : {
+           "Type" : "AWS::AutoScaling::ScalingPolicy",
+           "Properties" : {
+              "AdjustmentType" : "ExactCapacity",
+              "AutoScalingGroupName" : {
+                  "Fn::GetAtt" : [ "LogstashGroup", "Outputs.AutoScalingGroupId" ]
+              },
+              "Cooldown" : "3000",
+              "ScalingAdjustment" : { "Ref" : "LogstashGroupDesiredCapacity" }
+           }
+        },
+        "QueueSizeScaleUpAlarm": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmDescription": "Alarm if average queue size is greater than 120,000 messages for 5 minutes (scale up).",
+                "Namespace": "logsearch",
+                "MetricName": "QueueSize",
+                "Dimensions": [
+                    {
+                        "Name": "ClusterName",
+                        "Value" : { "Ref" : "ClusterName" }
                     }
                 ],
                 "Statistic": "Average",
@@ -326,9 +410,33 @@
                 "AlarmActions": [
                     {
                         "Ref": "AlarmTopicArn"
+                    },
+                    {
+                        "Ref": "QueueSizeScaleUpPolicy"
+                    }
+                ],
+                "InsufficientDataActions": [
+                    {
+                        "Ref": "AlarmTopicArn"
+                    }
+                ],
+                "OKActions": [
+                    {
+                        "Ref": "AlarmTopicArn"
                     }
                 ]
             }
+        },
+        "QueueSizeScaleUpPolicy" : {
+           "Type" : "AWS::AutoScaling::ScalingPolicy",
+           "Properties" : {
+              "AdjustmentType" : "ChangeInCapacity",
+              "AutoScalingGroupName" : {
+                  "Fn::GetAtt" : [ "LogstashGroup", "Outputs.AutoScalingGroupId" ]
+              },
+              "Cooldown" : "300",
+              "ScalingAdjustment" : "1"
+           }
         },
         "IndexLagAlarm": {
             "Type": "AWS::CloudWatch::Alarm",
@@ -340,10 +448,6 @@
                     {
                         "Name": "ClusterName",
                         "Value" : { "Ref" : "ClusterName" }
-                    },
-                    {
-                        "Name": "InstanceId",
-                        "Value" : { "Ref" : "ElasticsearchEbs0" }
                     }
                 ],
                 "Statistic": "Average",
@@ -352,6 +456,16 @@
                 "Threshold": "300",
                 "ComparisonOperator": "GreaterThanThreshold",
                 "AlarmActions": [
+                    {
+                        "Ref": "AlarmTopicArn"
+                    }
+                ],
+                "InsufficientDataActions": [
+                    {
+                        "Ref": "AlarmTopicArn"
+                    }
+                ],
+                "OKActions": [
                     {
                         "Ref": "AlarmTopicArn"
                     }
