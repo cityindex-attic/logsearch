@@ -354,7 +354,7 @@
         "QueueSizeAlarm": {
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
-                "AlarmDescription": "Alarm if queue size is greater than 50,000 messages.",
+                "AlarmDescription": "Alarm if queue size is greater than 120,000 messages for 5 minutes.",
                 "Namespace": "logsearch",
                 "MetricName": "QueueSize",
                 "Dimensions": [
