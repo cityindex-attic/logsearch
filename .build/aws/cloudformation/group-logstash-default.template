@@ -278,8 +278,8 @@
         }
     },
     "Outputs" : {
-        "AutoScalingGroupArn" : {
-            "Description" : "The Amazon Resource Name (ARN) of the created auto scaling group.",
+        "AutoScalingGroupId" : {
+            "Description" : "The physical ID of the created auto scaling group.",
             "Value" : {
                 "Ref" : "AutoScalingGroup"
             }
