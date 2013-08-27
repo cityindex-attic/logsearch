@@ -361,10 +361,6 @@
                     {
                         "Name": "ClusterName",
                         "Value" : { "Ref" : "ClusterName" }
-                    },
-                    {
-                        "Name": "InstanceId",
-                        "Value" : { "Ref" : "Redis0" }
                     }
                 ],
                 "Statistic": "Average",
