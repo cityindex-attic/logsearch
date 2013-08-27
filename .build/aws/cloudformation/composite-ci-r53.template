@@ -351,10 +351,49 @@
                 ]
             }
         },
-        "QueueSizeAlarm": {
+        "QueueSizeScaleDownAlarm": {
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
-                "AlarmDescription": "Alarm if queue size is greater than 120,000 messages for 5 minutes.",
+                "AlarmDescription": "Alarm if average queue size is less than 1,000 messages for 50 minutes (scale down).",
+                "Namespace": "logsearch",
+                "MetricName": "QueueSize",
+                "Dimensions": [
+                    {
+                        "Name": "ClusterName",
+                        "Value" : { "Ref" : "ClusterName" }
+                    },
+                    {
+                        "Name": "InstanceId",
+                        "Value" : { "Ref" : "Redis0" }
+                    }
+                ],
+                "Statistic": "Average",
+                "Period": "300",
+                "EvaluationPeriods": "10",
+                "Threshold": "1000",
+                "ComparisonOperator": "LessThanThreshold",
+                "AlarmActions": [
+                    {
+                        "Ref": "QueueSizeScaleDownPolicy"
+                    }
+                ]
+            }
+        },
+        "QueueSizeScaleDownPolicy" : {
+           "Type" : "AWS::AutoScaling::ScalingPolicy",
+           "Properties" : {
+              "AdjustmentType" : "ExactCapacity",
+              "AutoScalingGroupName" : {
+                  "Fn::GetAtt" : [ "LogstashGroup", "Outputs.AutoScalingGroupId" ]
+              },
+              "Cooldown" : "3000",
+              "ScalingAdjustment" : { "Ref" : "LogstashGroupDesiredCapacity" }
+           }
+        },
+        "QueueSizeScaleUpAlarm": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmDescription": "Alarm if average queue size is greater than 120,000 messages for 5 minutes (scale up).",
                 "Namespace": "logsearch",
                 "MetricName": "QueueSize",
                 "Dimensions": [
@@ -375,6 +414,9 @@
                 "AlarmActions": [
                     {
                         "Ref": "AlarmTopicArn"
+                    },
+                    {
+                        "Ref": "QueueSizeScaleUpPolicy"
                     }
                 ],
                 "InsufficientDataActions": [
@@ -388,6 +430,17 @@
                     }
                 ]
             }
+        },
+        "QueueSizeScaleUpPolicy" : {
+           "Type" : "AWS::AutoScaling::ScalingPolicy",
+           "Properties" : {
+              "AdjustmentType" : "ChangeInCapacity",
+              "AutoScalingGroupName" : {
+                  "Fn::GetAtt" : [ "LogstashGroup", "Outputs.AutoScalingGroupId" ]
+              },
+              "Cooldown" : "300",
+              "ScalingAdjustment" : "1"
+           }
         },
         "IndexLagAlarm": {
             "Type": "AWS::CloudWatch::Alarm",
