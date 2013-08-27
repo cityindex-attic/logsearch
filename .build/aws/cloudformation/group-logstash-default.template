@@ -224,6 +224,7 @@
                 "AvailabilityZones": {
                     "Fn::GetAZs" : ""
                 },
+                "Cooldown": "300",
                 "LaunchConfigurationName": {
                     "Ref": "LaunchConfiguration"
                 },
