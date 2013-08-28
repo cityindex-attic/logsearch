@@ -84,7 +84,7 @@
         "SpotPrice": {
             "Type": "Number",
             "Description": "The spot price for instances to create the nodes on.",
-            "Default": "0.08"
+            "Default": "0.16"
         }
     },
     "Mappings": {

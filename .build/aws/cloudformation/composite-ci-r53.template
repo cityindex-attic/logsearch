@@ -73,6 +73,11 @@
             "Description": "Instance type for the logstash nodes.",
             "Default" : "c1.medium"
         },
+        "LogstashSpotPrice": {
+            "Type": "Number",
+            "Description": "The spot price for instances to create the logstash nodes on.",
+            "Default": "0.20"
+        },
         "InstancePostScript": {
             "Type": "String",
             "Description": "A final command to run when provisioning instances.",
@@ -252,6 +257,7 @@
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
                     "InstanceType"          : { "Ref" : "LogstashInstanceType" },
+                    "SpotPrice"             : { "Ref" : "LogstashSpotPrice" },
                     "KeyName"               : { "Ref" : "KeyName" },
                     "RedisHost"             : { "Ref" : "DnsSrvPrivateRedis" },
                     "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
@@ -426,7 +432,7 @@
                   "Fn::GetAtt" : [ "LogstashGroup", "Outputs.AutoScalingGroupId" ]
               },
               "Cooldown" : "300",
-              "ScalingAdjustment" : "1"
+              "ScalingAdjustment" : "2"
            }
         },
         "IndexLagAlarm": {
