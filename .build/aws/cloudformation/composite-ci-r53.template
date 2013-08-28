@@ -68,6 +68,11 @@
             "Description": "Desired capacity of logstash auto scaling group within the cluster.",
             "Default": "1"
         },
+        "LogstashGroupMaxSize": {
+            "Type": "Number",
+            "Description": "Maximum size of logstash auto scaling group within the cluster.",
+            "Default": "8"
+        },
         "LogstashInstanceType": {
             "Type": "String",
             "Description": "Instance type for the logstash nodes.",
@@ -254,6 +259,7 @@
                     "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
                     "ElasticsearchHost"     : { "Ref" : "DnsSrvPrivateElasticsearch" },
                     "GroupDesiredCapacity"  : { "Ref" : "LogstashGroupDesiredCapacity" },
+                    "GroupMaxSize"          : { "Ref" : "LogstashGroupMaxSize" },
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
                     "InstanceType"          : { "Ref" : "LogstashInstanceType" },
