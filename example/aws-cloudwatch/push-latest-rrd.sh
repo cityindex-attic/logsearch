@@ -24,20 +24,16 @@ if [[ ! `echo $RRD_LINE | grep -E ": -nan(\$| )"` ]] ; then
 
     ARG1=$(cat <<EOF
     {
-        "dimensions" : [
+        "Dimensions" : [
             {
-                "name" : "ClusterName",
-                "value" : "$CLUSTER_NAME"
-            },
-            {
-                "name" : "InstanceId",
-                "value" : "$INSTANCE_ID"
+                "Name" : "ClusterName",
+                "Value" : "$CLUSTER_NAME"
             }
         ],
-        "metric_name" : "$METRIC_NAME",
-        "timestamp" : "$RRD_DATE",
-        "unit" : "Count",
-        "value" : $RRD_STAT
+        "MetricName" : "$METRIC_NAME",
+        "Timestamp" : "$RRD_DATE",
+        "Unit" : "Count",
+        "Value" : $RRD_STAT
     }
 EOF
     )

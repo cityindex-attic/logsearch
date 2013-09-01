@@ -28,6 +28,10 @@ echo "redis:$($APP_VENDOR_DIR/redis/src/redis-server -v | awk -F '=' '/v=/ { pri
 #
 
 if (which collectd 1>/dev/null 2>&1) ; then
+    if [ "$APP_CONFIG_REDIS_IPADDRESS" == '0.0.0.0' ] ; then
+        APP_CONFIG_REDIS_IPADDRESS="127.0.0.1"
+    fi
+
     sudo /bin/bash <<EOF
         if ! grep 'Import redis_info' /etc/collectd/collectd.conf ; then
             wget -qO /opt/collectd/lib/collectd/plugins/python/redis_info.py 'https://raw.github.com/powdahound/redis-collectd-plugin/master/redis_info.py'

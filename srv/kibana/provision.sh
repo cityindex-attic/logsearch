@@ -8,7 +8,7 @@ set -e
 #
 
 if [ ! -e $APP_VENDOR_DIR/kibana ] ; then
-    KIBANA_VERSION="87afc4dd50498f69f3ff11d2532b2d26a540e6da"
+    KIBANA_VERSION="e57aba10da909768d3191aec4e672b2531e21f18"
     echo "Download kibana-dev-$KIBANA_VERSION..."
 
     pushd $APP_VENDOR_DIR/

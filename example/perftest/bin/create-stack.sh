@@ -12,7 +12,7 @@ echo 'Creating stack...'
 CREATE_STACK=$(aws cloudformation create-stack \
     --parameters "[{\"parameter_key\":\"KeyName\",\"parameter_value\":\"$1\"},{\"parameter_key\":\"ClusterName\",\"parameter_value\":\"$STACK_NAME\"},{\"parameter_key\":\"ExternalAccessCidrRange\",\"parameter_value\":\"$IPADDR/32\"}]" \
     --stack-name $STACK_NAME \
-    --tags '{"1":{"name":"cost-centre","value":"elasticsearch-development-flow"}}' \
+    --tags '{"1":{"name":"cost-centre","value":"logsearch-development-flow"}}' \
     --template-body "`cat formation.template`"
 )
 

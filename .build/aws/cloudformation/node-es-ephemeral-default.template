@@ -1,0 +1,318 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "A default ephemeral-backed elasticsearch + kibana node.",
+    "Parameters": {
+        "AlarmTopicArn": {
+            "Type": "String",
+            "Description": "An SNS ARN for alarms to notify."
+        },
+        "AvailabilityZone": {
+            "Type": "String",
+            "Description": "Availability Zone to start the node in.",
+            "Default": "us-east-1a"
+        },
+        "ClusterName": {
+            "Type": "String",
+            "Description": "The cluster name the node is registered to.",
+            "MinLength" : "1"
+        },
+        "DisableApiTermination": {
+            "Type": "String",
+            "Description": "Prevent EC2 instance termination (if true, requires to actively enable it to successfully delete the stack).",
+            "Default": "false",
+            "AllowedValues": [
+                "false",
+                "true"
+            ]
+        },
+        "InstancePostScript": {
+            "Type": "String",
+            "Description": "A final command to run when provisioning instances.",
+            "Default": "/bin/true"
+        },
+        "InstanceProfile": {
+            "Type": "String",
+            "Description": "An IAM role for the node."
+        },
+        "InstanceType": {
+            "Default": "m1.large",
+            "Type": "String",
+            "Description": "The instance type to create the node on.",
+            "AllowedValues": [
+                "t1.micro",
+                "m1.small",
+                "m1.medium",
+                "m1.large",
+                "m1.xlarge",
+                "m2.xlarge",
+                "m2.2xlarge",
+                "m2.4xlarge",
+                "m3.xlarge",
+                "m3.2xlarge",
+                "c1.medium",
+                "c1.xlarge",
+                "cc2.8xlarge",
+                "cr1.8xlarge",
+                "cg1.4xlarge",
+                "hi1.4xlarge",
+                "hs1.8xlarge"
+            ],
+            "ConstraintDescription": "must be a valid EC2 instance type."
+        },
+        "KeyName": {
+            "Type": "String",
+            "Description": "A key pair name for configuring the node.",
+            "Default": "default"
+        },
+        "RepositoryBranch": {
+            "Default" : "master",
+            "Type": "String",
+            "Description": "A branch to use for bootstrapping."
+        },
+        "SecurityGroup": {
+            "Type": "String",
+            "Description": "A security group to create the node in.",
+            "Default" : "default",
+            "MinLength" : "1"
+        }
+    },
+    "Mappings": {
+        "RegionMap": {
+            "us-east-1": {
+                "AMI": "ami-d0f89fb9"
+            },
+            "us-west-2": {
+                "AMI": "ami-70f96e40"
+            },
+            "us-west-1": {
+                "AMI": "ami-fe002cbb"
+            },
+            "eu-west-1": {
+                "AMI": "ami-ce7b6fba"
+            },
+            "ap-southeast-1": {
+                "AMI": "ami-64084736"
+            },
+            "ap-northeast-1": {
+                "AMI": "ami-fe6ceeff"
+            },
+            "ap-southeast-2": {
+                "AMI": "ami-04ea7a3e"
+            },
+            "sa-east-1": {
+                "AMI": "ami-a3da00be"
+            }
+        }
+    },
+    "Resources": {
+        "Instance0": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata" : {
+                "AWS::CloudFormation::Init" : {
+                    "config" : {
+                        "files" : {
+                            "/app/.env" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
+                                            "export APP_ROOT_DIR=/app", "\n",
+                                            "export APP_APP_DIR=/app/app", "\n",
+                                            "export APP_VENDOR_DIR=/app/vendor", "\n",
+                                            "export APP_LOG_DIR=/app/var/log", "\n",
+                                            "export APP_RUN_DIR=/app/var/run", "\n",
+                                            "export APP_TMP_DIR=/app/tmp", "\n",
+                                            "export APP_DATA_DIR=/app/data", "\n",
+                                            "export APP_USER=ubuntu", "\n",
+                                            "export APP_CONFIG_ES_CLUSTER=", { "Ref" : "ClusterName" }, "\n",
+                                            "export APP_CONFIG_ES_IPADDRESS=0.0.0.0", "\n",
+                                            "export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup" }, "\n",
+                                            "export APP_CONFIG_ES_EXTRA='{\"node\":{\"master\":false}}'", "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000755"
+                            },
+                            "/home/ubuntu/provision" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "#!/bin/bash", "\n",
+                                            "set -e", "\n",
+                                            "/app/app/.build/ubuntu-12/provision.sh", "\n",
+                                            "mkdir -p /mnt/app-data", "\n",
+                                            "chown ubuntu:ubuntu /mnt/app-data", "\n",
+                                            "ln -s /mnt/app-data /app/data", "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
+                            },
+                            "/home/ubuntu/bootstrap" : {
+                                "source" : {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "https://raw.github.com/cityindex/logsearch-development-flow/",
+                                            { "Ref": "RepositoryBranch" },
+                                            "/bin/bootstrap"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone"
+                },
+                "DisableApiTermination": {
+                    "Ref": "DisableApiTermination"
+                },
+                "Monitoring": "true",
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "RegionMap",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "AMI"
+                    ]
+                },
+                "IamInstanceProfile": {
+                    "Ref": "InstanceProfile"
+                },
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SecurityGroups": [{
+                    "Ref": "SecurityGroup"
+                }],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref" : "AWS::StackName"
+                        },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "logsearch-cluster",
+                        "Value": {
+                            "Ref" : "ClusterName"
+                        },
+                        "PropagateAtLaunch": "true"
+                    }
+                ],
+                "UserData" : {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash", "\n",
+                                "# Error handling helper function\n",
+                                "function error_exit\n",
+                                "{\n",
+                                " cfn-signal --exit-code $? --reason \"$1\" '", { "Ref": "WaitConditionHandle" }, "'\n",
+                                " exit $?\n",
+                                "}\n",
+                                "apt-get update", "\n",
+                                "apt-get -y install python-pip", "\n",
+                                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
+                                "cfn-init --verbose ",
+                                " --region ", { "Ref": "AWS::Region" },
+                                " --stack ", { "Ref": "AWS::StackName" },
+                                " --resource Instance0 ",
+                                " || error_exit 'Failed to run cfn-init'", "\n",
+                                "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch,kibana ", { "Ref": "RepositoryBranch" }, "\n",
+                                "/app/app/.build/dev_server/extra.sh", "\n",
+                                { "Ref" : "InstancePostScript" }, "\n",
+                                "cfn-signal --exit-code 0 --reason 'Provisioning complete' '", { "Ref": "WaitConditionHandle" }, "'\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "Instance0StatusAlarm": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmDescription": "Alarm if the system or instance status checks are failing.",
+                "Namespace": "AWS/EC2",
+                "MetricName": "StatusCheckFailed",
+                "Dimensions": [
+                    {
+                        "Name": "InstanceId",
+                        "Value" : { "Ref" : "Instance0" }
+                    }
+                ],
+                "Statistic": "Maximum",
+                "Period": "300",
+                "EvaluationPeriods": "2",
+                "Threshold": "1",
+                "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+                "AlarmActions": [
+                    {
+                        "Ref": "AlarmTopicArn"
+                    }
+                ]
+            }
+        },
+        "WaitConditionHandle": {
+            "Type": "AWS::CloudFormation::WaitConditionHandle"
+        },
+        "WaitCondition": {
+            "Type": "AWS::CloudFormation::WaitCondition",
+            "DependsOn": "Instance0",
+            "Properties": {
+                "Handle": {
+                    "Ref": "WaitConditionHandle"
+                },
+                "Timeout": "900"
+            }
+        }
+    },
+    "Outputs" : {
+        "Instance0Id" : {
+            "Description" : "The physical ID of the created instance.",
+            "Value" : {
+                "Ref" : "Instance0"
+            }
+        },
+        "Instance0PrivateIp" : {
+            "Description" : "Private IP Address of the instance.",
+            "Value" : {
+                "Fn::GetAtt" :
+                [
+                    "Instance0",
+                    "PrivateIp"
+                ]
+            }
+        },
+        "Instance0PublicIp" : {
+            "Description" : "Public IP Address of the instance.",
+            "Value" : {
+                "Fn::GetAtt" :
+                [
+                    "Instance0",
+                    "PublicIp"
+                ]
+            }
+        }
+    }
+}
