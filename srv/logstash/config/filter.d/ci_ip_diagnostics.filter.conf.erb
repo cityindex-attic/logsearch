@@ -1,0 +1,44 @@
+# Filter type => "ci_ip_diagnostics"
+
+csv {
+    type => "ci_ip_diagnostics"
+    columns => [
+        "instruction_id",
+        "level",
+        "instruction_description",
+        "arrival_time",
+        "duration_ms",
+        "percentage_of_total",
+        "quotes_orders_affected"
+    ]
+}
+
+csv {
+    type => "ci_ip_diagnostics"
+    source => "instruction_description"
+    target => "instruction"
+    separator => "/"
+    columns => [
+        "type",
+        "status",
+        "source"
+    ]
+}
+
+#Create a full timestamp by combining the current date with the arrival_time field
+ruby {
+    type => "ci_ip_diagnostics"
+    code => 'event["arrival_time_tz"] = %Q|#{Time.now.strftime("%Y-%m-%d")} #{event["arrival_time"]}+0100|'
+}
+
+mutate {
+    type => "ci_ip_diagnostics"
+    convert => [ "duration_ms", "float" ]
+    convert => [ "percentage_of_total", "float" ]
+    convert => [ "quotes_orders_affected", "integer" ]
+}
+
+date {
+    type => "ci_ip_diagnostics"
+    match => [ "arrival_time_tz", "YYYY-MM-dd HH:mm:ss.SSSZ" ]
+}

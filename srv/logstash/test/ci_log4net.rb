@@ -65,7 +65,7 @@ class SimpleCiLog4netTest < Test::Unit::TestCase
   def test_search_by_message
     res = eslog_simple_search(
       nil,
-      '@fields.message:"MCATP:False"'
+      '@fields.message:"Order: 483553318 filtered"'
     )
 
     assert_equal 1, res['hits']['total']
