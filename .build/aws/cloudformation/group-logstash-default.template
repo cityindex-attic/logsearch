@@ -6,6 +6,11 @@
             "Type": "String",
             "Description": "An SNS ARN for alarms to notify."
         },
+        "ClusterName": {
+            "Type": "String",
+            "Description": "The cluster name the node is registered to.",
+            "MinLength" : "1"
+        },
         "ElasticsearchHost": {
             "Type": "String",
             "Description": "An elasticsearch host to send messages to.",
@@ -265,6 +270,13 @@
                         "Key": "Name",
                         "Value": {
                                 "Ref": "AWS::StackName"
+                        },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "logsearch-cluster",
+                        "Value": {
+                            "Ref" : "ClusterName"
                         },
                         "PropagateAtLaunch": "true"
                     }

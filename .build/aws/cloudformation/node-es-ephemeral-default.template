@@ -208,6 +208,13 @@
                             "Ref" : "AWS::StackName"
                         },
                         "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "logsearch-cluster",
+                        "Value": {
+                            "Ref" : "ClusterName"
+                        },
+                        "PropagateAtLaunch": "true"
                     }
                 ],
                 "UserData" : {

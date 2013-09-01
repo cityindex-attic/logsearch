@@ -257,6 +257,7 @@
                 },
                 "Parameters" : {
                     "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
+                    "ClusterName"           : { "Ref" : "ClusterName" },
                     "ElasticsearchHost"     : { "Ref" : "DnsSrvPrivateElasticsearch" },
                     "GroupDesiredCapacity"  : { "Ref" : "LogstashGroupDesiredCapacity" },
                     "GroupMaxSize"          : { "Ref" : "LogstashGroupMaxSize" },
