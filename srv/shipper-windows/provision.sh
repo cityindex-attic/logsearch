@@ -30,15 +30,4 @@ fi
 
 echo "service wrapper:$(display_file_info $DEST/windows-shipper-service.exe)"
 
-#
-# Plink (SSH tunnel)
-#
-
-if [ ! -e $DEST/plink.exe ] ; then
-    echo "Downloading plink(winsw-1.13) ..."
-
-    curl --location -o $DEST/plink.exe http://the.earth.li/~sgtatham/putty/latest/x86/plink.exe
-fi
-
-echo "SSH tunnel client (plink):$(display_file_info $DEST/plink.exe)"
 

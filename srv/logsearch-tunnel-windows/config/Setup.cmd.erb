@@ -1,0 +1,16 @@
+@echo off
+echo Register and start service
+for /f %%i in ('logsearch-tunnel-windows.exe status') do set INSTALL_STATUS=%%i
+if NOT "%INSTALL_STATUS%"=="NonExistent" (
+  echo Uninstalling existing logsearch-tunnel-windows.exe service
+  logsearch-tunnel-windows.exe uninstall 
+)
+
+echo Ensuring remote server key is registered
+echo y | plink.exe <%=ENV['broker_user']%>@<%=ENV['broker_url']%> -i <%=ENV['broker_private_key']%>
+
+echo Installing new logsearch-tunnel-windows.exe service
+logsearch-tunnel-windows.exe install 
+echo Starting logsearch-tunnel-windows.exe service
+logsearch-tunnel-windows.exe start
+

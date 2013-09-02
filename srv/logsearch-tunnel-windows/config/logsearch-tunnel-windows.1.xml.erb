@@ -1,0 +1,13 @@
+<service>
+  <id>logsearch-tunnel-windows</id>
+  <name>logsearch-tunnel-windows <%=ENV['version']%></name>
+  <description>SSH tunnel to logsearch server</description>
+  <env name="BROKER_URL" value="<%=ENV['broker_url']%>"/>
+  <env name="BROKER_USER" value="<%=ENV['broker_user']%>"/>
+  <env name="BROKER_PRIVATE_KEY" value="%BASE%/<%=ENV['broker_private_key']%>" />
+  <env name="PLINK" value="%BASE%/plink.exe"/>
+  <executable>%PLINK%</executable>
+  <arguments>-batch -v -N -L 6379:127.0.0.1:6379 %BROKER_USER%@%BROKER_URL% -i "%BROKER_PRIVATE_KEY%"</arguments>
+  <log mode="reset"/>
+  <onfailure action="restart" delay="30 sec" />
+</service> 
