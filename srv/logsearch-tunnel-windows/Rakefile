@@ -1,6 +1,6 @@
 namespace :package do
   
-  desc "Package a Windows shipper"
+  desc "Package a Windows tunnel"
   task :logsearch_tunnel_windows, :config_folder, :package_destination_folder, :version do |t, args|
     ENV['version']=args[:version]||"v0.0"
     ENV['broker_url'] = "redis.logsearch.cityindextest5.co.uk"
@@ -12,7 +12,7 @@ namespace :package do
     FileUtils.mkdir_p dest
 
     puts "------> Copying config files from #{args[:config_folder]}"
-    sh "cp -R #{args[:config_folder]}/* #{dest}"
+    sh "rsync -r --copy-links #{args[:config_folder]}/* #{dest}"
 
     puts "------> Downloading executables"
     sh "DEST='#{dest}' #{ENV['APP_APP_DIR']}/srv/logsearch-tunnel-windows/provision.sh"
