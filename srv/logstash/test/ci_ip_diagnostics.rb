@@ -8,16 +8,16 @@ class SimpleCiIPDiagnosticsTest < Test::Unit::TestCase
     assert_equal 32, res['hits']['total']
   end
 
-  def test_timestamps_are_constructed_as_today_plus_time_in_localtime
+  def test_timestamps_are_parsed_correctly_from_arrival_time_tz
     res = eslog_simple_search(
       nil,
-      '502625247'
+      'instruction_id:502625247'
     )
 
     assert_equal 1, res['hits']['total']
 
-    assert_equal "#{Time.now.strftime("%Y-%m-%d")}T01:04:54.158Z", res['hits']['hits'][0]['_source']['@timestamp']
-    assert_equal "#{Time.now.strftime("%Y-%m-%d")} 02:04:54.158+0100", res['hits']['hits'][0]['_source']['@fields']['arrival_time_tz']
+    assert_equal "2013-09-03T01:04:54.258Z", res['hits']['hits'][0]['_source']['@timestamp']
+    assert_equal "2013-09-03T02:04:54.258+01:00", res['hits']['hits'][0]['_source']['@fields']['arrival_time_tz']
   end
 
   def test_instruction_id
