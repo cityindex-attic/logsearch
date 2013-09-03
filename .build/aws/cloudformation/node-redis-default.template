@@ -16,6 +16,11 @@
             "Description": "The cluster name the node is registered to.",
             "MinLength" : "1"
         },
+        "CostCentre": {
+            "Type": "String",
+            "Description": "A specific cost center to affiliate with resources.",
+            "Default": "logsearch-development-flow"
+        },
         "DisableApiTermination": {
             "Type": "String",
             "Description": "Prevent EC2 instance termination (if true, requires to actively enable it to successfully delete the stack).",
@@ -213,6 +218,13 @@
                             "Ref" : "ClusterName"
                         },
                         "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "cost-centre",
+                        "Value" : {
+                            "Ref" : "CostCentre"
+                        },
+                        "PropagateAtLaunch" : "true"
                     }
                 ],
                 "UserData" : {

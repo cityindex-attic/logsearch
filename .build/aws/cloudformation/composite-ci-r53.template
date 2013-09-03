@@ -34,6 +34,11 @@
             "Description": "A unique name for the cluster.",
             "Default": "logsearch-test"
         },
+        "CostCentre": {
+            "Type": "String",
+            "Description": "A specific cost center to affiliate with resources.",
+            "Default": "logsearch-development-flow"
+        },
         "DisableApiTermination": {
             "Type": "String",
             "Description": "Prevent EC2 instance termination (if true, requires to actively enable it to successfully delete the stack).",
@@ -180,6 +185,7 @@
                     "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
                     "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
                     "ClusterName"           : { "Ref" : "ClusterName" },
+                    "CostCentre"            : { "Ref" : "CostCentre" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
@@ -207,6 +213,7 @@
                     "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
                     "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
                     "ClusterName"           : { "Ref" : "ClusterName" },
+                    "CostCentre"            : { "Ref" : "CostCentre" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
@@ -233,6 +240,7 @@
                     "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
                     "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
                     "ClusterName"           : { "Ref" : "ClusterName" },
+                    "CostCentre"            : { "Ref" : "CostCentre" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
@@ -258,6 +266,7 @@
                 "Parameters" : {
                     "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
                     "ClusterName"           : { "Ref" : "ClusterName" },
+                    "CostCentre"            : { "Ref" : "CostCentre" },
                     "ElasticsearchHost"     : { "Ref" : "DnsSrvPrivateElasticsearch" },
                     "GroupDesiredCapacity"  : { "Ref" : "LogstashGroupDesiredCapacity" },
                     "GroupMaxSize"          : { "Ref" : "LogstashGroupMaxSize" },
