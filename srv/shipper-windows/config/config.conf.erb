@@ -1,3 +1,24 @@
+input {
+
+<%= ERB.new(File.read(File.join ENV['shipper_config_folder'],"config", "inputs.erb"), nil, nil, '_input_sub_template').result(binding) %>
+
+}
+
 filter {
-    
+
+<%= ERB.new(File.read(File.join ENV['shipper_config_folder'],"config", "filters.erb"), nil, nil, '_input_sub_template').result(binding) %>
+
+}
+
+output {
+    # uncomment for debugging
+    # stdout { debug => true debug_format => "dots"}
+
+    redis {
+        host => "127.0.0.1"
+        port => "6379"
+        data_type => "list"
+        key => "logstash"
+        batch => true
+    }
 }

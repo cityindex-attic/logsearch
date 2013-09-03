@@ -1,9 +1,17 @@
+require 'yaml'
+
 namespace :package do
   
   desc "Package a windows shipper"
   task :windows_shipper, :shipper_config_folder, :package_destination_folder, :version do |t, args|
     ENV['version']=args[:version]||"v0.0"
+    settings = YAML::load_file(File.join args[:shipper_config_folder], "settings.yml")
+    ENV['name'] = settings['name']||"windows-shipper"
+    ENV['shipper_config_folder'] = args[:shipper_config_folder]
+
     puts "Packaging #{args[:shipper_config_folder]} #{ENV['version']} to #{args[:package_destination_folder]}"
+    puts "settings: #{settings.inspect}"
+
     dest="#{ENV['APP_APP_DIR']}/#{args[:package_destination_folder]}"
     FileUtils.mkdir_p dest
 
@@ -14,10 +22,6 @@ namespace :package do
     process_erb("#{ENV['APP_APP_DIR']}/srv/shipper-windows/config/config.conf.erb", "#{dest}/config.conf")
     process_erb("#{ENV['APP_APP_DIR']}/srv/shipper-windows/config/windows-shipper-service.exe.config.erb", "#{dest}/windows-shipper-service.exe.config")
     process_erb("#{ENV['APP_APP_DIR']}/srv/shipper-windows/config/windows-shipper-service.xml.erb", "#{dest}/windows-shipper-service.xml")
-
-    puts "------> Creating Start.cmd and Stop.cmd"
-    process_erb("#{ENV['APP_APP_DIR']}/srv/shipper-windows/config/Start.cmd.erb", "#{dest}/Start.cmd")
-    process_erb("#{ENV['APP_APP_DIR']}/srv/shipper-windows/config/Stop.cmd.erb", "#{dest}/Stop.cmd")
 
     puts "------> Creating Setup.cmd"
     process_erb("#{ENV['APP_APP_DIR']}/srv/shipper-windows/config/Setup.cmd.erb", "#{dest}/Setup.cmd")
