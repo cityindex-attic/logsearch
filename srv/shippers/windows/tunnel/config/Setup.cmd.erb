@@ -3,6 +3,7 @@ echo Register and start service
 for /f %%i in ('logsearch-tunnel-windows.exe status') do set INSTALL_STATUS=%%i
 if NOT "%INSTALL_STATUS%"=="NonExistent" (
   echo Uninstalling existing logsearch-tunnel-windows.exe service
+  logsearch-tunnel-windows.exe stop 
   logsearch-tunnel-windows.exe uninstall 
 )
 
