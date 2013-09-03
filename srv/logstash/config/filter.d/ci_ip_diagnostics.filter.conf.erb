@@ -3,6 +3,7 @@
 csv {
     type => "ci_ip_diagnostics"
     columns => [
+        "arrival_time_tz",
         "instruction_id",
         "level",
         "instruction_description",
@@ -25,12 +26,6 @@ csv {
     ]
 }
 
-#Create a full timestamp by combining the current date with the arrival_time field
-ruby {
-    type => "ci_ip_diagnostics"
-    code => 'event["arrival_time_tz"] = %Q|#{Time.now.strftime("%Y-%m-%d")} #{event["arrival_time"]}+0100|'
-}
-
 mutate {
     type => "ci_ip_diagnostics"
     convert => [ "duration_ms", "float" ]
@@ -40,5 +35,5 @@ mutate {
 
 date {
     type => "ci_ip_diagnostics"
-    match => [ "arrival_time_tz", "YYYY-MM-dd HH:mm:ss.SSSZ" ]
+    match => [ "arrival_time_tz", "ISO8601" ]
 }
