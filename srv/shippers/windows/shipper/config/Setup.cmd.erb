@@ -1,0 +1,12 @@
+@echo off
+echo Register and start service
+for /f %%i in ('windows-shipper-service.exe status') do set INSTALL_STATUS=%%i
+if NOT "%INSTALL_STATUS%"=="NonExistent" (
+  echo Uninstalling existing windows-shipper-service.exe service
+  windows-shipper-service.exe stop 
+  windows-shipper-service.exe uninstall 
+)
+echo Installing new windows-shipper-service.exe service
+windows-shipper-service.exe install 
+echo Starting windows-shipper-service.exe service
+windows-shipper-service.exe start
