@@ -1,6 +1,6 @@
 <service>
-  <id>logsearch-tunnel-windows</id>
-  <name>logsearch-tunnel-windows <%=ENV['version']%></name>
+  <id><%=ENV['name']%></id>
+  <name><%=ENV['name']%> <%=ENV['version']%></name>
   <description>SSH tunnel to logsearch server</description>
   <env name="BROKER_URL" value="<%=ENV['broker_url']%>"/>
   <env name="BROKER_USER" value="<%=ENV['broker_user']%>"/>
