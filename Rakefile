@@ -5,7 +5,7 @@ $LOGSTASH_MESSAGE_MAXSIZE=1048576
 
 Dotenv.load('../.env')
 
-Dir.glob('srv/*/Rakefile').each { |r| import r}
+Dir.glob('srv/**/Rakefile').each { |r| import r}
 
 desc "Connect to development VM"
 task :connect do

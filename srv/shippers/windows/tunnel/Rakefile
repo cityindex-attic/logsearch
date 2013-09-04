@@ -1,0 +1,38 @@
+
+namespace :package do
+namespace :shippers do
+namespace :windows do  
+  
+  desc "Package a Windows tunnel"
+  task :tunnel, :config_folder, :package_destination_folder, :version do |t, args|
+    ENV['version']=args[:version]||"v0.0"
+    settings = YAML::load_file(File.join args[:config_folder], "settings.yml")
+    ENV['broker_url'] = settings['broker_url']||"redis.logsearch.cityindextest5.co.uk"
+    ENV['broker_user'] = settings['broker_user']||"ubuntu"
+    ENV['broker_private_key'] = settings['broker_private_key']||"logsearch-ppe-shipper.ppk"
+    ENV['name'] = settings['name']||"windows-tunnel"
+
+    puts "Packaging #{args[:config_folder]} #{ENV['version']} to #{args[:package_destination_folder]}"
+    dest="#{ENV['APP_APP_DIR']}/#{args[:package_destination_folder]}"
+    FileUtils.mkdir_p dest
+
+    puts "------> Copying config files from #{args[:config_folder]}"
+    sh "rsync -r --copy-links #{args[:config_folder]}/* #{dest}"
+
+    puts "------> Downloading executables"
+    sh "DEST='#{dest}' #{ENV['APP_APP_DIR']}/srv/shippers/windows/tunnel/provision.sh"
+    
+    puts "------> Writing config files"
+    process_erb("#{ENV['APP_APP_DIR']}/srv/shippers/windows/tunnel/config/logsearch-tunnel-windows.exe.config.erb", "#{dest}/logsearch-tunnel-windows.exe.config")
+    process_erb("#{ENV['APP_APP_DIR']}/srv/shippers/windows/tunnel/config/logsearch-tunnel-windows.1.xml.erb", "#{dest}/logsearch-tunnel-windows.xml")
+
+    puts "------> Creating Setup.cmd"
+    process_erb("#{ENV['APP_APP_DIR']}/srv/shippers/windows/tunnel/config/Setup.cmd.erb", "#{dest}/Setup.cmd")
+
+    puts "------> Done!"
+    puts "Copy #{args[:package_destination_folder]} to a Windows machine and run Setup.cmd"
+  end
+
+end
+end
+end
