@@ -9,5 +9,6 @@
   <executable>%PLINK%</executable>
   <arguments>-batch -v -N -L 6379:127.0.0.1:6379 %BROKER_USER%@%BROKER_URL% -i "%BROKER_PRIVATE_KEY%"</arguments>
   <log mode="reset"/>
+  <logpath>%BASE%</logpath>
   <onfailure action="restart" delay="30 sec" />
 </service> 

@@ -9,5 +9,6 @@
   <arguments>%JAVA_OPTS% -jar "%LOGSTASH_JAR%" agent -f "%LOGSTASH_CONFIG%" -v</arguments> 
   <workingdirectory>%BASE%</workingdirectory>
   <log mode="reset"/>
+  <logpath>%BASE%</logpath>
   <onfailure action="restart" delay="30 sec" />
 </service>
