@@ -71,7 +71,7 @@
         "LogstashGroupDesiredCapacity": {
             "Type": "Number",
             "Description": "Desired capacity of logstash auto scaling group within the cluster.",
-            "Default": "1"
+            "Default": "2"
         },
         "LogstashGroupMaxSize": {
             "Type": "Number",
