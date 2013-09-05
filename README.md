@@ -8,7 +8,7 @@ Please see the [Wiki](https://github.com/cityindex/logsearch-development-flow/wi
 
 ### Contributing
 
-Have a bug, feature request or pull request? [Please open a new issue](https://github.com/cityindex/pressupbox-development-boilerplate/issues).
+Have a bug, feature request or pull request? [Please open a new issue](https://github.com/cityindex/logsearch-development-development-flow/issues).
 Anyone and everyone is welcome to contribute, but please take a moment to
 review the [guidelines for contributing](CONTRIBUTING.md) to make this process
 easy and effective for everyone, in particular:
