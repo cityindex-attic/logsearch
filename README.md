@@ -1,7 +1,7 @@
-elasticsearch-development-flow
+logsearch-development-flow
 ==============================
 
-A development environment with logstash + ElasticSearch + Kibana 3.
+A development environment with [logstash](http://logstash.net/) + [Elasticsearch](http://www.elasticsearch.org/) + [Kibana 3](http://three.kibana.org/).
 
 
 ### Quick Guide
