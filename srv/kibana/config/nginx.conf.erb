@@ -37,12 +37,23 @@ http {
             proxy_pass http://<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>:9200;
         }
 
-        location / {
-            root <%= ENV['APP_VENDOR_DIR'] %>/kibana;
-            index index.html;
+        location ~ ^/_cluster/(state|health)$ {
+            limit_except GET {
+                deny all;
+            }
+
+            proxy_pass http://<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>:9200;
         }
 
-        location ~ ^/_cluster/state$ {
+        location ~ ^/_cluster/nodes {
+            limit_except GET {
+                deny all;
+            }
+
+            proxy_pass http://<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>:9200;
+        }
+
+        location ~ ^/_nodes/stats {
             limit_except GET {
                 deny all;
             }
@@ -64,6 +75,15 @@ http {
             }
 
             proxy_pass http://<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>:9200;
+        }
+
+        location / {
+            if ($args ~ ^callback=) {
+                proxy_pass http://<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>:9200;
+            }
+
+            root <%= ENV['APP_VENDOR_DIR'] %>/kibana;
+            index index.html;
         }
     }
 }
