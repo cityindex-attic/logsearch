@@ -110,7 +110,7 @@
             "AllowedPattern": "(.*)\\.",
             "ConstraintDescription": "must be a FQDN ending in a period."
         },
-        "RepositoryBranch": {
+        "RepositoryCommit": {
             "Description": "Repository branch to bootstrap from.",
             "Type": "String",
             "Default": "master"
@@ -191,7 +191,7 @@
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
                     "InstanceType"          : { "Ref" : "ElasticsearchEbs0InstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
-                    "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
+                    "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
                     "SnapshotId"            : { "Ref" : "ElasticsearchEbsSnapshotId" },
                     "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
                 }
@@ -219,7 +219,7 @@
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
                     "InstanceType"          : { "Ref" : "ElasticsearchEphemeral0InstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
-                    "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
+                    "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
                     "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
                 }
             }
@@ -246,7 +246,7 @@
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
                     "InstanceType"          : { "Ref" : "Redis0InstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
-                    "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
+                    "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
                     "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
                 }
             }
@@ -277,7 +277,7 @@
                     "SpotPrice"             : { "Ref" : "LogstashSpotPrice" },
                     "KeyName"               : { "Ref" : "KeyName" },
                     "RedisHost"             : { "Ref" : "DnsSrvPrivateRedis" },
-                    "RepositoryBranch"      : { "Ref" : "RepositoryBranch" },
+                    "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
                     "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
                 }
             }

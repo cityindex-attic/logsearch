@@ -69,7 +69,7 @@
             "Description": "A key pair name for configuring the node.",
             "Default": "default"
         },
-        "RepositoryBranch": {
+        "RepositoryCommit": {
             "Default" : "master",
             "Type": "String",
             "Description": "A branch to use for bootstrapping."
@@ -165,7 +165,7 @@
                                         "",
                                         [
                                             "https://raw.github.com/cityindex/logsearch-development-flow/",
-                                            { "Ref": "RepositoryBranch" },
+                                            { "Ref": "RepositoryCommit" },
                                             "/bin/bootstrap"
                                         ]
                                     ]
@@ -251,7 +251,7 @@
                                 " --resource Instance0 ",
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch,kibana ", { "Ref": "RepositoryBranch" }, "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch,kibana ", { "Ref": "RepositoryCommit" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n",
                                 { "Ref" : "InstancePostScript" }, "\n",
                                 "cfn-signal --exit-code 0 --reason 'Provisioning complete' '", { "Ref": "WaitConditionHandle" }, "'\n"

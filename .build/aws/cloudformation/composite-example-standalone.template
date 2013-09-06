@@ -35,7 +35,7 @@
             "Description": "Name of an existing EC2 key pair for remote access to the EC2 instance.",
             "Type": "String"
         },
-        "RepositoryBranch": {
+        "RepositoryCommit": {
             "Description": "Repository branch to bootstrap from.",
             "Type": "String",
             "Default": "master"
@@ -264,7 +264,7 @@
                                         "",
                                         [
                                             "https://raw.github.com/cityindex/logsearch-development-flow/",
-                                            { "Ref": "RepositoryBranch" },
+                                            { "Ref": "RepositoryCommit" },
                                             "/bin/bootstrap"
                                         ]
                                     ]
@@ -351,7 +351,7 @@
                                 " --resource Instance0 ",
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch,kibana,logstash,redis,logstash_redis ", { "Ref": "RepositoryBranch" }, "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch,kibana,logstash,redis,logstash_redis ", { "Ref": "RepositoryCommit" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n",
                                 "cfn-signal --exit-code 0 --reason 'Provisioning complete' '", { "Ref": "Instance0WaitConditionHandle" }, "'\n"
                             ]
