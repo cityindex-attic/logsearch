@@ -41,5 +41,29 @@ http {
             root <%= ENV['APP_VENDOR_DIR'] %>/kibana;
             index index.html;
         }
+
+        location ~ ^/_cluster/state$ {
+            limit_except GET {
+                deny all;
+            }
+
+            proxy_pass http://<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>:9200;
+        }
+
+        location ~ ^/_stats$ {
+            limit_except GET {
+                deny all;
+            }
+
+            proxy_pass http://<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>:9200;
+        }
+
+        location ~ ^/_status$ {
+            limit_except GET {
+                deny all;
+            }
+
+            proxy_pass http://<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>:9200;
+        }
     }
 }
