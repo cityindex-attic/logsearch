@@ -1,0 +1,11 @@
+logsearch-development-flow
+Copyright 2013 City Index
+
+This product includes software developed by
+City Index (http://www.cityindex.com/).
+   
+This product includes third party software subject to the following copyrights:
+- ElasticSearch - Copyright 2009-2011 ElasticSearch and Shay Banon
+
+The licenses for these (and other) third party components are packaged within
+their respective jar files included with this distribution.
