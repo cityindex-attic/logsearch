@@ -407,7 +407,7 @@
         "QueueSizeScaleUpAlarm": {
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
-                "AlarmDescription": "Alarm if average queue size is greater than 60,000 messages for 5 minutes (scale up).",
+                "AlarmDescription": "Alarm if average queue size is greater than 120,000 messages for 5 minutes (scale up).",
                 "Namespace": "logsearch",
                 "MetricName": "QueueSize",
                 "Dimensions": [
@@ -419,7 +419,7 @@
                 "Statistic": "Average",
                 "Period": "300",
                 "EvaluationPeriods": "1",
-                "Threshold": "60000",
+                "Threshold": "120000",
                 "ComparisonOperator": "GreaterThanThreshold",
                 "AlarmActions": [
                     {
