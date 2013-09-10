@@ -80,7 +80,7 @@
             "Description": "A redis host to receive messages from.",
             "MinLength" : "1"
         },
-        "RepositoryBranch": {
+        "RepositoryCommit": {
             "Default" : "master",
             "Type": "String",
             "Description": "A branch to use for bootstrapping."
@@ -170,7 +170,7 @@
                                         "",
                                         [
                                             "https://raw.github.com/cityindex/logsearch-development-flow/",
-                                            { "Ref": "RepositoryBranch" },
+                                            { "Ref": "RepositoryCommit" },
                                             "/bin/bootstrap"
                                         ]
                                     ]
@@ -230,7 +230,7 @@
                                 " --resource LaunchConfiguration ",
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh logstash,logstash_redis ", { "Ref": "RepositoryBranch" }, "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh logstash,logstash_redis ", { "Ref": "RepositoryCommit" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n",
                                 { "Ref" : "InstancePostScript" }, "\n",
                                 "cfn-signal --exit-code 0 --reason 'Provisioning complete' '", { "Ref": "WaitConditionHandle" }, "'\n"
