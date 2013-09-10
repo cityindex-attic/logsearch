@@ -56,12 +56,12 @@
         "ElasticsearchEbs0InstanceType": {
             "Type": "String",
             "Description": "Instance type for the EBS-based elasticsearch node.",
-            "Default" : "m1.large"
+            "Default" : "m2.xlarge"
         },
         "ElasticsearchEphemeral0InstanceType": {
             "Type": "String",
             "Description": "Instance type for the ephemeral-based elasticsearch node.",
-            "Default" : "m1.large"
+            "Default" : "m2.xlarge"
         },
         "Redis0InstanceType": {
             "Type": "String",
