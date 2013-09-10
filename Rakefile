@@ -28,7 +28,9 @@ end
 
 desc "Install the foreman tasks as system services (requires sudo)"
 task :install_system_services do
-    sh "foreman export --app app --user #{ENV['APP_USER']} upstart /etc/init"
+    lc = ENV['APP_LOGSTASH_WORKERS'] || `grep -c ^processor /proc/cpuinfo`.chomp
+
+    sh "foreman export --app app --user #{ENV['APP_USER']} --concurrency elasticsearch=1,kibana=1,redis=1,logstash_redis=#{lc} upstart /etc/init"
     sh "sed -i '1s/^/limit nofile 32000 64000\\n/' /etc/init/app-elasticsearch-1.conf"
 end
 
