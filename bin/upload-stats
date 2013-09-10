@@ -18,5 +18,5 @@ else
 fi
 
 /app/app/bin/gather-stats $3 $4 > /tmp/gather-stats-$$.json
-aws s3 put-object --bucket $1 --key "$2$REF_STACK/$REF_NAME.json" --acl public-read --body /tmp/gather-stats-$$.json
+aws s3api put-object --bucket $1 --key "$2$REF_STACK/$REF_NAME.json" --acl public-read --body /tmp/gather-stats-$$.json
 rm /tmp/gather-stats-$$.json
