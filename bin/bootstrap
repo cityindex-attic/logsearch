@@ -66,3 +66,9 @@ for SRV in $(echo $2 | sed 's/,/\n/g') ; do
         sudo start app-$SRV || true # true in case it's already running
     fi
 done
+
+for SRV in $(ls -l /etc/init/app-* | sed 's/.*app-\(.*\).conf/\1/' | grep -ve '-[0-9]\+$') ; do
+    if ! echo ",$2," | grep ",$SRV," > /dev/null ; then
+        sudo rm /etc/init/app-$SRV*
+    fi
+done
