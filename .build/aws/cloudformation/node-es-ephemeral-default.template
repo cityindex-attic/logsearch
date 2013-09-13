@@ -131,6 +131,7 @@
                                             "export APP_DATA_DIR=/app/data", "\n",
                                             "export APP_USER=ubuntu", "\n",
                                             "export APP_CLUSTER_NAME=", { "Ref" : "ClusterName" }, "\n",
+                                            "export APP_NODE_NAME=ElasticsearchEphemeral", "\n",
                                             "export APP_CONFIG_ES_IPADDRESS=0.0.0.0", "\n",
                                             "export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup" }, "\n",
                                             "export APP_CONFIG_ES_EXTRA='\"node\":{\"master\":false}'", "\n"
