@@ -12,3 +12,4 @@ srv/*/config/*
 
 Vagrantfile.local
 packages/
+example/fabfile.pyc
