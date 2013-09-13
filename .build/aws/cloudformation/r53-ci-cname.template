@@ -1,0 +1,72 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Manage the CNAME of the CI cluster.",
+    "Parameters": {
+        "R53ZoneName": {
+            "Type": "String",
+            "Description": "Route 53 Hosted Zone for domain registration.",
+            "Default": "example.com.",
+            "AllowedPattern": "(.*)\\.",
+            "ConstraintDescription": "must be a FQDN ending in a period."
+        },
+        "R53HostName": {
+            "Type": "String",
+            "Description": "Public host name used within the zone.",
+            "Default": "logsearch"
+        },
+        "TargetHostName": {
+            "Type": "String",
+            "Description": "Target FQDN for the aliases.",
+            "Default": "logsearch-20130913a.example.com"
+        }
+    },
+    "Resources": {
+        "DnsMain": {
+            "Type": "AWS::Route53::RecordSet",
+            "Properties": {
+                "HostedZoneName" : { "Ref" : "R53ZoneName" },
+                "Name": {
+                    "Fn::Join" : [
+                        "",
+                        [
+                            { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
+                        ]
+                    ]
+                },
+                "Type" : "CNAME",
+                "TTL" : "60",
+                "ResourceRecords" : [
+                    { "Ref" : "TargetHostName" }
+                ]
+            }
+        },
+        "DnsRedis": {
+            "Type": "AWS::Route53::RecordSet",
+            "Properties": {
+                "HostedZoneName" : { "Ref" : "R53ZoneName" },
+                "Name": {
+                    "Fn::Join" : [
+                        "",
+                        [
+                            "redis.",
+                            { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
+                        ]
+                    ]
+                },
+                "Type" : "CNAME",
+                "TTL" : "60",
+                "ResourceRecords" : [
+                    {
+                        "Fn::Join" : [
+                            "",
+                            [
+                                "redis.",
+                                { "Ref" : "TargetHostName" }
+                            ]
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}
