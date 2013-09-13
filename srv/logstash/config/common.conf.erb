@@ -18,7 +18,7 @@ filter {
     #
 
     ruby {
-        code => "(event.message = event.message[0,<%= $LOGSTASH_MESSAGE_MAXSIZE %>] and (event.tags ||= []) << '_groktrimmed') if event.message.length > <%= $LOGSTASH_MESSAGE_MAXSIZE %>"
+        code => "(event.message = event.message[0,<%= $LOGSTASH_MESSAGE_MAXSIZE %>] and (event.tags ||= []) << '_groktrimmed') if event.message and event.message.length > <%= $LOGSTASH_MESSAGE_MAXSIZE %>"
     }
 
     #
