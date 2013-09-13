@@ -130,6 +130,7 @@
                                             "export APP_TMP_DIR=/app/tmp", "\n",
                                             "export APP_DATA_DIR=/app/data", "\n",
                                             "export APP_USER=ubuntu", "\n",
+                                            "export APP_DEPLOY_NAME=", { "Ref" : "AWS::StackName" }, "\n",
                                             "export APP_CLUSTER_NAME=", { "Ref" : "ClusterName" }, "\n",
                                             "export APP_NODE_NAME=Redis", "\n",
                                             "export APP_CONFIG_REDIS_IPADDRESS=0.0.0.0", "\n",
