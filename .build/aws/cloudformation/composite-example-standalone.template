@@ -246,7 +246,7 @@
                                             "export APP_TMP_DIR=/app/tmp", "\n",
                                             "export APP_DATA_DIR=/app/data", "\n",
                                             "export APP_USER=ubuntu", "\n",
-                                            "export APP_CONFIG_ES_CLUSTER=", { "Ref" : "ClusterName" }, "\n",
+                                            "export APP_CLUSTER_NAME=", { "Ref" : "ClusterName" }, "\n",
                                             "export APP_CONFIG_ES_IPADDRESS=`ec2metadata --local-ipv4`", "\n",
                                             "#export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup0" }, "\n",
                                             "export APP_CONFIG_REDIS_IPADDRESS=`ec2metadata --local-ipv4`", "\n",
