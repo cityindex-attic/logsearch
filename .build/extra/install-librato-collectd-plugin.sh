@@ -17,6 +17,9 @@ if [ ! -e /etc/collectd/collectd.d/librato.conf ] ; then
     fi
 
     wget -qO /opt/collectd/lib/collectd/plugins/python/collectd-librato.py 'https://raw.github.com/librato/collectd-librato/master/lib/collectd-librato.py'
+
+    . /app/.env
+
     cat <<EOF > /etc/collectd/collectd.d/librato.conf
 <Plugin python>
     ModulePath "/opt/collectd/lib/collectd/plugins/python/"
