@@ -32,6 +32,12 @@ namespace :logstash do
     sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -Dnetworkaddress.cache.ttl=32 -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_redis.conf'"
   end
 
+  desc "Run logstash forwarding lumberjack messages to redis"
+  task :lumberjack_to_redis, :logstash_type, :path do |t, args|
+    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/lumberjack_to_redis.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/lumberjack_to_redis.conf", args)
+    sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -Dnetworkaddress.cache.ttl=32 -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/lumberjack_to_redis.conf'"
+  end
+
   desc "Run logstash off json file via stdin"
   task :pv_jsonfile_to_elasticsearch, :logstash_type, :path do |t, args|
     process_erb(
