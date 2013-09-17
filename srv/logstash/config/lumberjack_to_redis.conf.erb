@@ -1,0 +1,23 @@
+input {
+    lumberjack {
+        # 1.2+ does not require type
+        type => "lumberjack"
+        host => "<%= ENV['APP_CONFIG_LUMBERJACK_HOST'] || '0.0.0.0'  %>"
+        port => "<%= ENV['APP_CONFIG_LUMBERJACK_PORT'] || '5043'  %>"
+        ssl_certificate => "<%= ENV['APP_DATA_DIR'] %>/lumberjack.crt"
+        ssl_key => "<%= ENV['APP_DATA_DIR'] %>/lumberjack.key"
+    }
+}
+
+output {
+    # uncomment for debugging
+    #stdout { debug => true debug_format => "json"}
+
+    redis {
+        host => "<%= ENV['APP_CONFIG_REDIS_IPADDRESS'] || '127.0.0.1'  %>"
+        data_type => "list"
+        key => "<%= ENV['APP_CONFIG_REDIS_KEY'] || 'logstash'  %>"
+        batch => true
+        batch_events => 50
+    }
+}
