@@ -16,7 +16,7 @@ def eslog_search(path, data)
   return res_data
 end
 
-def eslog_simple_search(index, query = '*')
+def eslog_simple_search(index, query = '*:*')
   eslog_search(
     (index ? (index + '/') : '') + '_search',
     {

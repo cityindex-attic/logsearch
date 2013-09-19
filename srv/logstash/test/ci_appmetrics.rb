@@ -21,7 +21,7 @@ class SimpleCiAppmetricsTest < Test::Unit::TestCase
   def test_search_by_name
     res = eslog_simple_search(
       nil,
-      '@fields.name:"Latency CIAPI.LogIn"'
+      'name:"Latency CIAPI.LogIn"'
     )
 
     assert_equal 1, res['hits']['total']
@@ -30,7 +30,7 @@ class SimpleCiAppmetricsTest < Test::Unit::TestCase
   def test_search_by_value
     res = eslog_simple_search(
       nil,
-      '@fields.value:"10.11.12.13"'
+      'value:"10.11.12.13"'
     )
 
     assert_equal 2, res['hits']['total']

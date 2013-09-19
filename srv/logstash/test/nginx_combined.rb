@@ -21,7 +21,7 @@ class SimpleNginxCombinedTest < Test::Unit::TestCase
   def test_search_by_remote_addr
     res = eslog_simple_search(
       nil,
-      '@fields.remote_addr:192.168.85.12'
+      'remote_addr:192.168.85.12'
     )
 
     assert_equal 1, res['hits']['total']
@@ -30,7 +30,7 @@ class SimpleNginxCombinedTest < Test::Unit::TestCase
   def test_search_by_request_method
     res = eslog_simple_search(
       nil,
-      '@fields.request_method:GET'
+      'request_method:GET'
     )
 
     assert_equal 4, res['hits']['total']
@@ -39,7 +39,7 @@ class SimpleNginxCombinedTest < Test::Unit::TestCase
   def test_search_by_request_uri
     res = eslog_simple_search(
       nil,
-      '@fields.request_uri:"/favicon.ico"'
+      'request_uri:"/favicon.ico"'
     )
 
     assert_equal 1, res['hits']['total']
@@ -48,7 +48,7 @@ class SimpleNginxCombinedTest < Test::Unit::TestCase
   def test_search_by_request_httpversion
     res = eslog_simple_search(
       nil,
-      '@fields.request_httpversion:1.1'
+      'request_httpversion:1.1'
     )
 
     assert_equal 5, res['hits']['total']
@@ -57,7 +57,7 @@ class SimpleNginxCombinedTest < Test::Unit::TestCase
   def test_search_by_status
     res = eslog_simple_search(
       nil,
-      '@fields.status:302'
+      'status:302'
     )
 
     assert_equal 1, res['hits']['total']
@@ -66,7 +66,7 @@ class SimpleNginxCombinedTest < Test::Unit::TestCase
   def test_search_by_body_bytes_sent
     res = eslog_simple_search(
       nil,
-      '@fields.body_bytes_sent:976'
+      'body_bytes_sent:976'
     )
 
     assert_equal 1, res['hits']['total']
@@ -92,7 +92,7 @@ class SimpleNginxCombinedTest < Test::Unit::TestCase
   def test_search_by_http_referer
     res = eslog_simple_search(
       nil,
-      '@fields.http_referer:"http://labs.cityindex.com/docs/"'
+      'http_referer:"http://labs.cityindex.com/docs/"'
     )
 
     assert_equal 1, res['hits']['total']
@@ -101,7 +101,7 @@ class SimpleNginxCombinedTest < Test::Unit::TestCase
   def test_search_by_http_user_agent
     res = eslog_simple_search(
       nil,
-      '@fields.http_user_agent:"\"Camo Asset Proxy 1.0.5\""'
+      'http_user_agent:"\"Camo Asset Proxy 1.0.5\""'
     )
 
     assert_equal 1, res['hits']['total']

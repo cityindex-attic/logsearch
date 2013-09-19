@@ -3,7 +3,7 @@
 input {
     file {
         type => "<%= @args[:logstash_type] %>"
-        format => "<%= @args[:logstash_format] || 'plain' %>"
+        codec => "<%= @args[:logstash_format] || 'line' %>"
         path => "<%= @args[:path] %>"
         sincedb_path => "<%= Dir.getwd %>/logstash_position.db"
         sincedb_write_interval => 10

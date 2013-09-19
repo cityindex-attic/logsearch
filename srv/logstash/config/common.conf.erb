@@ -3,14 +3,8 @@ filter {
     # for ignore particularly useless lines
     #
 
-    grep {
-        match => ["@message", "^(\w)*$"]
-        negate => true
-    }
-
-    grep {
-        match => ["@message", "^#"]
-        negate => true
+    if [message] =~ /^(\w)*$/ or [message] =~ /^#/ {
+        drop { }
     }
 
     #
@@ -18,17 +12,18 @@ filter {
     #
 
     ruby {
-        code => "(event.message = event.message[0,<%= $LOGSTASH_MESSAGE_MAXSIZE %>] and (event.tags ||= []) << '_groktrimmed') if event.message and event.message.length > <%= $LOGSTASH_MESSAGE_MAXSIZE %>"
+        code => "(event['message'] = event['message'][0,<%= $LOGSTASH_MESSAGE_MAXSIZE %>] and (event['tags'] ||= []) << '_groktrimmed') if event['message'] and event['message'].length > <%= $LOGSTASH_MESSAGE_MAXSIZE %>"
     }
 
     #
     # the various log types that we're interested in
     #
 
-    grok {
-        type => "apache_combined"
-        pattern => "%{COMBINEDAPACHELOG}"
-        add_tag => "apache"
+    if [type] == "apache_combined" {
+        grok {
+            match => [ "message", "%{COMBINEDAPACHELOG}" ]
+            add_tag => "apache"
+        }
     }
 
     #include all filters
@@ -37,33 +32,39 @@ filter {
     <% end %>
 
 <% ["iis_default","iis_tradingapi"].each do |type| %>
-    grok {
-        type => "<%=type%>"
-        pattern => "%{DATESTAMP:datetime} %{HOST:s_sitename} %{HOST:s_computername} %{IP:s_ip} %{WORD:cs_method} %{URIPATHPARAM:cs_uri_stem} (?:%{NOTSPACE:cs_uri_query}|-) %{POSINT:s_port} (?:%{USER:cs_username}|-) %{IP:c_ip} (?:HTTP/%{NUMBER:cs_version}|-) (?:%{NOTSPACE:cs_user_agent}|-) (?:%{NOTSPACE:cs_cookie}|-) (?:%{URI:cs_referer}|-) (?:%{URIHOST:cs_host}|-) %{POSINT:sc_status} %{INT:sc_substatus} %{INT:win32_status} %{NONNEGINT:sc_bytes} %{NONNEGINT:cs_bytes} %{NONNEGINT:time_taken}"
-        add_tag => "iis"
-        add_tag => "<%=type%>"
+    if [type] == "<%= type %>" {
+        grok {
+            match => [ "message", "%{TIMESTAMP_ISO8601:datetime} %{HOST:s_sitename} %{HOST:s_computername} %{IP:s_ip} %{WORD:cs_method} %{URIPATHPARAM:cs_uri_stem} (?:%{NOTSPACE:cs_uri_query}|-) %{POSINT:s_port} (?:%{USER:cs_username}|-) %{IP:c_ip} (?:HTTP/%{NUMBER:cs_version}|-) (?:%{NOTSPACE:cs_user_agent}|-) (?:%{NOTSPACE:cs_cookie}|-) (?:%{URI:cs_referer}|-) (?:%{URIHOST:cs_host}|-) %{POSINT:sc_status} %{INT:sc_substatus} %{INT:win32_status} %{NONNEGINT:sc_bytes} %{NONNEGINT:cs_bytes} %{NONNEGINT:time_taken}" ]
+            add_tag => "iis"
+            add_tag => "<%=type%>"
+        }
     }
 <% end %>
 
-    grok {
-        type => "nginx_combined"
-        pattern => "%{IPORHOST:remote_addr} - (?:%{USER:remote_user}|-) \[%{HTTPDATE:time_local}\] \"(?:%{WORD:request_method} %{URIPATHPARAM:request_uri}(?: HTTP/%{NUMBER:request_httpversion})?|-)\" %{INT:status} (?:%{NONNEGINT:body_bytes_sent}|-) \"(?:%{URI:http_referer}|-)\" %{QS:http_user_agent}"
-        add_tag => "nginx"
+    if [type] == "nginx_combined" {
+        grok {
+            match => [ "message", "%{IPORHOST:remote_addr} - (?:%{USER:remote_user}|-) \[%{HTTPDATE:time_local}\] \"(?:%{WORD:request_method} %{URIPATHPARAM:request_uri}(?: HTTP/%{NUMBER:request_httpversion})?|-)\" %{INT:status} (?:%{NONNEGINT:body_bytes_sent}|-) \"(?:%{URI:http_referer}|-)\" %{QS:http_user_agent}" ]
+            add_tag => "nginx"
+        }
     }
 
-    grok {
-        type => "ci_appmetrics"
-        pattern => "%{TIMESTAMP_ISO8601:time}\t(?<name>[^\t]+)\t%{GREEDYDATA:value}"
+    if [type] == "ci_appmetrics" {
+        grok {
+            match => [ "message", "%{TIMESTAMP_ISO8601:time}\t(?<name>[^\t]+)\t%{GREEDYDATA:value}" ]
+        }
     }
 
-    grok {
-        type => "ci_log4net"
-        pattern => "%{NOTSPACE:level}\s+%{TIMESTAMP_ISO8601:datetime} %{NOTSPACE:thread} %{NOTSPACE:logger} %{GREEDYDATA:message}"
+    if [type] == "ci_log4net" {
+        grok {
+            match => [ "message", "%{NOTSPACE:level}\s+%{TIMESTAMP_ISO8601:datetime} %{NOTSPACE:thread} %{NOTSPACE:logger} %{GREEDYDATA:message}" ]
+        }
     }
 
     #
     # Tag TradingAPI events to map uri to http://labs.cityindex.com/docs/ > Contents > CIAPI Reference > HTTP Services > Group > Service
     #
+
+    if [type] == "iis_tradingapi" {
 <% services = [
      { :group => "Authentication", :name => "LogOn", :method => "POST", :uri => '^/TradingApi/session$'},
      { :group => "Authentication", :name => "DeleteSession", :method => "POST", :uri => '^/TradingApi/session/deleteSession$'},
@@ -78,107 +79,123 @@ filter {
    ]
 
    services.each do |service| %>
-    grep {
-        type => "iis_tradingapi"
-        add_field => [ "ci_tradingapi_servicegroup", "<%=service[:group]%>" ]
-        add_field => [ "ci_tradingapi_servicename", "<%=service[:name]%>" ]
-        match => [ "cs_method", "(?i:<%=service[:method]%>)" ]
-        match => [ "cs_uri_stem", "(?i:<%=service[:uri]%>)" ]
-        drop => false
-    }
+        if [cs_method] == "<%= service[:method] %>" and [cs_uri_stem] =~ <%= Regexp.new(service[:uri]).inspect %> {
+            mutate {
+                add_field => [ "ci_tradingapi_servicegroup", "<%=service[:group]%>" ]
+                add_field => [ "ci_tradingapi_servicename", "<%=service[:name]%>" ]
+            }
+        }
 <% end %>
-
-    alter {
-        type => "ci_log4net"
-        coalesce => [
-            "@source_tz",
-            "%{@source_tz}",
-            # NOTE! this is applying a business-specific non-UTC timezone
-            "+01:00"
-        ]
     }
 
-    mutate {
-        type => "ci_log4net"
-        add_field => [ "datetime_tz", "%{datetime}%{@source_tz}" ]
+    if [type] == "ci_log4net" {
+        alter {
+            coalesce => [
+                "@source_tz",
+                "%{@source_tz}",
+                # NOTE! this is applying a business-specific non-UTC timezone
+                "+01:00"
+            ]
+        }
+    
+        mutate {
+            add_field => [ "datetime_tz", "%{datetime}%{@source_tz}" ]
+        }
     }
     
     #
     # specify the date field names for various types
     #
 
-    date {
-        type => "apache_combined"
-        match => [ "timestamp", "dd/MMM/yyyy:HH:mm:ss Z" ]
+    if [type] == "apache_combined" {
+        date {
+            match => [ "timestamp", "dd/MMM/yyyy:HH:mm:ss Z" ]
+        }
     }
 
 <% ["iis_default","iis_tradingapi"].each do |type| %>
-    date {
-        type => "<%=type%>"
-        match => [ "datetime", "yyyy-MM-dd HH:mm:ss" ]
+    if [type] == "<%= type %>" {
+        date {
+            match => [ "datetime", "yyyy-MM-dd HH:mm:ss" ]
+        }
     }
 <% end %>
 
-    date {
-        type => "nginx_combined"
-        match => [ "time_local", "dd/MMM/YYYY:HH:mm:ss Z" ]
+    if [type] == "nginx_combined" {
+        date {
+            match => [ "time_local", "dd/MMM/YYYY:HH:mm:ss Z" ]
+        }
     }
 
-    date {
-        type => "stackato_apptail"
-        match => [ "HumanTime", "ISO8601" ]
+    if [type] == "stackato_apptail" {
+        json {
+            source => "message"
+        }
+
+        date {
+            match => [ "HumanTime", "ISO8601" ]
+        }
     }
 
-    date {
-        type => "stackato_event"
-        match => [ "UnixTime", "UNIX" ]
+    if [type] == "stackato_event" {
+        json {
+            source => "message"
+        }
+
+        date {
+            match => [ "UnixTime", "UNIX" ]
+        }
     }
 
-    date {
-        type => "stackato_systail"
-        match => [ "UnixTime", "UNIX" ]
+    if [type] == "stackato_systail" {
+        json {
+            source => "message"
+        }
+
+        date {
+            match => [ "UnixTime", "UNIX" ]
+        }
     }
 
-    date {
-        type => "ci_appmetrics"
-        match => [ "time", "YYYY-MM-dd HH:mm:ss.SSSSSSS" ]
+    if [type] == "ci_appmetrics" {
+        date {
+            match => [ "time", "YYYY-MM-dd HH:mm:ss.SSSSSSS" ]
+        }
     }
 
-    date {
-        type => "ci_log4net"
-        match => [ "datetime_tz", "YYYY-MM-dd HH:mm:ss,SSSZ" ]
+    if [type] == "ci_log4net" {
+        date {
+            match => [ "datetime_tz", "YYYY-MM-dd HH:mm:ss,SSSZ" ]
+        }
     }
 
     #
     # type-casting for more advanced searches
     #
 
-    mutate {
-        type => "ci_log4net"
-        remove => [ "datetime_tz" ]
+    if [type] == "ci_log4net" {
+        mutate {
+            remove_field => [ "datetime_tz" ]
+        }
     }
 
-    mutate {
-        convert => [ "status", "integer" ]
-        convert => [ "body_bytes_sent", "integer" ]
-        tags => [ "nginx" ]
+    if "nginx" in [tags] {
+        mutate {
+            convert => [ "status", "integer" ]
+            convert => [ "body_bytes_sent", "integer" ]
+        }
     }
 
-    mutate {
-        convert => [ "s_port", "integer" ]
-        convert => [ "sc_status", "integer" ]
-        convert => [ "sc_substatus", "integer" ]
-        convert => [ "win32_status", "integer" ]
-        convert => [ "sc_bytes", "integer" ]
-        convert => [ "cs_bytes", "integer" ]
-        convert => [ "time_taken", "integer" ]
-        gsub => [ "cs_referer", "\\+", " " ]
-        tags => [ "iis" ]
-    }
-
-    json {
-        type => "stackato_event"
-        source => "Info"
-        target => "data"
+    if "iis" in [tags] {
+        mutate {
+            convert => [ "s_port", "integer" ]
+            convert => [ "sc_status", "integer" ]
+            convert => [ "sc_substatus", "integer" ]
+            convert => [ "win32_status", "integer" ]
+            convert => [ "sc_bytes", "integer" ]
+            convert => [ "cs_bytes", "integer" ]
+            convert => [ "time_taken", "integer" ]
+            gsub => [ "cs_referer", "\\+", " " ]
+        }
     }
 }

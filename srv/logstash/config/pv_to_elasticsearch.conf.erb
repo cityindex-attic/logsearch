@@ -3,13 +3,13 @@
 input {
     stdin {
         type => "<%= @args[:logstash_type] %>"
-        format => "<%= @args[:logstash_format] || 'plain' %>"
+        codec => "<%= @args[:logstash_format] || 'line' %>"
     }
 }
 
 output {
     # uncomment for debugging
-    #stdout { debug => true debug_format => "json"}
+#    stdout { codec => "rubydebug" }
 
     elasticsearch_http {
         # this will lose #({events-in-log} % {flush_size}) events due to unflushed buffer on exit
