@@ -1,0 +1,10 @@
+if [type] == "apache_combined" {
+    grok {
+        match => [ "message", "%{COMBINEDAPACHELOG}" ]
+        add_tag => "apache"
+    }
+
+    date {
+        match => [ "timestamp", "dd/MMM/yyyy:HH:mm:ss Z" ]
+    }
+}

@@ -1,0 +1,9 @@
+if [type] == "stackato_event" {
+    json {
+        source => "message"
+    }
+
+    date {
+        match => [ "UnixTime", "UNIX" ]
+    }
+}
