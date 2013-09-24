@@ -25,10 +25,10 @@ fi
 #
 
 if [ ! -e $APP_VENDOR_DIR/elasticsearch/plugins/cloud-aws ] ; then
-    echo "Downloading elasticsearch/cloud-aws-1.12.0..."
+    echo "Downloading elasticsearch/cloud-aws-1.14.0..."
 
     pushd $APP_VENDOR_DIR/elasticsearch/
-    ./bin/plugin -install elasticsearch/elasticsearch-cloud-aws/1.12.0
+    ./bin/plugin -install elasticsearch/elasticsearch-cloud-aws/1.14.0
     popd
 fi
 
