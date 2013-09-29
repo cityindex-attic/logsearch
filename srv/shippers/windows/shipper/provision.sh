@@ -11,9 +11,9 @@ function display_file_info {
 #
 
 if [ ! -e $DEST/logstash.jar ] ; then
-    echo "Downloading logstash-1.2.1..."
+    echo "Downloading logstash-1.1.13-pr19b5(patched)..."
     
-    curl --location -o $DEST/logstash.jar https://download.elasticsearch.org/logstash/logstash/logstash-1.2.1-flatjar.jar
+    curl --location -o $DEST/logstash.jar http://ci-elasticsearch-development-flow.s3.amazonaws.com/logstash-1.1.13-monolithic-pr19b5.jar
 fi
 
 echo "logstash:$(display_file_info $DEST/logstash.jar)"
