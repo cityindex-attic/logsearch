@@ -44,7 +44,7 @@ http {
             proxy_pass http://<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>:9200;
         }
 
-        location ~ ^/_cluster/(state|health)$ {
+        location ~ ^/_cluster/(state|health) {
             limit_except GET {
                 deny all;
             }
@@ -68,7 +68,15 @@ http {
             proxy_pass http://<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>:9200;
         }
 
-        location ~ ^/_stats$ {
+        location ~ ^/(_stats|_status|_mapping)$ {
+            limit_except GET {
+                deny all;
+            }
+
+            proxy_pass http://<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>:9200;
+        }
+
+        location ~ ^/.*/(_aliases|_mapping|_stats|_status)$ {
             limit_except GET {
                 deny all;
             }
