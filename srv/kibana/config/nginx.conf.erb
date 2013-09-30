@@ -17,6 +17,13 @@ http {
     proxy_read_timeout 90;
     proxy_temp_path <%= ENV['APP_TMP_DIR'] %>/nginx-proxy-temp;
 
+    gzip on;
+    gzip_comp_level 2;
+    gzip_disable "MSIE [1-6]\.(?!.*SV1)";
+    gzip_min_length 1024;
+    gzip_proxied expired no-cache no-store private auth;
+    gzip_types application/json;
+
     server {
         listen *:80;
         server_name kibana.vagrant;
