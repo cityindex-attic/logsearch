@@ -2,10 +2,9 @@ rootLogger: INFO, console, file
 logger:
     # log action execution errors for easier debugging
     action: DEBUG
-
-    # gateway
     gateway: DEBUG
-
+    cluster: DEBUG
+    indices: DEBUG
     request: INFO, request_log_file
 
 additivity:
