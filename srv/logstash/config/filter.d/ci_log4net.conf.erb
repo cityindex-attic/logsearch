@@ -3,24 +3,8 @@ if [type] == "ci_log4net" {
         match => [ "message", "%{NOTSPACE:level}\s+%{TIMESTAMP_ISO8601:datetime} %{NOTSPACE:thread} %{NOTSPACE:logger} %{GREEDYDATA:message}" ]
     }
 
-    alter {
-        coalesce => [
-            "@source_tz",
-            "%{@source_tz}",
-            # NOTE! this is applying a business-specific non-UTC timezone
-            "+01:00"
-        ]
-    }
-
-    mutate {
-        add_field => [ "datetime_tz", "%{datetime}%{@source_tz}" ]
-    }
-
     date {
-        match => [ "datetime_tz", "YYYY-MM-dd HH:mm:ss,SSSZ" ]
-    }
-
-    mutate {
-        remove_field => [ "datetime_tz" ]
+        match => [ "datetime", "YYYY-MM-dd HH:mm:ss,SSS" ]
+        timezone => "Europe/London"
     }
 }
