@@ -37,7 +37,7 @@ http {
             proxy_pass http://elasticsearch;
         }
 
-        location ~ ^/.*/_search$ {
+        location ~ ^/[^\/\*]+/_search$ {
             proxy_pass http://elasticsearch;
         }
 
