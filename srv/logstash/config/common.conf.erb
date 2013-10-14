@@ -25,6 +25,8 @@ filter {
     # the various log types that we're interested in
     #
 
+    mutate { type => 'ci_appmetrics' rename => [ 'message', '@message' ] }
+
     grok {
         type => "apache_combined"
         pattern => "%{COMBINEDAPACHELOG}"
