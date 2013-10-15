@@ -34,6 +34,11 @@ namespace :logstash do
 
   desc "Run logstash forwarding lumberjack messages to redis"
   task :lumberjack_to_redis, :logstash_type, :path do |t, args|
+    if ! File.exists?("#{ENV['APP_DATA_DIR']}/lumberjack.key")
+      puts "ERROR: #{ENV['APP_DATA_DIR']}/lumberjack.key is missing"
+      exit 1
+    end
+
     process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/lumberjack_to_redis.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/lumberjack_to_redis.conf", args)
     sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/lumberjack_to_redis.conf'"
   end
