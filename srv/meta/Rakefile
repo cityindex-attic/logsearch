@@ -15,13 +15,13 @@ namespace :meta do
 
   desc "Generate and forward some test logs to elasticsearch"
   task :generate_sample_logs do
-    puts "-----> Generating some sample log with entries over the last hour"
+
+    puts "-----> Generating some sample logs with entries over the last hour"
     nginx_log = "/tmp/nginx-access.log"
     process_erb("#{ENV['APP_APP_DIR']}/srv/meta/log-generators/nginx/access.log.erb", nginx_log)
 
     puts "-----> Importing the generated logs into elasticsearch (this takes a few minutes...)"
-    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf", { :logstash_type => "nginx_combined" })
-    sh "/usr/bin/pv -ept #{nginx_log} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf'"
+    Rake::Task["logstash:pv_to_elasticsearch"].invoke("nginx_combined", nginx_log)
 
   end
 
