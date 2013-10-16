@@ -12,4 +12,17 @@ namespace :meta do
       
     sh "/usr/bin/java -Djava.io.tmpdir='#{ENV['APP_TMP_DIR']}' -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -f '#{ENV['APP_APP_DIR']}/srv/meta/config/loggly.conf'"
   end
+
+  desc "Generate and forward some test logs to elasticsearch"
+  task :generate_sample_logs do
+
+    puts "-----> Generating some sample logs with entries over the last hour"
+    nginx_log = "/tmp/nginx-access.log"
+    process_erb("#{ENV['APP_APP_DIR']}/srv/meta/log-generators/nginx/access.log.erb", nginx_log)
+
+    puts "-----> Importing the generated logs into elasticsearch (this takes a few minutes...)"
+    Rake::Task["logstash:pv_to_elasticsearch"].invoke("nginx_combined", nginx_log)
+
+  end
+
 end

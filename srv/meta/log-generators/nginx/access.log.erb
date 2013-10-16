@@ -1,0 +1,17 @@
+<% 
+require 'time'
+start_time = Time.now.utc - (60 * 60) #one hour ago
+now = Time.now.utc
+while start_time < now do
+   start_time = start_time + 25
+   timestamp = start_time.strftime "%d/%b/%Y:%H:%M:%S %z"
+%>
+10.0.2.2 - - [<%=timestamp%>] "GET /config.js HTTP/1.1" 200 1196 "http://localhost:4567/index.html" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.69 Safari/537.36" 0.000
+10.0.2.2 - - [<%=timestamp%>] "GET /js/app.js HTTP/1.1" 200 1883 "http://localhost:4567/index.html" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.69 Safari/537.36" 0.000
+2013/10/15 17:44:20 [error] 1507#0: *3 open() "/app/vendor/kibana/favicon.ico" failed (2: No such file or directory), client: 10.0.2.2, server: kibana.vagrant, request: "GET /favicon.ico HTTP/1.1", host: "localhost:4567"
+10.0.2.2 - - [<%=timestamp%>] "GET /favicon.ico HTTP/1.1" 404 571 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.69 Safari/537.36" 0.000
+10.0.2.2 - - [<%=timestamp%>] "GET /common/font/fontawesome-webfont.woff?v=3.2.1 HTTP/1.1" 200 43572 "http://localhost:4567/index.html" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.69 Safari/537.36" 0.000
+10.0.2.2 - - [<%=timestamp%>] "GET /_aliases HTTP/1.1" 200 38 "http://localhost:4567/index.html" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.69 Safari/537.36" 0.007
+10.0.2.2 - - [<%=timestamp%>] "POST /logstash-2013.10.15/_search HTTP/1.1" 503 106 "http://localhost:4567/index.html" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.69 Safari/537.36" 0.006
+10.0.2.2 - - [<%=timestamp%>] "POST /logstash-2013.10.15/_search HTTP/1.1" 503 106 "http://localhost:4567/index.html" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.69 Safari/537.36" 0.005
+<% end %>
