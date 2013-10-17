@@ -10,6 +10,7 @@ namespace :windows do
     settings = YAML::load_file(File.join args[:shipper_config_folder], "settings.yml")
     ENV['name'] = settings['name']||"windows-shipper"
     ENV['shipper_config_folder'] = args[:shipper_config_folder]
+    ENV['log_folder'] = settings['log_folder']||"%BASE"
 
     puts "Packaging #{args[:shipper_config_folder]} #{ENV['version']} to #{args[:package_destination_folder]}"
     puts "settings: #{settings.inspect}"
