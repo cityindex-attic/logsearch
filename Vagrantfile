@@ -2,7 +2,8 @@ Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu-precise-server-amd64"
   config.vm.box_url = "http://cloud-images.ubuntu.com/precise/current/precise-server-cloudimg-vagrant-amd64-disk1.box"
 
-  config.vm.network :forwarded_port, guest: 80, host: 4567
+  config.vm.network :forwarded_port, guest: 80, host: 4567   # kibana (with proxied readonly ES calls)
+  config.vm.network :forwarded_port, guest: 9200, host: 9200 # elasticsearch
 
   config.vm.provider :virtualbox do |v|
     v.customize ["modifyvm", :id, "--memory", "1024"]
