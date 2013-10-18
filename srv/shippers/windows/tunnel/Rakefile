@@ -11,8 +11,8 @@ namespace :windows do
     ENV['broker_user'] = settings['broker_user']||"ubuntu"
     ENV['broker_private_key'] = settings['broker_private_key']||"logsearch-ppe-shipper.ppk"
     ENV['name'] = settings['name']||"windows-tunnel"
-    ENV['log_folder'] = settings['log_folder']||"%BASE"
-    
+    ENV['log_folder'] = settings['log_folder']||"%BASE%"
+
     puts "Packaging #{args[:config_folder]} #{ENV['version']} to #{args[:package_destination_folder]}"
     dest="#{ENV['APP_APP_DIR']}/#{args[:package_destination_folder]}"
     FileUtils.mkdir_p dest
