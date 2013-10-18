@@ -8,7 +8,7 @@
   <env name="PLINK" value="%BASE%/plink.exe"/>
   <executable>%PLINK%</executable>
   <arguments>-batch -v -N -L 6379:127.0.0.1:6379 %BROKER_USER%@%BROKER_URL% -i "%BROKER_PRIVATE_KEY%"</arguments>
-  <log mode="reset"/>  <log mode="roll-by-time">
+  <log mode="roll-by-time">
     <pattern>yyyyMMdd</pattern>
     <keepFiles>30</keepFiles>
   </log>
