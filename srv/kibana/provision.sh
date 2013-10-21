@@ -8,13 +8,13 @@ set -e
 #
 
 if [ ! -e $APP_VENDOR_DIR/kibana ] ; then
-    KIBANA_VERSION="e57aba10da909768d3191aec4e672b2531e21f18"
+    KIBANA_VERSION="v3.0.0milestone4"
     echo "Download kibana-dev-$KIBANA_VERSION..."
 
     pushd $APP_VENDOR_DIR/
     curl --location -o kibana.zip "https://github.com/elasticsearch/kibana/archive/$KIBANA_VERSION.zip"
     unzip -q kibana
-    mv "kibana-$KIBANA_VERSION" kibana
+    mv "kibana-*" kibana
     echo "$KIBANA_VERSION" > kibana/VERSION_DEV
     rm kibana.zip
     popd

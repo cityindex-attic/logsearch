@@ -33,10 +33,6 @@ http {
         listen *:80;
         server_name kibana.vagrant;
 
-        location ~ ^/_aliases$ {
-            proxy_pass http://elasticsearch;
-        }
-
         location ~ ^/[^\/\*]+/_search$ {
             proxy_pass http://elasticsearch;
         }
@@ -73,7 +69,7 @@ http {
             proxy_pass http://elasticsearch;
         }
 
-        location ~ ^/(_stats|_status|_mapping)$ {
+        location ~ ^/_(aliases|mapping|nodes|stats|status)$ {
             limit_except GET {
                 deny all;
             }
@@ -89,14 +85,6 @@ http {
             proxy_pass http://elasticsearch;
         }
 
-        location ~ ^/_status$ {
-            limit_except GET {
-                deny all;
-            }
-
-            proxy_pass http://elasticsearch;
-        }
-
         location / {
             if ($args ~ ^callback=) {
                 proxy_pass http://elasticsearch;
@@ -104,6 +92,12 @@ http {
 
             root <%= ENV['APP_VENDOR_DIR'] %>/kibana;
             index index.html;
+
+            location ~ \.(css|js|html)$ {
+                add_header Cache-Control "private";
+                add_header Pragma "no-cache";
+                expires off;
+            }
         }
     }
 }
