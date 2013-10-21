@@ -12,6 +12,6 @@
     <pattern>yyyyMMdd</pattern>
     <keepFiles>30</keepFiles>
   </log>
-  <logpath>%BASE%</logpath>
+  <logpath><%=ENV['log_folder']%></logpath>
   <onfailure action="restart" delay="30 sec" />
 </service>
