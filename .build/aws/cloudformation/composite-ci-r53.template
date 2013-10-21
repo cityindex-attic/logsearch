@@ -76,7 +76,7 @@
             "Description": "Instance type for the EBS-based elasticsearch node.",
             "Default" : "m2.xlarge"
         },
-        "ElasticsearchEphemeral0InstanceType": {
+        "ElasticsearchEbs1InstanceType": {
             "Type": "String",
             "Description": "Instance type for the ephemeral-based elasticsearch node.",
             "Default" : "m2.xlarge"
@@ -221,7 +221,7 @@
             "Type" : "AWS::EC2::SecurityGroupIngress",
             "Properties" : {
                 "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                "CidrIp" : { "Ref" : "CidrRang32" },
+                "CidrIp" : { "Ref" : "CidrRange3" },
                 "IpProtocol" : "tcp",
                 "FromPort" : "22",
                 "ToPort" : "22"
@@ -275,7 +275,7 @@
                 }
             }
         },
-        "ElasticsearchEphemeral0" : {
+        "ElasticsearchEbs1" : {
             "Type" : "AWS::CloudFormation::Stack",
             "Properties" : {
                 "TemplateURL" : {
@@ -283,7 +283,7 @@
                     "/",
                     [
                         { "Ref": "S3StackBase" },
-                        "node-es-ephemeral-default.template"
+                        "node-es-ebs-default.template"
                     ]
                     ]
                 },
@@ -295,9 +295,10 @@
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-                    "InstanceType"          : { "Ref" : "ElasticsearchEphemeral0InstanceType" },
+                    "InstanceType"          : { "Ref" : "ElasticsearchEbs1InstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
                     "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
+                    "SnapshotId"            : { "Ref" : "ElasticsearchEbsSnapshotId" },
                     "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
                 }
             }
@@ -376,7 +377,7 @@
                 "TTL" : "90",
                 "ResourceRecords" : [
                     {
-                        "Fn::GetAtt" : [ "ElasticsearchEphemeral0", "Outputs.Instance0PublicIp" ]
+                        "Fn::GetAtt" : [ "ElasticsearchEbs1", "Outputs.Instance0PublicIp" ]
                     }
                 ]
             }
