@@ -12,11 +12,11 @@ if [ ! -e $APP_VENDOR_DIR/kibana ] ; then
     echo "Download kibana-dev-$KIBANA_VERSION..."
 
     pushd $APP_VENDOR_DIR/
-    curl --location -o kibana.zip "https://github.com/elasticsearch/kibana/archive/$KIBANA_VERSION.zip"
-    unzip -q kibana
-    mv "kibana-*" kibana
+    mkdir -p kibana-tmp/
+    wget -O - "https://github.com/elasticsearch/kibana/archive/$KIBANA_VERSION.tar.gz" | tar -xzC $APP_VENDOR_DIR/kibana-tmp --strip-components 1
+    mv kibana-tmp/src kibana
     echo "$KIBANA_VERSION" > kibana/VERSION_DEV
-    rm kibana.zip
+    rm -fr kibana-tmp
     popd
 fi
 
