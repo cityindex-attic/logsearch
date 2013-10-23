@@ -45,6 +45,14 @@ http {
             proxy_pass http://elasticsearch;
         }
 
+        location ~ ^/_search/scroll$ {
+            limit_except GET {
+                deny all;
+            }
+
+            proxy_pass http://elasticsearch;
+        }
+
         location ~ ^/_cluster/(state|health) {
             limit_except GET {
                 deny all;
