@@ -12,7 +12,7 @@
             "Default": "us-east-1a"
         },
         "CidrRange0": {
-            "Description": "The CIDR range for remote access to advertised services like tcp:22, tcp:80, tcp:443.",
+            "Description": "The CIDR range for remote access to advertised services like tcp:80, tcp:443.",
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
@@ -21,7 +21,7 @@
             "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
         },
         "CidrRange1": {
-            "Description": "The CIDR range for secondary remote access to advertised services like tcp:22, tcp:80, tcp:443.",
+            "Description": "The CIDR range for secondary remote access to advertised services like tcp:80, tcp:443.",
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
@@ -30,7 +30,7 @@
             "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
         },
         "CidrRange2": {
-            "Description": "The CIDR range for tertiary remote access to advertised services like tcp:22, tcp:80, tcp:443.",
+            "Description": "The CIDR range for tertiary remote access to advertised services like tcp:80, tcp:443.",
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
@@ -39,7 +39,7 @@
             "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
         },
         "CidrRange3": {
-            "Description": "The CIDR range for quaternary remote access to advertised services like tcp:22, tcp:80, tcp:443.",
+            "Description": "The CIDR range for quaternary remote access to advertised services like tcp:80, tcp:443.",
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
@@ -157,16 +157,6 @@
                 }
             }
         },
-        "SecurityGroup0Cidr1Ingress0" : {
-            "Type" : "AWS::EC2::SecurityGroupIngress",
-            "Properties" : {
-                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                "CidrIp" : { "Ref" : "CidrRange1" },
-                "IpProtocol" : "tcp",
-                "FromPort" : "22",
-                "ToPort" : "22"
-            }
-        },
         "SecurityGroup0Cidr1Ingress1" : {
             "Type" : "AWS::EC2::SecurityGroupIngress",
             "Properties" : {
@@ -187,16 +177,6 @@
                 "ToPort" : "443"
             }
         },
-        "SecurityGroup0Cidr2Ingress0" : {
-            "Type" : "AWS::EC2::SecurityGroupIngress",
-            "Properties" : {
-                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                "CidrIp" : { "Ref" : "CidrRange2" },
-                "IpProtocol" : "tcp",
-                "FromPort" : "22",
-                "ToPort" : "22"
-            }
-        },
         "SecurityGroup0Cidr2Ingress1" : {
             "Type" : "AWS::EC2::SecurityGroupIngress",
             "Properties" : {
@@ -215,16 +195,6 @@
                 "IpProtocol" : "tcp",
                 "FromPort" : "443",
                 "ToPort" : "443"
-            }
-        },
-        "SecurityGroup0Cidr3Ingress0" : {
-            "Type" : "AWS::EC2::SecurityGroupIngress",
-            "Properties" : {
-                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                "CidrIp" : { "Ref" : "CidrRange3" },
-                "IpProtocol" : "tcp",
-                "FromPort" : "22",
-                "ToPort" : "22"
             }
         },
         "SecurityGroup0Cidr3Ingress1" : {
