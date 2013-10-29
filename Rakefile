@@ -7,18 +7,6 @@ Dotenv.load('../.env')
 
 Dir.glob('srv/**/Rakefile').each { |r| import r}
 
-desc "Connect to development VM"
-task :connect do
-  sh "vagrant up"
-  puts "SSHing into development VM"  
-  sh "vagrant ssh"
-end
-
-desc "Start up the elasticsearch backend and kibana frontend service"
-task :run do
-  sh "foreman start"
-end
-
 desc "Erase all environment data"
 task :erase do
     puts "==> Erasing all environment data!"
