@@ -81,6 +81,11 @@
             "Description": "Instance type for the ephemeral-based elasticsearch node.",
             "Default" : "m2.xlarge"
         },
+        "ElasticsearchMasterNodesMin": {
+            "Type": "Number",
+            "Description": "Minimum number of elasticsearch master nodes required.",
+            "Default": "2"
+        },
         "Redis0InstanceType": {
             "Type": "String",
             "Description": "Instance type for the redis node.",

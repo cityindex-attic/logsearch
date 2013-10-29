@@ -36,6 +36,12 @@
             "ec2" : {
                 "groups" : "<%= ENV['APP_CONFIG_ES_AWS_EC2_GROUP'] %>"
             }
+            <% if ENV['APP_CONFIG_ES_MASTER_NODES_MIN'] then %>
+                ,
+                "zen" : {
+                    "minimum_master_nodes" : <%= ENV['APP_CONFIG_ES_MASTER_NODES_MIN'] %>
+                }
+            <% end %>
         },
     <% end %>
     "path" : {

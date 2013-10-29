@@ -30,6 +30,11 @@
                 "true"
             ]
         },
+        "ElasticsearchMasterNodesMin": {
+            "Type": "Number",
+            "Description": "Minimum number of elasticsearch master nodes required.",
+            "Default": "1"
+        },
         "InstancePostScript": {
             "Type": "String",
             "Description": "A final command to run when provisioning instances.",
@@ -151,7 +156,8 @@
                                             "export APP_CLUSTER_NAME=", { "Ref" : "ClusterName" }, "\n",
                                             "export APP_NODE_NAME=ElasticsearchEbs", "\n",
                                             "export APP_CONFIG_ES_IPADDRESS=0.0.0.0", "\n",
-                                            "export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup" }, "\n"
+                                            "export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup" }, "\n",
+                                            "export APP_CONFIG_ES_MASTER_NODES_MIN=", { "Ref": "ElasticsearchMasterNodesMin" }, "\n"
                                         ]
                                     ]
                                 },
