@@ -1,0 +1,16 @@
+{
+  "network": {
+    "servers": [ "redis.logsearch.cityindextest5.co.uk:5043" ],
+    "ssl ca": "./lumberjack.crt",
+    "timeout": 15
+  },
+  "files": [
+    {
+      "paths": [ "./data/*" ],
+      "fields": {
+        "@type": "ci_log4net",
+        "@environment": "LIVE"
+      }
+    }
+  ]
+}
