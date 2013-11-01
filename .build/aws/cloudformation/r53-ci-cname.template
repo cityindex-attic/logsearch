@@ -67,6 +67,34 @@
                     }
                 ]
             }
+        },
+        "DnsElasticsearchInternal": {
+            "Type": "AWS::Route53::RecordSet",
+            "Properties": {
+                "HostedZoneName" : { "Ref" : "R53ZoneName" },
+                "Name": {
+                    "Fn::Join" : [
+                        "",
+                        [
+                            "elasticsearch.srv-int.",
+                            { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
+                        ]
+                    ]
+                },
+                "Type" : "CNAME",
+                "TTL" : "60",
+                "ResourceRecords" : [
+                    {
+                        "Fn::Join" : [
+                            "",
+                            [
+                                "elasticsearch.srv-int.",
+                                { "Ref" : "TargetHostName" }
+                            ]
+                        ]
+                    }
+                ]
+            }
         }
     }
 }

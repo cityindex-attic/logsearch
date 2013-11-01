@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# uploads the .build/aws/cloudformation/* files
+#
+# args: bucket, key-prefix
+
+set -e
+
+cd .build/aws/cloudformation/
+
+for TPL in *.template ; do
+    echo -n "$TPL..."
+
+    aws s3api put-object --bucket $1 --key "$2$TPL" --acl public-read --body $TPL > /dev/null
+
+    echo 'done'
+done

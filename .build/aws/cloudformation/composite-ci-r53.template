@@ -12,7 +12,7 @@
             "Default": "us-east-1a"
         },
         "CidrRange0": {
-            "Description": "The CIDR range for remote access to advertised services like tcp:22, tcp:80, tcp:443.",
+            "Description": "The CIDR range for remote access to advertised services like tcp:80, tcp:443.",
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
@@ -21,7 +21,7 @@
             "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
         },
         "CidrRange1": {
-            "Description": "The CIDR range for secondary remote access to advertised services like tcp:22, tcp:80, tcp:443.",
+            "Description": "The CIDR range for secondary remote access to advertised services like tcp:80, tcp:443.",
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
@@ -30,7 +30,16 @@
             "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
         },
         "CidrRange2": {
-            "Description": "The CIDR range for tertiary remote access to advertised services like tcp:22, tcp:80, tcp:443.",
+            "Description": "The CIDR range for tertiary remote access to advertised services like tcp:80, tcp:443.",
+            "Type": "String",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "127.0.0.1/32",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
+        },
+        "CidrRange3": {
+            "Description": "The CIDR range for quaternary remote access to advertised services like tcp:80, tcp:443.",
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
@@ -67,10 +76,15 @@
             "Description": "Instance type for the EBS-based elasticsearch node.",
             "Default" : "m2.xlarge"
         },
-        "ElasticsearchEphemeral0InstanceType": {
+        "ElasticsearchEbs1InstanceType": {
             "Type": "String",
             "Description": "Instance type for the ephemeral-based elasticsearch node.",
             "Default" : "m2.xlarge"
+        },
+        "ElasticsearchMasterNodesMin": {
+            "Type": "Number",
+            "Description": "Minimum number of elasticsearch master nodes required.",
+            "Default": "2"
         },
         "Redis0InstanceType": {
             "Type": "String",
@@ -148,16 +162,6 @@
                 }
             }
         },
-        "SecurityGroup0Cidr1Ingress0" : {
-            "Type" : "AWS::EC2::SecurityGroupIngress",
-            "Properties" : {
-                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                "CidrIp" : { "Ref" : "CidrRange1" },
-                "IpProtocol" : "tcp",
-                "FromPort" : "22",
-                "ToPort" : "22"
-            }
-        },
         "SecurityGroup0Cidr1Ingress1" : {
             "Type" : "AWS::EC2::SecurityGroupIngress",
             "Properties" : {
@@ -178,16 +182,6 @@
                 "ToPort" : "443"
             }
         },
-        "SecurityGroup0Cidr2Ingress0" : {
-            "Type" : "AWS::EC2::SecurityGroupIngress",
-            "Properties" : {
-                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                "CidrIp" : { "Ref" : "CidrRange2" },
-                "IpProtocol" : "tcp",
-                "FromPort" : "22",
-                "ToPort" : "22"
-            }
-        },
         "SecurityGroup0Cidr2Ingress1" : {
             "Type" : "AWS::EC2::SecurityGroupIngress",
             "Properties" : {
@@ -203,6 +197,26 @@
             "Properties" : {
                 "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
                 "CidrIp" : { "Ref" : "CidrRange2" },
+                "IpProtocol" : "tcp",
+                "FromPort" : "443",
+                "ToPort" : "443"
+            }
+        },
+        "SecurityGroup0Cidr3Ingress1" : {
+            "Type" : "AWS::EC2::SecurityGroupIngress",
+            "Properties" : {
+                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
+                "CidrIp" : { "Ref" : "CidrRange3" },
+                "IpProtocol" : "tcp",
+                "FromPort" : "80",
+                "ToPort" : "80"
+            }
+        },
+        "SecurityGroup0Cidr3Ingress2" : {
+            "Type" : "AWS::EC2::SecurityGroupIngress",
+            "Properties" : {
+                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
+                "CidrIp" : { "Ref" : "CidrRange3" },
                 "IpProtocol" : "tcp",
                 "FromPort" : "443",
                 "ToPort" : "443"
@@ -236,7 +250,7 @@
                 }
             }
         },
-        "ElasticsearchEphemeral0" : {
+        "ElasticsearchEbs1" : {
             "Type" : "AWS::CloudFormation::Stack",
             "Properties" : {
                 "TemplateURL" : {
@@ -244,7 +258,7 @@
                     "/",
                     [
                         { "Ref": "S3StackBase" },
-                        "node-es-ephemeral-default.template"
+                        "node-es-ebs-default.template"
                     ]
                     ]
                 },
@@ -256,9 +270,10 @@
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-                    "InstanceType"          : { "Ref" : "ElasticsearchEphemeral0InstanceType" },
+                    "InstanceType"          : { "Ref" : "ElasticsearchEbs1InstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
                     "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
+                    "SnapshotId"            : { "Ref" : "ElasticsearchEbsSnapshotId" },
                     "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
                 }
             }
@@ -337,7 +352,7 @@
                 "TTL" : "90",
                 "ResourceRecords" : [
                     {
-                        "Fn::GetAtt" : [ "ElasticsearchEphemeral0", "Outputs.Instance0PublicIp" ]
+                        "Fn::GetAtt" : [ "ElasticsearchEbs1", "Outputs.Instance0PublicIp" ]
                     }
                 ]
             }

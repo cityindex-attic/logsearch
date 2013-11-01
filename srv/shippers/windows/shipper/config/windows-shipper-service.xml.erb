@@ -8,7 +8,10 @@
   <executable>java</executable>
   <arguments>%JAVA_OPTS% -jar "%LOGSTASH_JAR%" agent -f "%LOGSTASH_CONFIG%" -v</arguments> 
   <workingdirectory>%BASE%</workingdirectory>
-  <log mode="reset"/>
-  <logpath>%BASE%</logpath>
+  <log mode="roll-by-time">
+    <pattern>yyyyMMdd</pattern>
+    <keepFiles>30</keepFiles>
+  </log>
+  <logpath><%=ENV['log_folder']%></logpath>
   <onfailure action="restart" delay="30 sec" />
 </service>
