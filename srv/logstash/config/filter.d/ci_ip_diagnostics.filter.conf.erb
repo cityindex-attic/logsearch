@@ -1,7 +1,8 @@
 # Filter type => "ci_ip_diagnostics"
 
-if [type] == "ci_ip_diagnostics" {
+if [@type] == "ci_ip_diagnostics" {
     csv {
+        source => "@message"
         columns => [
             "arrival_time_tz",
             "instruction_id",

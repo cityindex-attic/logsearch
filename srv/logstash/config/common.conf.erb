@@ -1,9 +1,18 @@
 filter {
     #
+    # rewrite our defined globals
+    #
+
+    mutate {
+        rename => [ "message", "@message" ]
+        rename => [ "type", "@type" ]
+    }
+
+    #
     # ignore particularly useless lines
     #
 
-    if [message] =~ /^(\w)*$/ or [message] =~ /^#/ {
+    if [@message] =~ /^(\w)*$/ or [@message] =~ /^#/ {
         drop { }
     }
 
@@ -12,7 +21,7 @@ filter {
     #
 
     ruby {
-        code => "(event['message'] = event['message'][0,<%= $LOGSTASH_MESSAGE_MAXSIZE %>] and (event['tags'] ||= []) << '_groktrimmed') if event['message'] and event['message'].length > <%= $LOGSTASH_MESSAGE_MAXSIZE %>"
+        code => "(event['@message'] = event['@message'][0,<%= $LOGSTASH_MESSAGE_MAXSIZE %>] and (event['tags'] ||= []) << '_groktrimmed') if event['@message'] and event['@message'].length > <%= $LOGSTASH_MESSAGE_MAXSIZE %>"
     }
 
     #

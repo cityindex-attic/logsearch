@@ -6,6 +6,17 @@ input {
         sincedb_path => "<%= Dir.getwd %>/logstash_position.db"
         sincedb_write_interval => 10
         start_position => "beginning"
+        add_field => [ "_logstash_input", "file" ]
+    }
+}
+
+filter {
+    if [_logstash_input] == "file" {
+        mutate {
+            rename => [ 'host', '@source.host' ]
+            rename => [ 'path', '@source.path' ]
+            remove_field => [ '_logstash_input' ]
+        }
     }
 }
 

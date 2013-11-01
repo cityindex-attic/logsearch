@@ -1,6 +1,6 @@
-if [type] == "apache_combined" {
+if [@type] == "apache_combined" {
     grok {
-        match => [ "message", "%{COMBINEDAPACHELOG}" ]
+        match => [ "@message", "%{COMBINEDAPACHELOG}" ]
         add_tag => "apache"
     }
 

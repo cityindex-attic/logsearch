@@ -1,6 +1,6 @@
-if [type] == "ci_log4net" {
+if [@type] == "ci_log4net" {
     grok {
-        match => [ "message", "%{NOTSPACE:level}\s+%{TIMESTAMP_ISO8601:datetime} %{NOTSPACE:thread} %{NOTSPACE:logger} %{GREEDYDATA:message}" ]
+        match => [ "@message", "%{NOTSPACE:level}\s+%{TIMESTAMP_ISO8601:datetime} %{NOTSPACE:thread} %{NOTSPACE:logger} %{GREEDYDATA:message}" ]
     }
 
     alter {

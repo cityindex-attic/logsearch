@@ -1,6 +1,6 @@
-if [type] == "stackato_event" {
+if [@type] == "stackato_event" {
     json {
-        source => "message"
+        source => "@message"
     }
 
     date {
