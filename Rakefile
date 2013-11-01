@@ -9,9 +9,28 @@ Dir.glob('srv/**/Rakefile').each { |r| import r}
 
 desc "Erase all environment data"
 task :erase do
-    puts "==> Erasing all environment data!"
+    restart_elasticsearch = false
 
+    if File.exists?("/etc/init/app-elasticsearch-1.conf")
+        if /start\/running/ =~ `service app-elasticsearch status` 
+            restart_elasticsearch = true
+
+            puts "==> Stopping app-elasticsearch"
+            sh "service app-elasticsearch stop"
+
+            sh "while nc -vz #{ENV['APP_CONFIG_ES_IPADDRESS']} 9200 2>/dev/null ; do sleep 2 ; done"
+        end
+    end
+
+    puts "==> Erasing all environment data!"
     sh "rm -fr #{ENV['APP_DATA_DIR']}/*"
+
+    if restart_elasticsearch
+        puts "==> Starting app-elasticsearch"
+        sh "service app-elasticsearch start"
+
+        sh "while ! nc -vz #{ENV['APP_CONFIG_ES_IPADDRESS']} 9200 2>/dev/null ; do sleep 2 ; done"
+    end
 end
 
 desc "Install the foreman tasks as system services (requires sudo)"
