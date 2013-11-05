@@ -3,9 +3,11 @@ filter {
     # rewrite our defined globals
     #
 
-    mutate {
-        rename => [ "message", "@message" ]
-        rename => [ "type", "@type" ]
+    if [@type] == '' and [@message] == '' {
+        mutate {
+            rename => [ "message", "@message" ]
+            rename => [ "type", "@type" ]
+        }
     }
 
     #
