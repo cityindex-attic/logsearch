@@ -16,7 +16,7 @@ task :erase do
             restart_elasticsearch = true
 
             puts "==> Stopping app-elasticsearch"
-            sh "service app-elasticsearch stop"
+            sh "sudo service app-elasticsearch stop"
 
             sh "while nc -vz #{ENV['APP_CONFIG_ES_IPADDRESS']} 9200 2>/dev/null ; do sleep 2 ; done"
         end
@@ -27,7 +27,7 @@ task :erase do
 
     if restart_elasticsearch
         puts "==> Starting app-elasticsearch"
-        sh "service app-elasticsearch start"
+        sh "sudo service app-elasticsearch start"
 
         sh "while ! nc -vz #{ENV['APP_CONFIG_ES_IPADDRESS']} 9200 2>/dev/null ; do sleep 2 ; done"
     end
