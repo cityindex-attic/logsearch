@@ -6,6 +6,8 @@
 *.ear
 .vagrant/
 
+config/
+
 srv/*/config/*
 !srv/*/config/*.erb
 !srv/*/config/filter.d/*.erb
