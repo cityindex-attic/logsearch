@@ -1,0 +1,9 @@
+if [@type] == "stackato_apptail" {
+    json {
+        source => "@message"
+    }
+
+    date {
+        match => [ "HumanTime", "ISO8601" ]
+    }
+}

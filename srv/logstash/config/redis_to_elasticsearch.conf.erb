@@ -6,7 +6,6 @@ input {
         type => "redis-input"
         data_type => "list"
         key => "<%= ENV['APP_CONFIG_REDIS_KEY'] || 'logstash'  %>"
-        format => "json_event"
         threads => 8
     }
 }
@@ -16,5 +15,6 @@ output {
     elasticsearch_http {
         host => "<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>"
         flush_size => 100
+        index_type => "%{@type}"
     }
 }

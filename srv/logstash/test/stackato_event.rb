@@ -21,7 +21,7 @@ class SimpleStackatoEventTest < Test::Unit::TestCase
   def test_search_by_Type
     res = eslog_simple_search(
       nil,
-      '@fields.Type:kato_action'
+      'Type:kato_action'
     )
 
     assert_equal 1, res['hits']['total']
@@ -30,7 +30,7 @@ class SimpleStackatoEventTest < Test::Unit::TestCase
   def test_search_by_Desc
     res = eslog_simple_search(
       nil,
-      '@fields.Desc:"Stopping application \'httpbin\' on DEA c43157"'
+      'Desc:"Stopping application \'httpbin\' on DEA c43157"'
     )
 
     assert_equal 2, res['hits']['total']
@@ -39,7 +39,7 @@ class SimpleStackatoEventTest < Test::Unit::TestCase
   def test_search_by_Severity
     res = eslog_simple_search(
       nil,
-      '@fields.Severity:ERROR'
+      'Severity:ERROR'
     )
 
     assert_equal 1, res['hits']['total']
@@ -48,7 +48,7 @@ class SimpleStackatoEventTest < Test::Unit::TestCase
   def test_search_by_Info
     res = eslog_simple_search(
       nil,
-      '@fields.Info.app_name:httpbin'
+      'Info.app_name:httpbin'
     )
 
     assert_equal 2, res['hits']['total']
@@ -57,7 +57,7 @@ class SimpleStackatoEventTest < Test::Unit::TestCase
   def test_search_by_Process
     res = eslog_simple_search(
       nil,
-      '@fields.Process:supervisord'
+      'Process:supervisord'
     )
 
     assert_equal 5, res['hits']['total']
@@ -66,7 +66,7 @@ class SimpleStackatoEventTest < Test::Unit::TestCase
   def test_search_by_NodeID
     res = eslog_simple_search(
       nil,
-      '@fields.NodeID:"10.11.12.14"'
+      'NodeID:"10.11.12.14"'
     )
 
     assert_equal 1, res['hits']['total']

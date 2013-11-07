@@ -3,11 +3,22 @@
 input {
     file {
         type => "<%= @args[:logstash_type] %>"
-        format => "<%= @args[:logstash_format] || 'plain' %>"
+        codec => "<%= @args[:logstash_format] || 'line' %>"
         path => "<%= @args[:path] %>"
         sincedb_path => "<%= Dir.getwd %>/logstash_position.db"
         sincedb_write_interval => 10
         start_position => "beginning"
+        add_field => [ "_logstash_input", "file" ]
+    }
+}
+
+filter {
+    if [_logstash_input] == "file" {
+        mutate {
+            rename => [ 'host', '@source.host' ]
+            rename => [ 'path', '@source.path' ]
+            remove_field => [ '_logstash_input' ]
+        }
     }
 }
 
@@ -21,5 +32,6 @@ output {
         # once fixed, this hack and its references should be removed in favor of a static number
         flush_size => <%= $bug_679_flush_size ? $bug_679_flush_size : 100 %>
         host => "<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>"
+        index_type => "%{@type}"
     }
 }

@@ -1,7 +1,7 @@
 input {
     stdin {
         type => "<%= @args[:logstash_type] %>"
-        format => "<%= @args[:logstash_format] || 'plain' %>"
+        codec => "<%= @args[:logstash_format] || 'line' %>"
     }
 }
 

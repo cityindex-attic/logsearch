@@ -17,7 +17,7 @@ class SimpleCiIPDiagnosticsTest < Test::Unit::TestCase
     assert_equal 1, res['hits']['total']
 
     assert_equal "2013-09-03T01:04:54.258Z", res['hits']['hits'][0]['_source']['@timestamp']
-    assert_equal "2013-09-03T02:04:54.258+01:00", res['hits']['hits'][0]['_source']['@fields']['arrival_time_tz']
+    assert_equal "2013-09-03T02:04:54.258+01:00", res['hits']['hits'][0]['_source']['arrival_time_tz']
   end
 
   def test_instruction_id
@@ -75,19 +75,19 @@ class SimpleCiIPDiagnosticsTest < Test::Unit::TestCase
   def assert_field_matches(field_query, expected_matches)
     actual = eslog_simple_search(
       nil,
-      "@fields.#{field_query}"
+      "#{field_query}"
     )
 
     assert_equal expected_matches, actual['hits']['total'], 
-      "Searching for @fields.#{field_query} identified the wrong number of requests: #{JSON.pretty_generate(actual)}"
+      "Searching for #{field_query} identified the wrong number of requests: #{JSON.pretty_generate(actual)}"
   end
 
   def assert_field_type(field_query, field, type)
     res = eslog_simple_search(
       nil,
-      "@fields.#{field_query}"
+      "#{field_query}"
     )
-    value = res['hits']['hits'][0]['_source']['@fields'][field]
+    value = res['hits']['hits'][0]['_source'][field]
 
     assert_equal type, value.class, "field is: #{value} \n===========Full query result============= #{JSON.pretty_generate(res)}"
   end

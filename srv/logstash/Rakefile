@@ -113,17 +113,17 @@ namespace :logstash do
 
       desc "Run stackato_apptail tests"
       task :stackato_apptail => :erase do
-        run_integration_test("stackato_apptail", "pv_jsonfile_to_elasticsearch")
+        run_integration_test("stackato_apptail", "pv_to_elasticsearch")
       end
 
       desc "Run stackato_event tests"
       task :stackato_event => :erase do
-        run_integration_test("stackato_event", "pv_jsonfile_to_elasticsearch")
+        run_integration_test("stackato_event", "pv_to_elasticsearch")
       end
 
       desc "Run stackato_systail tests"
       task :stackato_systail => :erase do
-        run_integration_test("stackato_systail", "pv_jsonfile_to_elasticsearch")
+        run_integration_test("stackato_systail", "pv_to_elasticsearch")
       end
 
       desc "Run ci_appmetrics tests"
@@ -167,10 +167,10 @@ def run_integration_test(type, task = "file")
         end
 
         puts "==> Importing test data ..."
-        sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/do-import.rb #{task} #{type} #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log > /dev/null"
+        sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/do-import.rb #{task} #{type} #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"# > /dev/null"
 
         puts "==> Ensuring elasticsearch has finished indexing our data ..."
-        sh "curl -sXPOST 'http://#{ENV['APP_CONFIG_ES_IPADDRESS']}:9200/_all/_refresh' > /dev/null"
+        sh "curl -sXPOST 'http://#{ENV['APP_CONFIG_ES_IPADDRESS']}:9200/_all/_flush' > /dev/null"
       
         puts "==> Running our test queries ..."
         sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.rb"
