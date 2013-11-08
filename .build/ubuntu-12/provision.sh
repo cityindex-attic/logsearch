@@ -65,15 +65,6 @@ if [ ! -f /usr/bin/git ]; then
 fi
 echo "git:\t$(git --version)"
 
-if [ ! -f /usr/bin/stackato ]; then
-    sudo curl -k --location -o /tmp/stackato.zip http://downloads.activestate.com/stackato/client/v1.7.2/stackato-1.7.2-linux-glibc2.3-x86_64.zip 
-    sudo apt-get install unzip -y 
-    sudo unzip /tmp/stackato.zip -d /tmp
-    sudo mv /tmp/stackato-1.7.2-linux-glibc2.3-x86_64/stackato /usr/bin
-    sudo rm -rf /tmp/stackato*
-fi
-echo "stackato:$(stackato --version)"
-
 
 #
 # system: ntpd
