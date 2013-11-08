@@ -17,7 +17,7 @@ set -x #extra debugging
 if [ -e /home/vagrant ] ; then
     APP_USER=vagrant
 else
-    APP_USER=$(ls /home/)
+    APP_USER=$(whoami)
 fi
 
 echo "APP_USER detected as: $APP_USER"
