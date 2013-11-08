@@ -3,3 +3,4 @@ kibana: rake kibana:run
 redis: rake redis:run
 logstash_redis: rake logstash:redis_to_elasticsearch
 lumberjack_redis: rake logstash:lumberjack_to_redis
+syslog_redis: rake logstash:syslog_to_redis

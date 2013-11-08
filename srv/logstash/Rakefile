@@ -40,7 +40,13 @@ namespace :logstash do
     end
 
     process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/lumberjack_to_redis.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/lumberjack_to_redis.conf", args)
-    sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/lumberjack_to_redis.conf'"
+    sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/lumberjack_to_redis.conf'"
+  end
+
+  desc "Run logstash forwarding syslog messages to redis"
+  task :syslog_to_redis, :logstash_type, :path do |t, args|
+    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/syslog_to_redis.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/syslog_to_redis.conf", args)
+    sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/syslog_to_redis.conf'"
   end
 
   desc "Run logstash off json file via stdin"
