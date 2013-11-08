@@ -1,7 +1,6 @@
 #!/bin/bash
 
 set -e
-set -x #extra debugging
 
 #
 # system-wide deps
@@ -13,11 +12,12 @@ set -x #extra debugging
 #
 # app
 #
-
-if [ -e /home/vagrant ] ; then
+if [ "$TRAVIS" = "true" ]; then
+    APP_USER=$(whoami)
+elif [ -e /home/vagrant ] ; then
     APP_USER=vagrant
 else
-    APP_USER=$(whoami)
+    APP_USER=$(ls /home/)
 fi
 
 echo "APP_USER detected as: $APP_USER"
