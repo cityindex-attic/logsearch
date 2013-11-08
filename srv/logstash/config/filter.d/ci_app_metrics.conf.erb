@@ -1,3 +1,5 @@
+# Filter type => "ci_appmetrics" 
+
 if [@type] == "ci_appmetrics" {
     grok {
         match => [ "@message", "%{TIMESTAMP_ISO8601:time}\t(?<name>[^\t]+)\t%{GREEDYDATA:value}" ]

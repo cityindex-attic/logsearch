@@ -35,4 +35,23 @@ class SimpleCiAppmetricsTest < Test::Unit::TestCase
 
     assert_equal 2, res['hits']['total']
   end
+
+  def test_latency_values_set_to_type_float
+    res = eslog_simple_search(
+      nil,
+      '@message:"Latency CIAPI.*" OR "Latency General.*"'
+    )
+
+    assert_equal 1, res['hits']['total']
+    assert_equal "2013-09-03T01:04:54.258Z", res['hits']['hits'][0]['_source']['@timestamp']
+  end
+
+  def test_non_latency_values_set_to_type_string
+    res = eslog_simple_search(
+      nil,
+      'NOT @message:"Latency *"'
+    )
+
+    assert_equal 1, res['hits']['total']
+  end
 end
