@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+set -x #extra debugging
 
 #
 # system-wide deps
@@ -18,6 +19,8 @@ if [ -e /home/vagrant ] ; then
 else
     APP_USER=$(ls /home/)
 fi
+
+echo "APP_USER detected as: $APP_USER"
 
 mkdir -p /app
 
