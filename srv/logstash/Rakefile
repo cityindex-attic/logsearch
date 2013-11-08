@@ -67,7 +67,7 @@ namespace :logstash do
   desc "Parse STDIN and dump the result to STDOUT"
   task :debug, :logstash_type do |t, args|
     process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/debug.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/debug.conf", args)
-    sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/debug.conf'"
+    sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -v -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/debug.conf'"
   end
 
   namespace :test do
