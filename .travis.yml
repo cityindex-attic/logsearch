@@ -1,0 +1,4 @@
+install: .build/dev_server/provision.sh
+rvm:
+  - "1.9.3"
+script: "rake logstash:test:all_types"
