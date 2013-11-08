@@ -1,5 +1,8 @@
 language: ruby
 rvm:
   - "1.9.3"
+before_install:
+  - mkdir -p /app
+  - ln -s . /app/app
 install: .build/dev_server/provision.sh
 script: "rake logstash:test:all_types"
