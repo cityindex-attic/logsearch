@@ -44,7 +44,7 @@ echo 'export APP_CONFIG_REDIS_KEY=logstash' >> /app/.env
 echo 'export APP_CONFIG_IMPORTQUEUE_KEY=importqueue' >> /app/.env
 chmod +x /app/.env
 
-ls -lah /app/.env
+tree /app
 
 sudo -H -u $APP_USER /bin/bash << 'EOF'
     set -x
@@ -54,7 +54,7 @@ sudo -H -u $APP_USER /bin/bash << 'EOF'
 
     echo "PWD: $(pwd)"
     
-    . ../.env
+    . /app/.env
     
     mkdir -p $APP_VENDOR_DIR
     mkdir -p $APP_LOG_DIR
