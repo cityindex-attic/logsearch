@@ -8,7 +8,8 @@ before_install:
 install: sudo .build/dev_server/provision.sh
 script: 
   - cd /app/app
-  - bundle install
+  - cat /app/.env
+  - . /app/.env
   - env
   - rake logstash:test:type:ci_appmetrics
 notifications:
