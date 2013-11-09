@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -x
 set -e
 
 if [[ ! "$(locale)" =~ "en_US.utf8" ]]; then
