@@ -6,6 +6,10 @@ before_install:
   - sudo chmod 777 /app
   - ln -s $(pwd) /app/app
 install: sudo .build/dev_server/provision.sh
-script: sudo rake logstash:test:type:ci_appmetrics
+script: 
+  - cd /app/app
+  - bundle install
+  - env
+  - rake logstash:test:type:ci_appmetrics
 notifications:
   flowdock: 803b1aaf805716f8a7822ff582b2e5f5
