@@ -11,7 +11,8 @@ script:
   - cat /app/.env
   - . /app/.env
   - bundle
-  - env
+  - sudo rake install_system_services
+  - sudo start app
   - rake logstash:test:type:ci_appmetrics
 notifications:
   flowdock: 803b1aaf805716f8a7822ff582b2e5f5
