@@ -13,7 +13,7 @@ set -e
 # app
 #
 if [ "$TRAVIS" = "true" ]; then
-    APP_USER=$(whoami)
+    APP_USER=travis
 elif [ -e /home/vagrant ] ; then
     APP_USER=vagrant
 else
@@ -43,6 +43,8 @@ echo 'export APP_CONFIG_REDIS_IPADDRESS=0.0.0.0' >> /app/.env
 echo 'export APP_CONFIG_REDIS_KEY=logstash' >> /app/.env
 echo 'export APP_CONFIG_IMPORTQUEUE_KEY=importqueue' >> /app/.env
 chmod +x /app/.env
+
+ls -lah /app/.env
 
 sudo -H -u $APP_USER /bin/bash << 'EOF'
     set -x
