@@ -8,18 +8,19 @@ set -e
 /app/app/.build/ubuntu-12/provision.sh
 /app/app/.build/dev_server/extra.sh
 
+
 #
 # app
 #
-if [ -e /home/vagrant ] ; then
+if [ "$TRAVIS" = "true" ]; then
+    APP_USER=$(whoami)
+elif [ -e /home/vagrant ] ; then
     APP_USER=vagrant
 else
     APP_USER=$(ls /home/)
 fi
 
-APP_USER_GROUP=$(id -g -n $APP_USER)
-
-echo "APP_USER:APP_USER_GROUP detected as: $APP_USER: $APP_USER_GROUP"
+echo "APP_USER detected as: $APP_USER"
 
 mkdir -p /app
 
@@ -30,7 +31,7 @@ if [ 'vagrant' != "$APP_USER" ] ; then
     fi
 fi
 
-chown $APP_USER:$APP_USER_GROUP /app
+chown $APP_USER:$APP_USER /app
 
 echo '$APP_USER soft nofile 32000' > /etc/security/limits.d/$APP_USER.conf
 echo '$APP_USER hard nofile 64000' >> /etc/security/limits.d/$APP_USER.conf
