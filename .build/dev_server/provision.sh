@@ -45,9 +45,12 @@ echo 'export APP_CONFIG_IMPORTQUEUE_KEY=importqueue' >> /app/.env
 chmod +x /app/.env
 
 sudo -H -u $APP_USER /bin/bash << 'EOF'
+    set -x
+    set -e
+    
     cd /app/app/
 
-    set -e
+    echo "PWD: $(pwd)"
     
     . ../.env
     
