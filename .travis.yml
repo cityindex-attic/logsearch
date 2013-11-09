@@ -10,6 +10,7 @@ script:
   - cd /app/app
   - cat /app/.env
   - . /app/.env
+  - bundle
   - env
   - rake logstash:test:type:ci_appmetrics
 notifications:
