@@ -1,18 +1,19 @@
 language: ruby
 rvm:
   - "1.9.3"
+gemfile:
+  - /app/app/Gemfile
 before_install:
   - sudo mkdir -p /app
   - sudo chmod 777 /app
   - ln -s $(pwd) /app/app
 install: sudo .build/dev_server/provision.sh
-script: 
+before_script: 
   - cd /app/app
   - cat /app/.env
   - . /app/.env
-  - bundle
-  - sudo rake install_system_services
+  - "sudo bundle exec rake install_system_services"
   - sudo start app
-  - rake logstash:test:type:ci_appmetrics
+script: "bundle exec rake logstash:test:type:ci_appmetrics"
 notifications:
   flowdock: 803b1aaf805716f8a7822ff582b2e5f5
