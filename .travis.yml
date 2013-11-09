@@ -2,15 +2,10 @@ language: ruby
 rvm:
   - "1.9.3"
 before_install:
-  - echo whoami:$(whoami) groups:$(groups)
-  - echo PWD:$(pwd)
-  - env
-  - sudo apt-get install tree
-  - tree -d -L 3 /
   - sudo mkdir -p /app
   - sudo chmod 777 /app
   - ln -s $(pwd) /app/app
-install: sudo .build/dev_server/provision.sh
+install: .build/dev_server/provision.sh
 script: rake logstash:test:type:ci_appmetrics
 notifications:
   flowdock: 803b1aaf805716f8a7822ff582b2e5f5
