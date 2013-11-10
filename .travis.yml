@@ -12,6 +12,7 @@ before_script:
   - cd /app/app
   - cat /app/.env
   - . /app/.env
+  - sudo . /app/.env
   - "sudo bundle exec rake install_system_services"
   - sudo start app
 script: "bundle exec rake logstash:test:type:ci_appmetrics"
