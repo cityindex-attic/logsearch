@@ -12,9 +12,8 @@ before_script:
   - cd /app/app
   - cat /app/.env
   - . /app/.env
-  - sudo . /app/.env
-  - "sudo bundle exec rake install_system_services"
-  - sudo start app
-script: "bundle exec rake logstash:test:type:ci_appmetrics"
+  - sudo -E bundle exec rake install_system_services
+  - sudo -E start app
+script: bundle exec rake logstash:test:type:ci_appmetrics
 notifications:
   flowdock: 803b1aaf805716f8a7822ff582b2e5f5
