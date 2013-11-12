@@ -3,6 +3,12 @@ filter {
     # rewrite our defined globals
     #
 
+    if [type] == 'redis' or [type] == 'redis-input' {
+        mutate {
+            remove_field => [ 'type' ]
+        }
+    }
+
     if [type] != '' {
         mutate {
             rename => [ "type", "@type" ]
@@ -63,3 +69,4 @@ filter {
         }
     }
 }
+
