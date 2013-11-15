@@ -31,7 +31,7 @@ task :erase do
         puts "==> Starting app-elasticsearch"
         sh "sudo service app-elasticsearch start"
 
-        sh "while ! nc -vz #{ENV['APP_CONFIG_ES_IPADDRESS']} 9200 2>/dev/null ; do sleep 2 ; tail -n25 /var/log/app/elasticsearch-1.log ; done"
+        sh "while ! nc -vz #{ENV['APP_CONFIG_ES_IPADDRESS']} 9200 2>/dev/null ; do sleep 2 ; done"
     end
 end
 
