@@ -6,12 +6,12 @@
 *.ear
 .vagrant/
 
-config/
+/config/
 
-srv/*/config/*
-!srv/*/config/*.erb
-!srv/*/config/filter.d/*.erb
+/srv/*/config/*
+!/srv/*/config/*.erb
+!/srv/*/config/filter.d/*.erb
 
-Vagrantfile.local
-packages/
-example/fabfile.pyc
+/Vagrantfile.local
+/packages/
+/example/fabfile.pyc
