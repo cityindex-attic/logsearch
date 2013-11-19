@@ -179,7 +179,8 @@ def run_integration_test(type, task = "file")
         end
 
         puts "==> Importing test data ..."
-        sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/do-import.rb #{task} #{type} #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"# > /dev/null"
+        #sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/do-import.rb #{task} #{type} #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"# > /dev/null"
+        sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/do-import-redis.rb #{type} #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"# > /dev/null"
 
         puts "==> Ensuring elasticsearch has finished indexing our data ..."
         sh "curl -sXPOST 'http://#{ENV['APP_CONFIG_ES_IPADDRESS']}:9200/_all/_flush' > /dev/null"
