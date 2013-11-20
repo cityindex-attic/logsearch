@@ -104,7 +104,7 @@
         "LogstashInstanceType": {
             "Type": "String",
             "Description": "Instance type for the logstash nodes.",
-            "Default" : "c1.medium"
+            "Default" : "c3.large"
         },
         "LogstashSpotPrice": {
             "Type": "Number",

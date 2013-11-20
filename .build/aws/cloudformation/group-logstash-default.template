@@ -46,7 +46,7 @@
             "Description": "An IAM role for the nodes."
         },
         "InstanceType": {
-            "Default": "m1.large",
+            "Default": "c3.large",
             "Type": "String",
             "Description": "The instance type to create the nodes on.",
             "AllowedValues": [
@@ -62,9 +62,15 @@
                 "m3.2xlarge",
                 "c1.medium",
                 "c1.xlarge",
+                "c3.large",
+                "c3.xlarge",
+                "c3.2xlarge",
+                "c3.4xlarge",
+                "c3.8xlarge",
                 "cc2.8xlarge",
                 "cr1.8xlarge",
                 "cg1.4xlarge",
+                "g2.2xlarge",
                 "hi1.4xlarge",
                 "hs1.8xlarge"
             ],
