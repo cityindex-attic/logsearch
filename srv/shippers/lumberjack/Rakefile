@@ -1,0 +1,26 @@
+require 'yaml'
+
+namespace :lumberjack do
+
+  desc "Install lumberjack to #{ENV['APP_VENDOR_DIR']}"
+  task :provision do 
+    unless File.exists? "#{ENV['APP_VENDOR_DIR']}/lumberjack"
+       sh "#{ENV['APP_APP_DIR']}/srv/shippers/lumberjack/provision.sh #{ENV['APP_VENDOR_DIR']}"
+    end
+  end
+
+  desc "Generate lumberjack keys to #{ENV['APP_DATA_DIR']} (unless they already exist)"
+  task :generate_keys do 
+    unless File.exists? "#{ENV['APP_DATA_DIR']}/lumberjack.key"
+        sh "openssl req -x509 -batch -nodes -newkey rsa:2048 -keyout #{ENV['APP_DATA_DIR']}/lumberjack.key -out #{ENV['APP_DATA_DIR']}/lumberjack.crt"
+    end
+  end
+
+  desc "Run logstash forwarding lumberjack messages to redis"
+  task :ship_to_lumberjack_endpoint, :lumberjack_config_erb do |t, args|
+    lumberjack_config = "#{ENV['APP_APP_DIR']}/srv/shippers/lumberjack/config/lumberjack_to_lumberjack_endpoint.json"
+    process_erb("#{args[:lumberjack_config_erb]}", "#{lumberjack_config}", args)
+    sh "#{ENV['APP_VENDOR_DIR']}/lumberjack -config #{lumberjack_config}"
+  end
+
+end
