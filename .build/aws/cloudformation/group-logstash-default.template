@@ -2,7 +2,7 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "A default logstash parser node auto scaling group.",
     "Parameters": {
-        "AlarmTopicArn": {
+        "AutoScalingTopicArn": {
             "Type": "String",
             "Description": "An SNS ARN for alarms to notify."
         },
@@ -270,7 +270,7 @@
                     "Ref": "GroupMaxSize"
                 },
                 "NotificationConfiguration" : {
-                    "TopicARN" : { "Ref" : "AlarmTopicArn" },
+                    "TopicARN" : { "Ref" : "AutoScalingTopicArn" },
                     "NotificationTypes" : [
                         "autoscaling:TEST_NOTIFICATION",
                         "autoscaling:EC2_INSTANCE_LAUNCH",
