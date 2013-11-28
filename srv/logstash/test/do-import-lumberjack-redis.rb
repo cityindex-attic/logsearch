@@ -5,6 +5,7 @@ require_relative 'common'
 #
 
 def ensure_service_running(service_name)
+  puts "Ensuring #{service_name} is running..."
   unless /start\/running/ =~ `service #{service_name} status` 
     raise "service #{service_name} must be running.\nRun 'sudo start app' before running this test"
   end
@@ -16,17 +17,21 @@ ensure_service_running "app-redis"
 ensure_service_running "app-lumberjack_redis"
 ensure_service_running "app-logstash_redis"
 
-# Make sure the app-logstash_redis is running the latest config file
-`sudo service app-logstash_redis restart`
-
 # ensure lumberjack and lumberjack keys are installed
-system "cd #{File.dirname(__FILE__)}/../../../ && rake lumberjack:provision"
-system "cd #{File.dirname(__FILE__)}/../../../ && rake lumberjack:generate_keys"
+# system "cd #{File.dirname(__FILE__)}/../../../ && rake lumberjack:provision"
+# system "cd #{File.dirname(__FILE__)}/../../../ && rake lumberjack:generate_keys"
 
-# ship the test log file via lumberjack shipper -> lumberjack endpoint -> redis
-system "cd #{File.dirname(__FILE__)}/../../../ && rake lumberjack:ship_to_lumberjack_endpoint[#{ARGV[0]}]"
+# # Make sure the app-logstash_redis is running the latest config file
+# puts "Waiting for app-lumberjack_redis to be ready..."
+# puts `sudo service app-lumberjack_redis stop`
+# sleep 2
+# puts `sudo service app-lumberjack_redis start`
+# system "while ! nc -vz 127.0.0.1 5043 2>/dev/null ; do echo -n . & sleep 2 ; done"
 
-raise "Failed to import using lumberjack config '#{ARGV[0]}'" if 0 < $?.exitstatus
+puts "\nShipping the test log file via lumberjack shipper -> lumberjack endpoint -> redis"
+system "cd #{File.dirname(__FILE__)}/../../../ && rake lumberjack:ship_to_lumberjack_endpoint[#{ARGV[1]}]"
+
+raise "Failed to import #{ARGV[1]} using lumberjack" if 0 < $?.exitstatus
 
 # logstash workers have a slight delay with queueing/flushing
 sleep 15

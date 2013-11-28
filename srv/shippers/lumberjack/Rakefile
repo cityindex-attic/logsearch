@@ -17,10 +17,16 @@ namespace :lumberjack do
   end
 
   desc "Run logstash forwarding lumberjack messages to redis"
-  task :ship_to_lumberjack_endpoint, :lumberjack_config_erb do |t, args|
+  task :ship_to_lumberjack_endpoint, :file do |t, args|
     lumberjack_config = "#{ENV['APP_APP_DIR']}/srv/shippers/lumberjack/config/lumberjack_to_lumberjack_endpoint.json"
-    process_erb("#{args[:lumberjack_config_erb]}", "#{lumberjack_config}", args)
-    sh "#{ENV['APP_VENDOR_DIR']}/lumberjack -config #{lumberjack_config}"
+    lumberjack_config_erb = "#{lumberjack_config}.erb"
+    process_erb("#{lumberjack_config_erb}", "#{lumberjack_config}", args)
+    pid = fork do
+        exec "/usr/bin/pv -ept #{args[:file]} | #{ENV['APP_VENDOR_DIR']}/lumberjack -config #{lumberjack_config} -idle-flush-time=1s"
+    end
+    sleep 1
+    Process.kill("HUP", pid)
+    Process.wait
   end
 
 end

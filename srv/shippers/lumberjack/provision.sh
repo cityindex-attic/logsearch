@@ -15,9 +15,7 @@ function display_file_info {
 if [ ! -e $DEST/lumberjack ] ; then
     echo "Downloading lumberjack..."
     
-    curl --location -o $DEST/lumberjack.zip https://s3.amazonaws.com/logsearch-ciapi_latency_monitor-bot/lumberjack.nix.zip
-    sudo apt-get install unzip
-    unzip $DEST/lumberjack.zip
+    curl https://s3.amazonaws.com/ci-labs-buildpack-downloads/lumberjack/lumberjack-1f1f44bc60cb7a271f2bd06f3db1ed666c1a9b22.tar.gz | tar -C $DEST -zx
     chmod +x $DEST/lumberjack
 fi
 
