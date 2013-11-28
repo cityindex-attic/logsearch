@@ -10,7 +10,8 @@ raise "Failed to import '#{ARGV[1]}' as #{ARGV[0]}" if 0 < $?.exitstatus
 
 
 # logstash workers have a slight delay with queueing/flushing
-sleep 8
+# @todo make this static sleep more intelligent...
+sleep 30
 
 #
 # make sure everything parsed okay
