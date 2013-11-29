@@ -55,6 +55,20 @@
                 ]
             }
         },
+        "SecurityGroup0InterSyslog5514": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupName": {
+                    "Ref": "SecurityGroup0"
+                },
+                "IpProtocol": "udp",
+                "FromPort": "5514",
+                "ToPort": "5514",
+                "SourceSecurityGroupName": {
+                    "Ref": "SecurityGroup0"
+                }
+            }
+        },
         "SecurityGroup0InterElasticsearch9200": {
             "Type": "AWS::EC2::SecurityGroupIngress",
             "Properties": {

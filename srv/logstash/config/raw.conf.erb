@@ -2,7 +2,6 @@
 
 input {
     stdin {
-        debug => true
         type => "<%= @args[:logstash_type] %>"
         codec => "<%= @args[:logstash_format] || 'line' %>"
     }
@@ -11,6 +10,5 @@ input {
 output {
     stdout {
         codec => "json"
-        debug => true
     }
 }

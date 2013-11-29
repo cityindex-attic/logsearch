@@ -5,7 +5,7 @@ namespace :elasticsearch do
 
     sh "[ -e #{ENV['APP_VENDOR_DIR']}/elasticsearch/config/mappings ] && unlink #{ENV['APP_VENDOR_DIR']}/elasticsearch/config/mappings ; ln -s #{ENV['APP_APP_DIR']}/srv/elasticsearch/config/mappings #{ENV['APP_VENDOR_DIR']}/elasticsearch/config/mappings"
 
-    exec "'#{ENV['APP_VENDOR_DIR']}/elasticsearch/bin/elasticsearch' -f -XX:HeapDumpPath=#{ENV['APP_TMP_DIR']}/heap-dump/ -Des.config='#{ENV['APP_APP_DIR']}/srv/elasticsearch/config/default.json' -Des.pidfile='#{ENV['APP_RUN_DIR']}/elasticsearch.pid'"
+    exec "'#{ENV['APP_VENDOR_DIR']}/elasticsearch/bin/elasticsearch' -f -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled -XX:HeapDumpPath=#{ENV['APP_TMP_DIR']}/heap-dump/ -Des.config='#{ENV['APP_APP_DIR']}/srv/elasticsearch/config/default.json' -Des.pidfile='#{ENV['APP_RUN_DIR']}/elasticsearch.pid'"
   end
 
   task :envdeps do

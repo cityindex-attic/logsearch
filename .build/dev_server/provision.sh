@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -x
 set -e
 
 #
@@ -12,12 +12,15 @@ set -e
 #
 # app
 #
-
-if [ -e /home/vagrant ] ; then
+if [ "$TRAVIS" = "true" ]; then
+    APP_USER=travis
+elif [ -e /home/vagrant ] ; then
     APP_USER=vagrant
 else
     APP_USER=$(ls /home/)
 fi
+
+echo "APP_USER detected as: $APP_USER"
 
 mkdir -p /app
 
@@ -42,11 +45,14 @@ echo 'export APP_CONFIG_IMPORTQUEUE_KEY=importqueue' >> /app/.env
 chmod +x /app/.env
 
 sudo -H -u $APP_USER /bin/bash << 'EOF'
-    cd /app/app/
-
+    set -x
     set -e
     
-    . ../.env
+    cd /app/app/
+
+    echo "PWD: $(pwd)"
+    
+    . /app/.env
     
     mkdir -p $APP_VENDOR_DIR
     mkdir -p $APP_LOG_DIR

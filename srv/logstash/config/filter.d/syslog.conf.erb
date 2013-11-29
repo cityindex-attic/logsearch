@@ -1,0 +1,20 @@
+if [@type] == "syslog" {
+    syslog_pri { }
+
+    date {
+        match => { "timestamp" => [ "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ] }
+    }
+
+    mutate {
+        rename => [ "logsource", "@source.host" ]
+        # syslog doesn't provide us a raw message
+        rename => [ "@message", "message" ]
+        remove_field => [
+            "timestamp",
+            "syslog_facility",
+            "syslog_facility_code",
+            "syslog_severity",
+            "syslog_severity_code"
+        ]
+    }
+}

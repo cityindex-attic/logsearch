@@ -1,39 +1,38 @@
 # Filter type => "ci_ip_diagnostics"
 
-csv {
-    type => "ci_ip_diagnostics"
-    columns => [
-        "arrival_time_tz",
-        "instruction_id",
-        "level",
-        "instruction_description",
-        "arrival_time",
-        "duration_ms",
-        "percentage_of_total",
-        "quotes_orders_affected"
-    ]
-}
-
-csv {
-    type => "ci_ip_diagnostics"
-    source => "instruction_description"
-    target => "instruction"
-    separator => "/"
-    columns => [
-        "type",
-        "status",
-        "source"
-    ]
-}
-
-mutate {
-    type => "ci_ip_diagnostics"
-    convert => [ "duration_ms", "float" ]
-    convert => [ "percentage_of_total", "float" ]
-    convert => [ "quotes_orders_affected", "integer" ]
-}
-
-date {
-    type => "ci_ip_diagnostics"
-    match => [ "arrival_time_tz", "ISO8601" ]
+if [@type] == "ci_ip_diagnostics" {
+    csv {
+        source => "@message"
+        columns => [
+            "arrival_time_tz",
+            "instruction_id",
+            "level",
+            "instruction_description",
+            "arrival_time",
+            "duration_ms",
+            "percentage_of_total",
+            "quotes_orders_affected"
+        ]
+    }
+    
+    csv {
+        source => "instruction_description"
+        target => "instruction"
+        separator => "/"
+        columns => [
+            "type",
+            "status",
+            "source"
+        ]
+    }
+    
+    mutate {
+        convert => [ "duration_ms", "float" ]
+        convert => [ "percentage_of_total", "float" ]
+        convert => [ "quotes_orders_affected", "integer" ]
+    }
+    
+    date {
+        match => [ "arrival_time_tz", "ISO8601" ]
+    }
 }

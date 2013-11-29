@@ -40,7 +40,13 @@ namespace :logstash do
     end
 
     process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/lumberjack_to_redis.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/lumberjack_to_redis.conf", args)
-    sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/lumberjack_to_redis.conf'"
+    sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/lumberjack_to_redis.conf'"
+  end
+
+  desc "Run logstash forwarding syslog messages to redis"
+  task :syslog_to_redis, :logstash_type, :path do |t, args|
+    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/syslog_to_redis.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/syslog_to_redis.conf", args)
+    sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/syslog_to_redis.conf'"
   end
 
   desc "Run logstash off json file via stdin"
@@ -67,7 +73,12 @@ namespace :logstash do
   desc "Parse STDIN and dump the result to STDOUT"
   task :debug, :logstash_type do |t, args|
     process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/debug.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/debug.conf", args)
-    sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/debug.conf'"
+    sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -v -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/debug.conf'"
+  end
+
+  task :raw, :logstash_type do |t, args|
+    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/raw.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/raw.conf", args)
+    sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/raw.conf'"
   end
 
   namespace :test do
@@ -113,17 +124,17 @@ namespace :logstash do
 
       desc "Run stackato_apptail tests"
       task :stackato_apptail => :erase do
-        run_integration_test("stackato_apptail", "pv_jsonfile_to_elasticsearch")
+        run_integration_test("stackato_apptail", "pv_to_elasticsearch")
       end
 
       desc "Run stackato_event tests"
       task :stackato_event => :erase do
-        run_integration_test("stackato_event", "pv_jsonfile_to_elasticsearch")
+        run_integration_test("stackato_event", "pv_to_elasticsearch")
       end
 
       desc "Run stackato_systail tests"
       task :stackato_systail => :erase do
-        run_integration_test("stackato_systail", "pv_jsonfile_to_elasticsearch")
+        run_integration_test("stackato_systail", "pv_to_elasticsearch")
       end
 
       desc "Run ci_appmetrics tests"
@@ -140,6 +151,7 @@ namespace :logstash do
       task :ci_ip_diagnostics => :erase do
         run_integration_test("ci_ip_diagnostics", "pv_to_elasticsearch")
       end
+
     end
   end
 end
@@ -167,10 +179,11 @@ def run_integration_test(type, task = "file")
         end
 
         puts "==> Importing test data ..."
-        sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/do-import.rb #{task} #{type} #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log > /dev/null"
+        #sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/do-import.rb #{task} #{type} #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"# > /dev/null"
+        sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/do-import-redis.rb #{type} #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"# > /dev/null"
 
         puts "==> Ensuring elasticsearch has finished indexing our data ..."
-        sh "curl -sXPOST 'http://#{ENV['APP_CONFIG_ES_IPADDRESS']}:9200/_all/_refresh' > /dev/null"
+        sh "curl -sXPOST 'http://#{ENV['APP_CONFIG_ES_IPADDRESS']}:9200/_all/_flush' > /dev/null"
       
         puts "==> Running our test queries ..."
         sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.rb"

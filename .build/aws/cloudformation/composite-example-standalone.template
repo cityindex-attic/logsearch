@@ -79,6 +79,21 @@
             "c1.xlarge" : {
                 "ElasticsearchHeapSize" : "3584M"
             },
+            "c3.large" : {
+                "ElasticsearchHeapSize" : "2G"
+            },
+            "c3.xlarge" : {
+                "ElasticsearchHeapSize" : "4G"
+            },
+            "c3.2xlarge" : {
+                "ElasticsearchHeapSize" : "8G"
+            },
+            "c3.4xlarge" : {
+                "ElasticsearchHeapSize" : "16G"
+            },
+            "c3.8xlarge" : {
+                "ElasticsearchHeapSize" : "32G"
+            },
             "cc2.8xlarge" : {
                 "ElasticsearchHeapSize" : "30G"
             },
@@ -87,6 +102,9 @@
             },
             "cg1.4xlarge" : {
                 "ElasticsearchHeapSize" : "12G"
+            },
+            "g2.2xlarge" : {
+                "ElasticsearchHeapSize" : "8G"
             },
             "hi1.4xlarge" : {
                 "ElasticsearchHeapSize" : "31G"

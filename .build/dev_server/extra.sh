@@ -4,6 +4,7 @@
 #  * aws-cli - for running aws commands
 #  * munin - localhost stats gathering
 
+set -x
 set -e
 
 if ! (which easy_install 1>/dev/null 2>&1) ; then
