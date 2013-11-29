@@ -33,6 +33,10 @@ http {
         listen *:80;
         server_name kibana.vagrant;
 
+        location ~ ^/_all/_search {
+            deny all;
+        }
+
         location ~ ^/[^\/\*]+/_search$ {
             proxy_pass http://elasticsearch;
         }
