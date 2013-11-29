@@ -7,17 +7,9 @@ logstash_redis_logfile = "/var/log/app/logstash_redis-1.log"
 # import path is:  file -> lumberjack shipper -> lumberjack endpoint -> redis -> parser -> elasticsearch
 #
 
-puts "---> Restarting app-logstash_redis to ensure its using the latest config and a flush_size of 1"
-ENV['APP_CONFIG_REDIS_FLUSH_SIZE'] = "1"
-ENV['DEBUG_OUTPUT'] = "true" #FIXME: these aren't getting passed through to the service...
-puts `sudo service app-logstash_redis restart`
+puts "---> Stopping app-logstash_redis service..."
+puts `sudo service app-logstash_redis stop`
 
-def ensure_service_running(service_name)
-  puts "  Ensuring #{service_name} is running..."
-  unless /start\/running/ =~ `service #{service_name} status` 
-    raise "service #{service_name} must be running.\nRun 'sudo start app' before running this test"
-  end
-end
 
 puts "---> Ensuring other required services are running"
 ensure_service_running "app-elasticsearch"
@@ -40,25 +32,11 @@ system "cd #{File.dirname(__FILE__)}/../../../ && rake lumberjack:ship_to_lumber
 
 raise "Failed to import #{log_file} using lumberjack" if 0 < $?.exitstatus
 
-until_line = `tail -n1 #{log_file}`.strip
-puts "---> Waiting for #{logstash_redis_logfile} to contain last line of #{log_file} ('#{until_line}')"
-def wait_for(file, until_line)
-  f = File.open(file,"r")
-  f.seek(0,IO::SEEK_END)
-  not_found = true
-  while not_found do
-    select([f])
-    line = f.gets
-    print "."
-    if line =~ /.*#{Regexp.escape(until_line)}.*/
-      puts " found #{until_line} in #{file}" 
-      not_found = false
-    end
-    sleep 1
-  end
-end
-
-wait_for(logstash_redis_logfile,until_line)
+puts "---> redis -> parser -> elasticsearch"
+last_line_of_log_file = `tail -n1 #{log_file}`.strip
+puts "running rake logstash:redis_to_elasticsearch until #{last_line_of_log_file} detected in output"
+run_until "cd #{File.dirname(__FILE__)}/../../../ && APP_CONFIG_REDIS_FLUSH_SIZE=1 DEBUG_OUTPUT=true rake logstash:redis_to_elasticsearch",\
+          /.*#{Regexp.escape(last_line_of_log_file)}.*/, 2
 
 #
 # make sure everything parsed okay

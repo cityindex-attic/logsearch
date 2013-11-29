@@ -42,7 +42,7 @@ namespace :lumberjack do
           print line 
           if (line =~ exit_regex) 
             puts "Shutting down process #{pid}"
-            Process.kill("SIGTERM", pid) 
+            Process.kill(-9, pid) # SIGTERM whole process group
           end
         end
       rescue Errno::EIO
@@ -50,7 +50,6 @@ namespace :lumberjack do
       end
       Process.wait(pid)
     end
-    
-  end
+  end #run_until
 
 end
