@@ -33,10 +33,9 @@ system "cd #{File.dirname(__FILE__)}/../../../ && rake lumberjack:ship_to_lumber
 raise "Failed to import #{log_file} using lumberjack" if 0 < $?.exitstatus
 
 puts "---> redis -> parser -> elasticsearch"
-last_line_of_log_file = `tail -n1 #{log_file}`.strip
-puts "running rake logstash:redis_to_elasticsearch until #{last_line_of_log_file} detected in output"
+puts "running rake logstash:redis_to_elasticsearch until 2 seconds after 'timestamp' detected in output"
 run_until "cd #{File.dirname(__FILE__)}/../../../ && APP_CONFIG_REDIS_FLUSH_SIZE=1 DEBUG_OUTPUT=true rake logstash:redis_to_elasticsearch",\
-          /.*#{Regexp.escape(last_line_of_log_file)}.*/, 2
+          /.*#{Regexp.escape("timestamp")}.*/, 2
 
 #
 # make sure everything parsed okay

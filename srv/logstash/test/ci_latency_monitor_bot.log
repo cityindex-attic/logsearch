@@ -1,11 +1,6 @@
-2013-11-26 11:24:31.525 Starting monitors...
-2013-11-26 11:24:31.573 Info_NodeName: AndreiCfTest
-2013-11-26 11:24:31.575 Info_MonitorsVersion: Monitors, Version=1.0.5078.25555, Culture=neutral, PublicKeyToken=null
-2013-11-26 11:24:31.576 Info_CiapiVersion: v10.7.0.574
-2013-11-26 11:24:32.369 Info.NTP_Offset: -0.001274
-2013-11-26 11:24:32.727 Latency General.StaticPage: 1.1089922
-2013-11-26 11:24:41.691 Latency General.StaticPage: 0.0865262
-2013-11-26 11:24:51.688 Latency General.StaticPage: 0.0869604
-2013-11-26 11:25:01.689 Latency General.StaticPage: 0.086818
-2013-11-26 11:25:11.690 Latency General.StaticPage: 0.0864544
-2013-11-26 11:25:21.709 Latency General.StaticPage: 0.0918979
+{"@timestamp":"2013-11-26T11:24:31.525Z", "@environment": "INTEGRATION_TEST", "@source.host": "vagrant", "@source.lonlat": [0.5,0.5], "log":"Starting monitors..."}
+{"@timestamp":"2013-11-26T11:24:31.575Z", "@environment": "INTEGRATION_TEST", "@source.host": "vagrant", "@source.lonlat": [0.5,0.5], "Info_NodeName":"AndreiCfTest"}
+{"@timestamp":"2013-11-26T11:24:31.575Z", "@environment": "INTEGRATION_TEST", "@source.host": "vagrant", "@source.lonlat": [0.5,0.5], "Info_MonitorsVersion":"Monitors, Version=1.0.5078.25555, Culture=neutral, PublicKeyToken=null"}
+{"@timestamp":"2013-11-26T11:24:31.575Z", "@environment": "INTEGRATION_TEST", "@source.host": "vagrant", "@source.lonlat": [0.5,0.5], "Info.NTP_Offset":-0.001274}
+{"@timestamp":"2013-11-26T11:24:32.727Z", "@environment": "INTEGRATION_TEST", "@source.host": "vagrant", "@source.lonlat": [0.5,0.5], "Latency General.StaticPage":1.1089922}
+{"@timestamp":"2013-11-26T11:24:41.691Z", "@environment": "INTEGRATION_TEST", "@source.host": "vagrant", "@source.lonlat": [0.5,0.5], "Latency General.StaticPage":0.0865262}

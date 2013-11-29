@@ -67,11 +67,13 @@ def run_until(cmd, exit_regex, kill_delay = 0)
     cmd = cmd_file.path
     File.chmod(0744, cmd)
   end
+  is_shutting_down = false
   PTY.spawn( cmd ) do |stdout_and_err, stdin, pid| 
     begin
       stdout_and_err.each do |line| 
         print line 
-        if (line =~ exit_regex) 
+        if (line =~ exit_regex && !is_shutting_down) 
+          is_shutting_down = true
           puts "Shutting down process group #{pid} in #{kill_delay}s"
           sleep kill_delay
           Process.kill(-9, pid) # -9 == SIGTERM for whole process group
