@@ -11,7 +11,9 @@ input {
 }
 
 output {
-    #stdout { debug => true debug_format => "json"}
+    <%# if ENV['DEBUG_OUTPUT'] %>
+    stdout { debug => true codec => "rubydebug" } 
+    <%# end %>
     elasticsearch_http {
         host => "<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>"
         flush_size => <%= ENV['APP_CONFIG_REDIS_FLUSH_SIZE'] || 100  %>

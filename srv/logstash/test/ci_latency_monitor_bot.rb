@@ -8,7 +8,7 @@ describe CILatencyMonitorBot, "type=ci_latency_monitor_bot" do
   it "should put events in the right index for their timestamp" do
     res = eslog_simple_search('logstash-2013.11.26')
 
-    assert_equal 47, res['hits']['total']
+    assert_equal 11, res['hits']['total']
 
   end
 

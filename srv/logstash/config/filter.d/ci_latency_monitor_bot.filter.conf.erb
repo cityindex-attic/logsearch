@@ -2,11 +2,18 @@
 
 if [@type] == "ci_latency_monitor_bot" {
     grok {
-        match => [ "@message", "%{TIMESTAMP_ISO8601:time} %{GREEDYDATA:value}" ]
+        match => [ "@message", "%{TIMESTAMP_ISO8601:time}%{SPACE}%{GREEDYDATA:message_data}" ]
     }
 
     date {
         match => [ "time", "YYYY-MM-dd HH:mm:ss.SSS" ]
     }
+
+    kv {
+    	source => "message_data"
+    	field_split => "\ \\t"
+	    value_split => ":"
+	    remove_field => [ "message_data" ]
+	  }
 }
 
