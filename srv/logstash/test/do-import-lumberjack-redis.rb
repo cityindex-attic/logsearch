@@ -4,7 +4,8 @@ require_relative 'common'
 # import path is:  file -> lumberjack shipper -> lumberjack endpoint -> redis -> parser -> elasticsearch
 #
 
-puts "---> Restarting app-logstash_redis"
+puts "---> Restarting app-logstash_redis to ensure its using the latest config and a flush_size of 1"
+ENV['APP_CONFIG_REDIS_FLUSH_SIZE'] = "1"
 puts `sudo service app-logstash_redis restart`
 
 def ensure_service_running(service_name)
@@ -36,7 +37,23 @@ system "cd #{File.dirname(__FILE__)}/../../../ && rake lumberjack:ship_to_lumber
 raise "Failed to import #{ARGV[1]} using lumberjack" if 0 < $?.exitstatus
 
 puts "---> Waiting for logstash-redis"
-sleep 30
+def wait_for(file, pattern)
+  f = File.open(file,"r")
+  f.seek(0,IO::SEEK_END)
+  not_found = true
+  while not_found do
+    select([f])
+    line = f.gets
+    print "."
+    if line=~pattern
+      puts " found #{pattern} in #{file}" 
+      not_found = false
+    end
+    sleep 1
+  end
+end
+
+wait_for("/var/log/app/logstash_redis-1.log",/Lumberjack/)
 
 #
 # make sure everything parsed okay

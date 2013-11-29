@@ -1,0 +1,12 @@
+# Filter type => "ci_latency_monitor_bot" 
+
+if [@type] == "ci_latency_monitor_bot" {
+    grok {
+        match => [ "@message", "%{TIMESTAMP_ISO8601:time} %{GREEDYDATA:value}" ]
+    }
+
+    date {
+        match => [ "time", "YYYY-MM-dd HH:mm:ss.SSS" ]
+    }
+}
+
