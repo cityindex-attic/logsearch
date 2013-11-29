@@ -18,14 +18,24 @@ describe CILatencyMonitorBot, "type=ci_latency_monitor_bot" do
     end
   end
 
-  # it "should convert lonlat comma separated string to array" do
-  #   res = eslog_simple_search(
-  #     nil,
-  #     '_exists_:@source_lonlat'
-  #   )
+  it "should convert treat @source.lonlat as an array" do
+    res = eslog_simple_search(
+      nil,
+      '_exists_:@source.lonlat'
+    )
 
-  #   assert_equal 47, res['hits']['total']
-  #   res['hits']['hits'][0]['_source']['source_lonlat'].must_be_instance_of Array
-  # end
+    assert_equal 6, res['hits']['total']
+    res['hits']['hits'][0]['_source']['@source.lonlat'].must_be_instance_of Array
+  end
+
+   it "should treat 'Latency General.StaticPage' as a float" do
+    res = eslog_simple_search(
+      nil,
+      '_exists_:"Latency General.StaticPage"'
+    )
+
+    assert_equal 2, res['hits']['total']
+    res['hits']['hits'][0]['_source']['Latency General.StaticPage'].must_be_instance_of Float
+  end
 
 end #describe
