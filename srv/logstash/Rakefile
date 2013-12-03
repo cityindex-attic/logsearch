@@ -159,6 +159,11 @@ namespace :logstash do
         run_integration_test("ci_ip_diagnostics", "pv_to_elasticsearch")
       end
 
+      desc "Run cf_loggregator_syslog tests"
+      task :cf_loggregator_syslog => :erase do
+        run_integration_test("cf_loggregator_syslog", "pv_to_elasticsearch")
+      end
+
     end
   end
 end
