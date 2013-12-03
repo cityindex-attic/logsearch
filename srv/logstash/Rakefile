@@ -94,6 +94,7 @@ namespace :logstash do
       Rake::Task["logstash:test:type:stackato_event"].invoke
       Rake::Task["logstash:test:type:stackato_systail"].invoke
       Rake::Task["logstash:test:type:ci_appmetrics"].invoke
+      Rake::Task["logstash:test:type:ci_latency_monitor_bot"].invoke
       Rake::Task["logstash:test:type:ci_log4net"].invoke
       Rake::Task["logstash:test:type:ci_ip_diagnostics"].invoke
 
@@ -142,6 +143,12 @@ namespace :logstash do
         run_integration_test("ci_appmetrics", "pv_to_elasticsearch")
       end
 
+      desc "Run ci_latency_monitor_bot tests"
+      task :ci_latency_monitor_bot do
+        system "cd #{ENV['APP_APP_DIR']} && rake elasticsearch:delete_all_data_by_query"
+        run_integration_test("ci_latency_monitor_bot", "pv_to_elasticsearch", "do-import-lumberjack-redis")
+      end
+
       desc "Run ci_log4net tests"
       task :ci_log4net => :erase do
         run_integration_test("ci_log4net", "pv_to_elasticsearch")
@@ -158,7 +165,7 @@ end
 
 class ElasticsearchNotRunning < RuntimeError; end
 
-def run_integration_test(type, task = "file")
+def run_integration_test(type, task = "file", importer = "do-import-redis")
     pid = false
 
     if File.exists?("/etc/init/app-elasticsearch-1.conf")
@@ -179,8 +186,16 @@ def run_integration_test(type, task = "file")
         end
 
         puts "==> Importing test data ..."
-        #sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/do-import.rb #{task} #{type} #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"# > /dev/null"
-        sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/do-import-redis.rb #{type} #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"# > /dev/null"
+        case importer
+        when "do-import"
+         sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/do-import.rb #{task} #{type} #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"# > /dev/null"
+        when "do-import-redis"
+         sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/do-import-redis.rb #{type} #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"# > /dev/null"
+        when "do-import-lumberjack-redis"
+         sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/do-import-lumberjack-redis.rb #{type} #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"# > /dev/null"
+        else
+          raise "Unrecognised importer: #{importer}"
+        end
 
         puts "==> Ensuring elasticsearch has finished indexing our data ..."
         sh "curl -sXPOST 'http://#{ENV['APP_CONFIG_ES_IPADDRESS']}:9200/_all/_flush' > /dev/null"

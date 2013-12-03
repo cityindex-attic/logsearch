@@ -1,0 +1,6 @@
+{"@timestamp":"2013-11-26T11:24:31.525Z", "@environment": "INTEGRATION_TEST", "@source.host": "vagrant", "@source.lonlat": [0.5,0.5], "log":"Starting monitors..."}
+{"@timestamp":"2013-11-26T11:24:31.575Z", "@environment": "INTEGRATION_TEST", "@source.host": "vagrant", "@source.lonlat": [0.5,0.5], "Info_NodeName":"AndreiCfTest"}
+{"@timestamp":"2013-11-26T11:24:31.575Z", "@environment": "INTEGRATION_TEST", "@source.host": "vagrant", "@source.lonlat": [0.5,0.5], "Info_MonitorsVersion":"Monitors, Version=1.0.5078.25555, Culture=neutral, PublicKeyToken=null"}
+{"@timestamp":"2013-11-26T11:24:31.575Z", "@environment": "INTEGRATION_TEST", "@source.host": "vagrant", "@source.lonlat": [0.5,0.5], "Info.NTP_Offset":-0.001274}
+{"@timestamp":"2013-11-26T11:24:32.727Z", "@environment": "INTEGRATION_TEST", "@source.host": "vagrant", "@source.lonlat": [0.5,0.5], "Latency General.StaticPage":1.1089922}
+{"@timestamp":"2013-11-26T11:24:41.691Z", "@environment": "INTEGRATION_TEST", "@source.host": "vagrant", "@source.lonlat": [0.5,0.5], "Latency General.StaticPage":0.0865262}

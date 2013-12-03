@@ -1,0 +1,55 @@
+require 'yaml'
+require 'pty'
+require 'tempfile'
+
+namespace :lumberjack do
+
+  desc "Install lumberjack to #{ENV['APP_VENDOR_DIR']}"
+  task :provision do 
+    unless File.exists? "#{ENV['APP_VENDOR_DIR']}/lumberjack"
+       sh "#{ENV['APP_APP_DIR']}/srv/shippers/lumberjack/provision.sh #{ENV['APP_VENDOR_DIR']}"
+    end
+  end
+
+  desc "Generate lumberjack keys to #{ENV['APP_DATA_DIR']} (unless they already exist)"
+  task :generate_keys do 
+    unless File.exists? "#{ENV['APP_DATA_DIR']}/lumberjack.key"
+        sh "openssl req -x509 -batch -nodes -newkey rsa:2048 -keyout #{ENV['APP_DATA_DIR']}/lumberjack.key -out #{ENV['APP_DATA_DIR']}/lumberjack.crt"
+    end
+  end
+
+  desc "Run logstash forwarding lumberjack messages to redis"
+  task :ship_to_lumberjack_endpoint, :file do |t, args|
+    lumberjack_config = "#{ENV['APP_APP_DIR']}/srv/shippers/lumberjack/config/lumberjack_to_lumberjack_endpoint.json"
+    lumberjack_config_erb = "#{lumberjack_config}.erb"
+    process_erb("#{lumberjack_config_erb}", "#{lumberjack_config}", args)
+    run_until "/usr/bin/pv -ept #{args[:file]} | #{ENV['APP_VENDOR_DIR']}/lumberjack -config #{lumberjack_config} -idle-flush-time=1s",\
+              /.*Registrar\ received.*/
+  end
+
+  def run_until(cmd, exit_regex)
+    unless File.exists?(cmd)
+      cmd_file = Tempfile.new('run_until.sh')
+      cmd_file.write("#!/usr/bin/env bash\n")
+      cmd_file.write(cmd)
+      cmd_file.close
+      cmd = cmd_file.path
+      File.chmod(0744, cmd)
+    end
+    PTY.spawn( cmd ) do |stdout_and_err, stdin, pid| 
+      begin
+        stdout_and_err.each do |line| 
+          print line 
+          if (line =~ exit_regex) 
+            puts "Shutting down process #{pid}"
+            Process.kill(-9, pid) # SIGTERM whole process group
+          end
+        end
+      rescue Errno::EIO
+        #ignore - see http://stackoverflow.com/questions/10238298/ruby-on-linux-pty-goes-away-without-eof-raises-errnoeio     
+      end
+      Process.wait(pid)
+    end
+  end #run_until
+
+end

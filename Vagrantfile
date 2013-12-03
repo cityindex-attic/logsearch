@@ -6,7 +6,7 @@ Vagrant.configure("2") do |config|
   config.vm.network :forwarded_port, guest: 9200, host: 9200 # elasticsearch
 
   config.vm.provider :virtualbox do |v|
-    v.customize ["modifyvm", :id, "--memory", "1024"]
+    v.customize ["modifyvm", :id, "--memory", "1700"]
   end
 
   config.vm.provider :aws do |aws, override|

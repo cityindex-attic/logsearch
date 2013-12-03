@@ -1,0 +1,16 @@
+{
+	"network": 
+	{
+		"servers": [ "127.0.0.1:5043" ],
+		"ssl ca": "/app/data/lumberjack.crt",
+		"timeout": 15
+	},
+	"files": [ 
+		{
+			"paths": [ "-" ],
+			"fields": {
+				"@type": "json"
+			}
+		}
+	]
+}

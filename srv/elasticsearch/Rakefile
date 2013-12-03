@@ -8,6 +8,13 @@ namespace :elasticsearch do
     exec "'#{ENV['APP_VENDOR_DIR']}/elasticsearch/bin/elasticsearch' -f -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled -XX:HeapDumpPath=#{ENV['APP_TMP_DIR']}/heap-dump/ -Des.config='#{ENV['APP_APP_DIR']}/srv/elasticsearch/config/default.json' -Des.pidfile='#{ENV['APP_RUN_DIR']}/elasticsearch.pid'"
   end
 
+  desc 'Delete all Elastic Search data using DELETE all data query to http://127.0.0.1:9200'
+  task :delete_all_data_by_query do
+    puts "---> Deleting all Elastic Search data"
+    sh "curl -XDELETE 'http://127.0.0.1:9200/_all/_query?q=*:*'"
+    puts "---> Done."
+  end
+
   task :envdeps do
     if File.symlink?("#{ENV['APP_TMP_DIR']}/heap-dump")
       # hacky; assumes sudo may be necessary (e.g. creating a root dir in /mnt on ec2)
