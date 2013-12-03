@@ -8,6 +8,12 @@
         }
     },
     "index" : {
+        "cache" : {
+            "field" : {
+                "type" : "soft",
+                "expire" : "15m"
+            }
+        },
         "translog" : {
             "flush_threshold_ops" : 64000
         }
