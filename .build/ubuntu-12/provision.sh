@@ -46,8 +46,8 @@ if [[ ! "$(ruby --version)" =~ "ruby 1.9.3" ]]; then
   # choose your interpreter
   # changes symlinks for /usr/bin/ruby , /usr/bin/gem
   # /usr/bin/irb, /usr/bin/ri and man (1) ruby
-  sudo update-alternatives --config ruby
-  sudo update-alternatives --config gem
+  sudo update-alternatives --auto ruby
+  sudo update-alternatives --auto gem
 
   echo -e "#Ensure gems are in path\nexport PATH=\$PATH:/var/lib/gems/1.9.1/bin/" >> /etc/profile
 fi
