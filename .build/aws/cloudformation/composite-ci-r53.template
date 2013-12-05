@@ -6,9 +6,10 @@
             "Type" : "String",
             "Description" : "An SNS Topic ARN to publish stability alarms to."
         },
-        "AutoScalingTopicArn" : {
-            "Type" : "String",
-            "Description" : "An SNS Topic ARN to publish Auto Scaling notifications to."
+        "AutoScalingTopicArn": {
+            "Type": "String",
+            "Description": "ARN of SNS topic for Auto Scaling notifications.",
+            "Default": ""
         },
         "AvailabilityZone": {
             "Type": "String",
@@ -322,7 +323,7 @@
                     ]
                 },
                 "Parameters" : {
-                    "AutoScalingTopicArn"         : { "Ref" : "AutoScalingTopicArn" },
+                    "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
                     "ClusterName"           : { "Ref" : "ClusterName" },
                     "CostCentre"            : { "Ref" : "CostCentre" },
                     "ElasticsearchHost"     : { "Ref" : "DnsSrvPrivateElasticsearch" },
