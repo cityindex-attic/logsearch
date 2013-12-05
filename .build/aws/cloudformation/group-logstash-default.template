@@ -100,7 +100,7 @@
         },
         "SpotPrice": {
             "Type": "Number",
-            "Description": "The spot price for instances to create the nodes on.",
+            "Description": "The spot price for instances to create the nodes on (use 0 to request on demand instances).",
             "Default": "0.16"
         }
     },
@@ -113,6 +113,18 @@
                             "Ref": "AutoScalingTopicArn"
                         },
                         ""
+                    ]
+                }
+            ]
+        },
+        "UseSpotInstances": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "SpotPrice"
+                        },
+                        "0"
                     ]
                 }
             ]
@@ -231,7 +243,15 @@
                     "Ref": "SecurityGroup"
                 }],
                 "SpotPrice": {
-                    "Ref": "SpotPrice"
+                    "Fn::If": [
+                        "UseSpotInstances",
+                        {
+                            "Ref": "SpotPrice"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
                 },
                 "UserData" : {
                     "Fn::Base64": {

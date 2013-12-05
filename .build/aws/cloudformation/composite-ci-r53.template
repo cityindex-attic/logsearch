@@ -113,7 +113,7 @@
         },
         "LogstashSpotPrice": {
             "Type": "Number",
-            "Description": "The spot price for instances to create the logstash nodes on.",
+            "Description": "The spot price for instances to create the logstash nodes on (use 0 to request on demand instances).",
             "Default": "0.21"
         },
         "InstancePostScript": {
