@@ -24,6 +24,8 @@
         "EbsVolumeSize": {
             "Description": "Size of a dedicated EBS volume to be attached to the EC2 instance.",
             "Type": "Number",
+            "MinValue": "10",
+            "MaxValue": "1024",
             "Default": "32"
         },
         "InstanceType": {

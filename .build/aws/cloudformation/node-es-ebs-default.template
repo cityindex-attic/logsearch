@@ -87,14 +87,44 @@
         },
         "SnapshotId": {
             "Type": "String",
-            "Description": "A Snapshot ID to start the node from.",
-            "AllowedPattern": "snap-([0-9a-f]{8})"
+            "Description": "Conditional: A Snapshot ID to start the node from (use snap-00000000 to request a new volume instead).",
+            "AllowedPattern": "snap-([0-9a-f]{8})",
+            "Default": "snap-00000000"
         },
         "SecurityGroup": {
             "Type": "String",
             "Description": "A security group to create the node in.",
             "Default" : "default",
             "MinLength" : "1"
+        },
+        "VolumeSize": {
+            "Type": "Number",
+            "Description": "Conditional: Size (GiBs) of a new volume to use for the EBS-based elasticsearch node (only used when requested via snapshot id snap-00000000).",
+            "MinValue": "10",
+            "MaxValue": "1024",
+            "Default": "64"
+        }
+    },
+    "Conditions": {
+        "UseSnapshot": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "SnapshotId"
+                        },
+                        "snap-00000000"
+                    ]
+                }
+            ]
+        },
+        "UseVolume": {
+            "Fn::Equals": [
+                {
+                    "Ref": "SnapshotId"
+                },
+                "snap-00000000"
+            ]
         }
     },
     "Mappings": {
@@ -132,8 +162,27 @@
                 "AvailabilityZone": {
                     "Ref": "AvailabilityZone"
                 },
+                "Size": {
+                    "Fn::If": [
+                        "UseVolume",
+                        {
+                            "Ref": "VolumeSize"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                },
                 "SnapshotId": {
-                    "Ref": "SnapshotId"
+                    "Fn::If": [
+                        "UseSnapshot",
+                        {
+                            "Ref": "SnapshotId"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
                 }
             },
             "DeletionPolicy": "Snapshot"

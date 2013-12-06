@@ -73,8 +73,16 @@
         },
         "ElasticsearchEbsSnapshotId": {
             "Type": "String",
-            "Description": "Snapshot to use for the EBS-based elasticsearch node.",
-            "AllowedPattern": "snap-([0-9a-f]{8})"
+            "Description": "Conditional: Snapshot to use for the EBS-based elasticsearch node (use snap-00000000 to request a new volume instead).",
+            "AllowedPattern": "snap-([0-9a-f]{8})",
+            "Default": "snap-00000000"
+        },
+        "ElasticsearchEbsVolumeSize": {
+            "Type": "Number",
+            "Description": "Conditional: Size (GiBs) of a new volume to use for the EBS-based elasticsearch node (only used when requested via snapshot id snap-00000000).",
+            "MinValue": "10",
+            "MaxValue": "1024",
+            "Default": "64"
         },
         "ElasticsearchEbs0InstanceType": {
             "Type": "String",
@@ -251,7 +259,8 @@
                     "KeyName"               : { "Ref" : "KeyName" },
                     "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
                     "SnapshotId"            : { "Ref" : "ElasticsearchEbsSnapshotId" },
-                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
+                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
+                    "VolumeSize"            : { "Ref" : "ElasticsearchEbsVolumeSize" }
                 }
             }
         },
@@ -279,7 +288,8 @@
                     "KeyName"               : { "Ref" : "KeyName" },
                     "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
                     "SnapshotId"            : { "Ref" : "ElasticsearchEbsSnapshotId" },
-                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
+                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
+                    "VolumeSize"            : { "Ref" : "ElasticsearchEbsVolumeSize" }
                 }
             }
         },
