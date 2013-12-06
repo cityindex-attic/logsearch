@@ -15,7 +15,7 @@ if ! (which git 1>/dev/null 2>&1) ; then
 fi
 
 if [ ! -d /app/app ]; then
-    git clone https://github.com/cityindex/elasticsearch-development-flow.git /app/app
+    git clone https://github.com/cityindex/logsearch.git /app/app
 
     if [[ "$3" != "" ]]; then
         (cd /app/app ; git checkout "$3")

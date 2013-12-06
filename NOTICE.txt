@@ -1,4 +1,4 @@
-logsearch-development-flow
+logsearch
 Copyright 2013 City Index
 
 This product includes software developed by

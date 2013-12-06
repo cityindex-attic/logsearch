@@ -181,7 +181,7 @@
                                 "mode" : "000555"
                             },
                             "/home/ubuntu/bootstrap" : {
-                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "source" : "https://raw.github.com/cityindex/logsearch/master/bin/bootstrap",
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
                                 "mode" : "000555"
@@ -303,7 +303,7 @@
                                 "mode" : "000555"
                             },
                             "/home/ubuntu/bootstrap" : {
-                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "source" : "https://raw.github.com/cityindex/logsearch/master/bin/bootstrap",
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
                                 "mode" : "000555"
@@ -400,7 +400,7 @@
                                 "mode" : "000755"
                             },
                             "/home/ubuntu/bootstrap" : {
-                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "source" : "https://raw.github.com/cityindex/logsearch/master/bin/bootstrap",
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
                                 "mode" : "000555"
@@ -498,7 +498,7 @@
                                 "mode" : "000755"
                             },
                             "/home/ubuntu/bootstrap" : {
-                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "source" : "https://raw.github.com/cityindex/logsearch/master/bin/bootstrap",
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
                                 "mode" : "000555"
@@ -596,7 +596,7 @@
                                 "mode" : "000755"
                             },
                             "/home/ubuntu/bootstrap" : {
-                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "source" : "https://raw.github.com/cityindex/logsearch/master/bin/bootstrap",
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
                                 "mode" : "000555"
@@ -694,7 +694,7 @@
                                 "mode" : "000755"
                             },
                             "/home/ubuntu/bootstrap" : {
-                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "source" : "https://raw.github.com/cityindex/logsearch/master/bin/bootstrap",
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
                                 "mode" : "000555"
@@ -792,7 +792,7 @@
                                 "mode" : "000755"
                             },
                             "/home/ubuntu/bootstrap" : {
-                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "source" : "https://raw.github.com/cityindex/logsearch/master/bin/bootstrap",
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
                                 "mode" : "000555"
@@ -890,7 +890,7 @@
                                 "mode" : "000755"
                             },
                             "/home/ubuntu/bootstrap" : {
-                                "source" : "https://raw.github.com/cityindex/elasticsearch-development-flow/master/bin/bootstrap",
+                                "source" : "https://raw.github.com/cityindex/logsearch/master/bin/bootstrap",
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
                                 "mode" : "000555"

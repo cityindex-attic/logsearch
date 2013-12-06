@@ -153,7 +153,7 @@
                                     "Fn::Join": [
                                         "",
                                         [
-                                            "https://raw.github.com/cityindex/logsearch-development-flow/",
+                                            "https://raw.github.com/cityindex/logsearch/",
                                             { "Ref": "RepositoryCommit" },
                                             "/bin/bootstrap"
                                         ]
