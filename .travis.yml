@@ -7,7 +7,9 @@ before_install:
   - sudo mkdir -p /app
   - sudo chmod 777 /app
   - x=$(pwd) && mv $x /app/app && ln -s /app/app $x
-install: sudo -E .build/dev_server/provision.sh
+install: 
+  - sudo rvm use 1.9.3 --install --binary --fuzzy
+  - sudo .build/dev_server/provision.sh
 before_script: 
   - cd /app/app
   - cat /app/.env
