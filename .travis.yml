@@ -13,9 +13,6 @@ before_script:
   - cd /app/app
   - cat /app/.env
   - . /app/.env
-  - rvmsudo -E env
-  - rvmsudo -E gem install bundler
-  - rvmsudo -E bundle
   - rvmsudo -E bundle exec rake install_system_services
   - rvmsudo -E start app
 script: bundle exec rake logstash:test:all_types
