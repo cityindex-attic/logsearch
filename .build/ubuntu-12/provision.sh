@@ -117,3 +117,15 @@ if ! (which pv 1>/dev/null 2>&1) ; then
 fi
 
 echo "pv:$(pv -V | head -n1 | awk -F ' ' '/pv/ { print $2 }')"
+
+#
+# system: zip
+#
+
+if ! (which zip 1>/dev/null 2>&1) ; then
+    echo "Installing zip..."
+
+    sudo apt-get install -y zip
+fi
+
+echo "zip:$(zip -v | head -n2)"
