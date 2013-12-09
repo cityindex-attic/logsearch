@@ -1,0 +1,48 @@
+# Filter type => "ci_ip_diagnostics"
+
+if [@type] == "ci_ip_diagnostics_kv" {
+    mutate {
+        add_field => [ "@messagetmp", "DateTimeLogged=%{@message}" ]
+    }
+
+    kv {
+        source => "@message"
+        field_split => ","
+    }
+
+    mutate {
+        rename => [ "ProcessDesc", "ProcessDescRaw" ]
+    }
+    
+    csv {
+        source => "ProcessDescRaw"
+        target => "ProcessDesc"
+        separator => "/"
+        columns => [
+            "Type",
+            "Status",
+            "Source"
+        ]
+    }
+    
+    if [StartDateTime] {
+        date {
+            match => [ "StartDateTime", "ISO8601" ]
+        }
+    } else if [DateTime] {
+        date {
+            match => [ "DateTime", "ISO8601" ]
+        }
+    } else {
+        date {
+            match => [ "DateTimeLogged", "ISO8601" ]
+        }
+    }
+    
+    mutate {
+        convert => [ "Percentage", "float" ]
+        convert => [ "TotalMs", "float" ]
+        convert => [ "Value", "float" ]
+        convert => [ "NoOfOrders", "integer" ]
+    }
+}

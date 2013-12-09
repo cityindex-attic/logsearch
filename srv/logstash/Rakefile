@@ -97,6 +97,7 @@ namespace :logstash do
       Rake::Task["logstash:test:type:ci_latency_monitor_bot"].invoke
       Rake::Task["logstash:test:type:ci_log4net"].invoke
       Rake::Task["logstash:test:type:ci_ip_diagnostics"].invoke
+      Rake::Task["logstash:test:type:ci_ip_diagnostics_kv"].invoke
 
       puts "==> All tests completed successfully :)"
     end
@@ -157,6 +158,11 @@ namespace :logstash do
       desc "Run ci_ip_diagnostics tests"
       task :ci_ip_diagnostics => :erase do
         run_integration_test("ci_ip_diagnostics", "pv_to_elasticsearch")
+      end
+
+      desc "Run ci_ip_diagnostics_kv tests"
+      task :ci_ip_diagnostics_kv => :erase do
+        run_integration_test("ci_ip_diagnostics_kv", "pv_to_elasticsearch")
       end
 
     end

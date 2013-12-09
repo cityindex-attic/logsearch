@@ -7,15 +7,14 @@ before_install:
   - sudo mkdir -p /app
   - sudo chmod 777 /app
   - x=$(pwd) && mv $x /app/app && ln -s /app/app $x
-install: sudo .build/dev_server/provision.sh
+install: 
+  - rvmsudo .build/dev_server/provision.sh
 before_script: 
   - cd /app/app
   - cat /app/.env
   - . /app/.env
-  - sudo -E env
-  - sudo -E bundle
-  - sudo -E bundle exec rake install_system_services
-  - sudo -E start app
+  - rvmsudo -E bundle exec rake install_system_services
+  - rvmsudo -E start app
 script: bundle exec rake logstash:test:all_types
 notifications:
   flowdock: 803b1aaf805716f8a7822ff582b2e5f5

@@ -14,10 +14,13 @@ set -e
 #
 if [ "$TRAVIS" = "true" ]; then
     APP_USER=travis
+    SUDO="rvmsudo"
 elif [ -e /home/vagrant ] ; then
     APP_USER=vagrant
+    SUDO="sudo"
 else
     APP_USER=$(ls /home/)
+    SUDO="sudo"
 fi
 
 echo "APP_USER detected as: $APP_USER"
@@ -44,7 +47,7 @@ echo 'export APP_CONFIG_REDIS_KEY=logstash' >> /app/.env
 echo 'export APP_CONFIG_IMPORTQUEUE_KEY=importqueue' >> /app/.env
 chmod +x /app/.env
 
-sudo -H -u $APP_USER /bin/bash << 'EOF'
+$SUDO -H -u $APP_USER /bin/bash << 'EOF'
     set -x
     set -e
     
@@ -72,8 +75,8 @@ EOF
 
 if [ ! -d $APP_TMP_DIR/heap-dump ] ; then
     if [ -d /mnt ] ; then
-        sudo mkdir -p /mnt/app-tmp-heap-dump
-        sudo chown $APP_USER:$APP_USER /mnt/app-tmp-heap-dump
+        $SUDO mkdir -p /mnt/app-tmp-heap-dump
+        $SUDO chown $APP_USER:$APP_USER /mnt/app-tmp-heap-dump
         [ -e $APP_TMP_DIR/heap-dump ] || ln -s /mnt/app-tmp-heap-dump $APP_TMP_DIR/heap-dump
     else
         mkdir -p $APP_TMP_DIR/heap-dump
