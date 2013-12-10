@@ -14,7 +14,7 @@
         "CostCentre": {
             "Type": "String",
             "Description": "A specific cost center to affiliate with resources.",
-            "Default": "logsearch-development-flow"
+            "Default": "logsearch-dev"
         },
         "ElasticsearchHost": {
             "Type": "String",
