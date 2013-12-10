@@ -4,7 +4,8 @@
     "Parameters": {
         "AutoScalingTopicArn": {
             "Type": "String",
-            "Description": "An SNS ARN for alarms to notify."
+            "Description": "ARN of SNS topic for Auto Scaling notifications.",
+            "Default": ""
         },
         "ClusterName": {
             "Type": "String",
@@ -99,8 +100,34 @@
         },
         "SpotPrice": {
             "Type": "Number",
-            "Description": "The spot price for instances to create the nodes on.",
+            "Description": "The spot price for instances to create the nodes on (use 0 to request on demand instances).",
             "Default": "0.16"
+        }
+    },
+    "Conditions": {
+        "UseAutoScalingNotifications": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "AutoScalingTopicArn"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "UseSpotInstances": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "SpotPrice"
+                        },
+                        "0"
+                    ]
+                }
+            ]
         }
     },
     "Mappings": {
@@ -216,7 +243,15 @@
                     "Ref": "SecurityGroup"
                 }],
                 "SpotPrice": {
-                    "Ref": "SpotPrice"
+                    "Fn::If": [
+                        "UseSpotInstances",
+                        {
+                            "Ref": "SpotPrice"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
                 },
                 "UserData" : {
                     "Fn::Base64": {
@@ -270,13 +305,23 @@
                     "Ref": "GroupMaxSize"
                 },
                 "NotificationConfiguration" : {
-                    "TopicARN" : { "Ref" : "AutoScalingTopicArn" },
-                    "NotificationTypes" : [
-                        "autoscaling:TEST_NOTIFICATION",
-                        "autoscaling:EC2_INSTANCE_LAUNCH",
-                        "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
-                        "autoscaling:EC2_INSTANCE_TERMINATE",
-                        "autoscaling:EC2_INSTANCE_TERMINATE_ERROR"
+                    "Fn::If": [
+                        "UseAutoScalingNotifications",
+                        {
+                            "TopicARN": {
+                                "Ref": "AutoScalingTopicArn"
+                            },
+                            "NotificationTypes": [
+                                "autoscaling:EC2_INSTANCE_LAUNCH",
+                                "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+                                "autoscaling:EC2_INSTANCE_TERMINATE",
+                                "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
+                                "autoscaling:TEST_NOTIFICATION"
+                            ]
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
                     ]
                 },
                 "Tags": [
