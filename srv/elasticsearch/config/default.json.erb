@@ -59,7 +59,8 @@
         "host" : "<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>"
     },
     "http" : {
-        "port" : "9200"
+        "port" : "9200",
+        "type" : "com.sonian.elasticsearch.http.filter.FilterHttpServerTransportModule"
     },
     "threadpool" : {
         "search" : {
@@ -71,6 +72,67 @@
             "type" : "fixed",
             "size" : 64,
             queue_size : 256
+        }
+    },
+    "sonian" : {
+        "elasticsearch" : {
+            "http" : {
+                "filter" : {
+                    "http_filter_chain" : [
+                        "logging"
+                    ],
+                    "http_filter" : {
+                        "logging" : {
+                            "type" : "com.sonian.elasticsearch.http.filter.logging.LoggingFilterHttpServerAdapter",
+                            "logger" : "request",
+                            "format" : "json",
+                            "level" : "INFO",
+                            "log_body" : false,
+                            "loggers" : {
+                                "stats" : {
+                                    "path" : [
+                                        "/_cluster/health",
+                                        "/_cluster/nodes",
+                                        "/_cluster/state",
+                                        "/_cluster/nodes/{node}/stats"
+                                    ],
+                                    "method" : [
+                                        "GET"
+                                    ],
+                                    "level" : "TRACE"
+                                },
+                                "searches" : {
+                                    "path" : [
+                                        "/_search",
+                                        "/_search/scroll",
+                                        "/_search/scroll/{scroll_id}",
+                                        "/{index}/_search",
+                                        "/{index}/{type}/_search",
+                                        "/{index}/{type}/{id}/_mlt"
+                                    ],
+                                    "method" : [
+                                        "GET",
+                                        "POST"
+                                    ],
+                                    "log_body": true
+                                },
+                                "count" : {
+                                    path: [
+                                        "/_count",
+                                        "/{index}/_count",
+                                        "/{index}/{type}/_count"
+                                    ],
+                                    "method" : [
+                                        "GET",
+                                        "POST"
+                                    ],
+                                    "log_body" : true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
