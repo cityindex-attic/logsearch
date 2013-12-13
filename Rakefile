@@ -45,6 +45,8 @@ desc "Deploy an AWS CloudFormation Stack."
 task :deploy_aws_cloudformation_stack, :stack_name, :s3_bucket, :config_dir, :cfn_template, :passthru_cfn do |t, args|
     commit = `git rev-parse HEAD`.chomp
 
+    raise "The commit #{commit} does not seem to be available upstream." unless system "git branch -r --contains #{commit} | grep -e '^\s*origin/' > /dev/null"
+
     puts "\n==> Uploading Templates..."
     sh "./bin/upload-aws-cloudformation #{args[:s3_bucket]} logsearch-deploy/#{args[:stack_name]}/template/"
     puts ""
