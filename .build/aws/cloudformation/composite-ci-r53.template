@@ -157,6 +157,16 @@
             "Default": "https://s3.amazonaws.com/ci-elasticsearch-development-flow/aws-cloudformation/master"
         }
     },
+    "Conditions": {
+        "IsLiveEnvironment": {
+            "Fn::Equals": [
+                {
+                    "Ref": "CostCentre"
+                },
+                "logsearch-live"
+            ]
+        }
+    },
     "Resources": {
         "SecurityGroup0": {
             "Type": "AWS::CloudFormation::Stack",
@@ -482,7 +492,17 @@
                 "Dimensions": [
                     {
                         "Name": "ClusterName",
-                        "Value" : { "Ref" : "ClusterName" }
+                        "Value": {
+                            "Fn::If": [
+                                "IsLiveEnvironment",
+                                {
+                                    "Ref": "ClusterName"
+                                },
+                                {
+                                    "Ref": "AWS::StackName"
+                                }
+                            ]
+                        }
                     }
                 ],
                 "Statistic": "Average",
@@ -530,7 +550,17 @@
                 "Dimensions": [
                     {
                         "Name": "ClusterName",
-                        "Value" : { "Ref" : "ClusterName" }
+                        "Value": {
+                            "Fn::If": [
+                                "IsLiveEnvironment",
+                                {
+                                    "Ref": "ClusterName"
+                                },
+                                {
+                                    "Ref": "AWS::StackName"
+                                }
+                            ]
+                        }
                     }
                 ],
                 "Statistic": "Average",
