@@ -290,6 +290,16 @@
                     {
                         "Ref": "AlarmTopicArn"
                     }
+                ],
+                "InsufficientDataActions": [
+                    {
+                        "Ref": "AlarmTopicArn"
+                    }
+                ],
+                "OKActions": [
+                    {
+                        "Ref": "AlarmTopicArn"
+                    }
                 ]
             }
         },
