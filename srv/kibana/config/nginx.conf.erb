@@ -38,7 +38,7 @@ http {
         }
 
         location ~ ^/[^\/\*]+/_search$ {
-            rewrite ^(.*)$ $1?timeout=5s break;
+            rewrite ^(.*)$ $1?timeout=15s break;
             proxy_pass http://elasticsearch;
         }
 
