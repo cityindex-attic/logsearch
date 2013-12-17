@@ -8,26 +8,26 @@ namespace :logstash do
     sh "/usr/bin/java -Djava.io.tmpdir='#{ENV['APP_TMP_DIR']}' -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/redis_to_elasticsearch.conf'"
   end
 
-  desc "Run logstash off stdin"
-  task :pv_to_elasticsearch, :logstash_type, :path do |t, args|
+  desc "Load a file with logstash and send to ElasticSearch"
+  task :load_file_to_elasticsearch, :logstash_type, :path do |t, args|
     process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf", args)
     sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf'"
   end
 
-  desc "Run logstash off a file"
-  task :file_to_elasticsearch, :logstash_type, :path do |t, args|
+  desc "Watch changes to a file with logstash off a file and send it to ElasticSearch"
+  task :watch_file_to_elasticsearch, :logstash_type, :path do |t, args|
     process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_elasticsearch.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_elasticsearch.conf", args)
     sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_elasticsearch.conf'"
   end
 
-  desc "Run logstash off a file and send it to redis"
-  task :file_to_redis, :logstash_type, :path do |t, args|
+  desc "Watch changes to a file with logstash off a file and send it to Redis"
+  task :watch_file_to_redis, :logstash_type, :path do |t, args|
     process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_redis.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_redis.conf", args)
     sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_redis.conf'"
   end
 
-  desc "Run logstash off stdin"
-  task :pv_to_redis, :logstash_type, :path do |t, args|
+  desc "Load a file with logstash and send to redis"
+  task :load_file_to_redis, :logstash_type, :path do |t, args|
     process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_redis.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_redis.conf", args)
     sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_redis.conf'"
   end
@@ -49,8 +49,8 @@ namespace :logstash do
     sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/syslog_to_redis.conf'"
   end
 
-  desc "Run logstash off json file via stdin"
-  task :pv_jsonfile_to_elasticsearch, :logstash_type, :path do |t, args|
+  desc "Load a file with logstash with logstash_format => json and send to elasticsearch"
+  task :load_file_jsonfile_to_elasticsearch, :logstash_type, :path do |t, args|
     process_erb(
         "#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf.erb",
         "#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf",
