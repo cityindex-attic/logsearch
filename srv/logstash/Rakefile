@@ -1,3 +1,5 @@
+require_relative 'test/common'
+
 $LOGSTASH_WORKERS = ENV['APP_LOGSTASH_WORKERS'] || `grep -c ^processor /proc/cpuinfo`.chomp
 
 namespace :logstash do
@@ -111,58 +113,58 @@ namespace :logstash do
     namespace :type do
       desc "Run nginx_combined tests"
       task :nginx_combined => "elasticsearch:delete_all_data_by_query" do
-        run_integration_test("nginx_combined", "do-import-redis", 5)
+        run_integration_test("nginx_combined", :redis, 5)
       end
 
       desc "Run iis_default tests"
       task :iis_default => "elasticsearch:delete_all_data_by_query" do
-        run_integration_test("iis_default", "do-import-redis", 48)
+        run_integration_test("iis_default", :redis, 48)
       end
 
       desc "Run iis_tradingapi tests"
       task :iis_tradingapi => "elasticsearch:delete_all_data_by_query" do
-        run_integration_test("iis_tradingapi", "do-import-redis", 48)
+        run_integration_test("iis_tradingapi", :redis, 48)
       end
 
       desc "Run stackato_apptail tests"
       task :stackato_apptail => "elasticsearch:delete_all_data_by_query" do
-        run_integration_test("stackato_apptail", "do-import-redis", 4)
+        run_integration_test("stackato_apptail", :redis, 4)
       end
 
       desc "Run stackato_event tests"
       task :stackato_event => "elasticsearch:delete_all_data_by_query" do
-        run_integration_test("stackato_event", "do-import-redis", 11)
+        run_integration_test("stackato_event", :redis, 11)
       end
 
       desc "Run stackato_systail tests"
       task :stackato_systail => "elasticsearch:delete_all_data_by_query" do
-        run_integration_test("stackato_systail", "do-import-redis", 18)
+        run_integration_test("stackato_systail", :redis, 18)
       end
 
       desc "Run ci_appmetrics tests"
       task :ci_appmetrics => "elasticsearch:delete_all_data_by_query" do
-        run_integration_test("ci_appmetrics", "do-import-redis", 47)
+        run_integration_test("ci_appmetrics", :redis, 47)
       end
 
       desc "Run ci_latency_monitor_bot tests"
       task :ci_latency_monitor_bot do
         system "cd #{ENV['APP_APP_DIR']} && rake elasticsearch:delete_all_data_by_query"
-        run_integration_test("ci_latency_monitor_bot", "do-import-lumberjack-redis", 6)
+        run_integration_test("ci_latency_monitor_bot", :lumberjack, 6)
       end
 
       desc "Run ci_log4net tests"
       task :ci_log4net => "elasticsearch:delete_all_data_by_query" do
-        run_integration_test("ci_log4net", "do-import-redis", 2)
+        run_integration_test("ci_log4net", :redis, 2)
       end
 
       desc "Run ci_ip_diagnostics tests"
       task :ci_ip_diagnostics => "elasticsearch:delete_all_data_by_query" do
-        run_integration_test("ci_ip_diagnostics", "do-import-redis", 32)
+        run_integration_test("ci_ip_diagnostics", :redis, 32)
       end
 
       desc "Run ci_ip_diagnostics_kv tests"
       task :ci_ip_diagnostics_kv => "elasticsearch:delete_all_data_by_query" do
-        run_integration_test("ci_ip_diagnostics_kv", "do-import-redis", 31)
+        run_integration_test("ci_ip_diagnostics_kv", :redis, 31)
       end
 
     end
@@ -171,7 +173,7 @@ end
 
 class ElasticsearchNotRunning < RuntimeError; end
 
-def run_integration_test(type, importer = "do-import-redis", expected_messages = 0)
+def run_integration_test(type, method, expected_messages)
     pid = false
 
     if File.exists?("/etc/init/app-elasticsearch-1.conf")
@@ -192,14 +194,34 @@ def run_integration_test(type, importer = "do-import-redis", expected_messages =
         end
 
         puts "==> Importing test data ..."
-        case importer
-        when "do-import-redis"
-         sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/do-import-redis.rb #{type} #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log #{expected_messages}"# > /dev/null"
-        when "do-import-lumberjack-redis"
-         sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/do-import-lumberjack-redis.rb #{type} #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log #{expected_messages}"# > /dev/null"
-        else
-          raise "Unrecognised importer: #{importer}"
+        case method
+            when :redis
+                Rake::Task['logstash:load_file_to_redis'].reenable
+                Rake::Task['logstash:load_file_to_redis'].invoke type, "#{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"
+            when :lumberjack
+                puts "---> Ensuring lumberjack and lumberjack keys are installed"
+
+                unless File.exists? "#{ENV['APP_VENDOR_DIR']}/lumberjack"
+                    system "cd #{File.dirname(__FILE__)}/../../../ && rake lumberjack:provision"
+                end
+
+                unless File.exists? "#{ENV['APP_DATA_DIR']}/lumberjack.key"
+                    Rake::Task['lumberjack:generate_keys'].invoke
+
+                    puts "Restarting app-lumberjack_redis to ensure its running the latest config file..."
+                    sh `sudo service app-lumberjack_redis restart`
+                end
+
+                puts "---> Shipping the test log file via lumberjack shipper -> lumberjack endpoint -> redis"
+                Rake::Task['lumberjack:ship_to_lumberjack_endpoint'].reenable
+                Rake::Task['lumberjack:ship_to_lumberjack_endpoint'].invoke "#{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"
+            else
+                raise "Unrecognised importer: #{method}"
         end
+
+        wait_for_message_count expected_messages
+
+        assert_no_grokparsefailure
 
         puts "==> Ensuring elasticsearch has finished indexing our data ..."
         sh "curl -sXPOST 'http://#{ENV['APP_CONFIG_ES_IPADDRESS']}:9200/_all/_flush' > /dev/null"

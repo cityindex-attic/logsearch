@@ -85,3 +85,64 @@ def run_until(cmd, exit_regex, kill_delay = 0)
     Process.wait(pid)
   end
 end #run_until
+
+def wait_for_message_count (expected_count, timeout_after = 180)
+  timeout_after = 180 / 2
+
+  print '==> Waiting for data to be ready...'
+
+  done = false
+
+  for i in 0..timeout_after
+    sleep 2
+
+    print '.'
+
+    begin
+      res = eslog_search "_search", { "query" => { "match_all" => { } } }
+
+#      puts "#{expected_count} vs #{res['hits']['total']}"
+
+      if expected_count == res['hits']['total']
+        done = true
+        break
+      end
+    rescue
+      # sometimes errors with 503 while loading
+    end
+  end
+
+  raise "Timed out waiting to see #{expected_count} messages." unless done
+
+  puts 'done'
+end
+
+def assert_no_grokparsefailure
+  res = eslog_search(
+    "_search",
+    {
+      "query" => {
+        "filtered" => {
+          "query" => {
+            "query_string" => {
+              "query" => "@tags:\"_grokparsefailure\""
+            }
+          }
+        }
+      },
+      "size" => 10,
+      "sort" => [
+        {
+          "@timestamp" => {
+            "order" => "desc"
+          }
+        }
+      ]
+    }
+  )
+
+  if (0 < res['hits']['total'])
+    raise "Some log events were not parsed correctly (#{res['hits']['total']} events) " +
+          "- the most recent 10 are shown: #{JSON.pretty_generate(res)}"
+  end
+end
