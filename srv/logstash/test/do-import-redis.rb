@@ -12,7 +12,7 @@ print '==> Waiting for data to be ready...'
 
 done = false
 
-for i in 0..60
+for i in 0..90
     sleep 2
 
     print '.'

@@ -39,8 +39,6 @@ run_until "cd #{File.dirname(__FILE__)}/../../../ && APP_CONFIG_REDIS_FLUSH_SIZE
 
 puts "---> Restarting app-logstash_redis service..."
 puts `sudo service app-logstash_redis start`
-# logstash takes forever to restart and might cause later tests to fail
-sleep 60
 
 #
 # make sure everything parsed okay
