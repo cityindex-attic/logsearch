@@ -3,13 +3,17 @@
 if [@type] == "ci_appmetrics" {
     grok {
         match => [ "@message", "%{TIMESTAMP_ISO8601:time}\t(?<name>[^\t]+)\t%{GREEDYDATA:value}" ]
+        match => [ "@message", "%{TIMESTAMP_ISO8601:time}\t(?<name>[^\t]+)" ]
     }
- 
-    grok {
-        match => [ "value", "^%{NUMBER:duration:float}$" ]
+
+    if [value] != "" {
+        grok {
+            match => [ "value", "^%{NUMBER:duration:float}$" ]
+        }
     }
 
     date {
         match => [ "time", "YYYY-MM-dd HH:mm:ss.SSSSSSS" ]
     }
 }
+
