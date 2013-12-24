@@ -209,7 +209,7 @@ def run_integration_test(type, method, expected_messages)
                     Rake::Task['lumberjack:generate_keys'].invoke
 
                     puts "Restarting app-lumberjack_redis to ensure its running the latest config file..."
-                    sh `sudo service app-lumberjack_redis restart`
+                    sh "sudo service app-lumberjack_redis restart"
                 end
 
                 puts "---> Shipping the test log file via lumberjack shipper -> lumberjack endpoint -> redis"

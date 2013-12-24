@@ -80,7 +80,7 @@ task :deploy_aws_cloudformation_stack, :stack_name, :s3_bucket, :config_dir, :cf
     sh cmd
 
     puts ""
-    puts "Don't forget to `git push origin release-#{args[:stack_name]}`"
+    puts "Don't forget to run: git push origin release-#{args[:stack_name]}"
     puts ""
 end
 
