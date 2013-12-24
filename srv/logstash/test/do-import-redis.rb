@@ -4,7 +4,7 @@ require_relative 'common'
 # import the test data
 #
 
-system "cd #{File.dirname(__FILE__)}/../../../ && rake logstash:pv_to_redis[#{ARGV[0]},#{ARGV[1]}]"
+system "cd #{File.dirname(__FILE__)}/../../../ && rake logstash:load_file_to_redis[#{ARGV[0]},#{ARGV[1]}]"
 
 raise "Failed to import '#{ARGV[1]}' as #{ARGV[0]}" if 0 < $?.exitstatus
 
