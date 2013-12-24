@@ -10,26 +10,26 @@ namespace :logstash do
 
   desc "Load a file with logstash and send to ElasticSearch"
   task :load_file_to_elasticsearch, :logstash_type, :path do |t, args|
-    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf", args)
-    sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf'"
+    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/load_file_to_elasticsearch.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/load_file_to_elasticsearch.conf", args)
+    sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/load_file_to_elasticsearch.conf'"
   end
 
   desc "Watch changes to a file with logstash off a file and send it to ElasticSearch"
   task :watch_file_to_elasticsearch, :logstash_type, :path do |t, args|
-    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_elasticsearch.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_elasticsearch.conf", args)
-    sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_elasticsearch.conf'"
+    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/watch_file_to_elasticsearch.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/watch_file_to_elasticsearch.conf", args)
+    sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/watch_file_to_elasticsearch.conf'"
   end
 
   desc "Watch changes to a file with logstash off a file and send it to Redis"
   task :watch_file_to_redis, :logstash_type, :path do |t, args|
-    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_redis.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_redis.conf", args)
-    sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/file_to_redis.conf'"
+    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/watch_file_to_redis.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/watch_file_to_redis.conf", args)
+    sh "TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/watch_file_to_redis.conf'"
   end
 
   desc "Load a file with logstash and send to redis"
   task :load_file_to_redis, :logstash_type, :path do |t, args|
-    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_redis.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_redis.conf", args)
-    sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_redis.conf'"
+    process_erb("#{ENV['APP_APP_DIR']}/srv/logstash/config/load_file_to_redis.conf.erb", "#{ENV['APP_APP_DIR']}/srv/logstash/config/load_file_to_redis.conf", args)
+    sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/load_file_to_redis.conf'"
   end
 
   desc "Run logstash forwarding lumberjack messages to redis"
@@ -52,15 +52,15 @@ namespace :logstash do
   desc "Load a file with logstash with logstash_format => json and send to elasticsearch"
   task :load_file_jsonfile_to_elasticsearch, :logstash_type, :path do |t, args|
     process_erb(
-        "#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf.erb",
-        "#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf",
+        "#{ENV['APP_APP_DIR']}/srv/logstash/config/load_file_to_elasticsearch.conf.erb",
+        "#{ENV['APP_APP_DIR']}/srv/logstash/config/load_file_to_elasticsearch.conf",
         {
             :logstash_format => "json",
             :logstash_type => args[:logstash_type],
             :path => args[:path]
         }
     )
-    sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/pv_to_elasticsearch.conf'"
+    sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/load_file_to_elasticsearch.conf'"
   end
 
   # use only when you want super, super inefficient imports (only used by the tests)
@@ -111,58 +111,58 @@ namespace :logstash do
     namespace :type do
       desc "Run nginx_combined tests"
       task :nginx_combined => :erase do
-        run_integration_test("nginx_combined", "pv_to_elasticsearch", "do-import-redis", 5)
+        run_integration_test("nginx_combined", "load_file_to_elasticsearch", "do-import-redis", 5)
       end
 
       desc "Run iis_default tests"
       task :iis_default => :erase do
-        run_integration_test("iis_default", "pv_to_elasticsearch", "do-import-redis", 48)
+        run_integration_test("iis_default", "load_file_to_elasticsearch", "do-import-redis", 48)
       end
 
       desc "Run iis_tradingapi tests"
       task :iis_tradingapi => :erase do
-        run_integration_test("iis_tradingapi", "pv_to_elasticsearch", "do-import-redis", 48)
+        run_integration_test("iis_tradingapi", "load_file_to_elasticsearch", "do-import-redis", 48)
       end
 
       desc "Run stackato_apptail tests"
       task :stackato_apptail => :erase do
-        run_integration_test("stackato_apptail", "pv_to_elasticsearch", "do-import-redis", 4)
+        run_integration_test("stackato_apptail", "load_file_to_elasticsearch", "do-import-redis", 4)
       end
 
       desc "Run stackato_event tests"
       task :stackato_event => :erase do
-        run_integration_test("stackato_event", "pv_to_elasticsearch", "do-import-redis", 11)
+        run_integration_test("stackato_event", "load_file_to_elasticsearch", "do-import-redis", 11)
       end
 
       desc "Run stackato_systail tests"
       task :stackato_systail => :erase do
-        run_integration_test("stackato_systail", "pv_to_elasticsearch", "do-import-redis", 18)
+        run_integration_test("stackato_systail", "load_file_to_elasticsearch", "do-import-redis", 18)
       end
 
       desc "Run ci_appmetrics tests"
       task :ci_appmetrics => :erase do
-        run_integration_test("ci_appmetrics", "pv_to_elasticsearch", "do-import-redis", 47)
+        run_integration_test("ci_appmetrics", "load_file_to_elasticsearch", "do-import-redis", 47)
       end
 
       desc "Run ci_latency_monitor_bot tests"
       task :ci_latency_monitor_bot do
         system "cd #{ENV['APP_APP_DIR']} && rake elasticsearch:delete_all_data_by_query"
-        run_integration_test("ci_latency_monitor_bot", "pv_to_elasticsearch", "do-import-lumberjack-redis", 6)
+        run_integration_test("ci_latency_monitor_bot", "load_file_to_elasticsearch", "do-import-lumberjack-redis", 6)
       end
 
       desc "Run ci_log4net tests"
       task :ci_log4net => :erase do
-        run_integration_test("ci_log4net", "pv_to_elasticsearch", "do-import-redis", 2)
+        run_integration_test("ci_log4net", "load_file_to_elasticsearch", "do-import-redis", 2)
       end
 
       desc "Run ci_ip_diagnostics tests"
       task :ci_ip_diagnostics => :erase do
-        run_integration_test("ci_ip_diagnostics", "pv_to_elasticsearch", "do-import-redis", 32)
+        run_integration_test("ci_ip_diagnostics", "load_file_to_elasticsearch", "do-import-redis", 32)
       end
 
       desc "Run ci_ip_diagnostics_kv tests"
       task :ci_ip_diagnostics_kv => :erase do
-        run_integration_test("ci_ip_diagnostics_kv", "pv_to_elasticsearch", "do-import-redis", 31)
+        run_integration_test("ci_ip_diagnostics_kv", "load_file_to_elasticsearch", "do-import-redis", 31)
       end
 
     end

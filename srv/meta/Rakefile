@@ -21,7 +21,7 @@ namespace :meta do
     process_erb("#{ENV['APP_APP_DIR']}/srv/meta/log-generators/nginx/access.log.erb", nginx_log)
 
     puts "-----> Importing the generated logs into elasticsearch (this takes a few minutes...)"
-    Rake::Task["logstash:pv_to_elasticsearch"].invoke("nginx_combined", nginx_log)
+    Rake::Task["logstash:load_file_to_elasticsearch"].invoke("nginx_combined", nginx_log)
 
   end
 
