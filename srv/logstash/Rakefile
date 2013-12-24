@@ -110,37 +110,37 @@ namespace :logstash do
 
     namespace :type do
       desc "Run nginx_combined tests"
-      task :nginx_combined => :erase do
+      task :nginx_combined => "elasticsearch:delete_all_data_by_query" do
         run_integration_test("nginx_combined", "load_file_to_elasticsearch", "do-import-redis", 5)
       end
 
       desc "Run iis_default tests"
-      task :iis_default => :erase do
+      task :iis_default => "elasticsearch:delete_all_data_by_query" do
         run_integration_test("iis_default", "load_file_to_elasticsearch", "do-import-redis", 48)
       end
 
       desc "Run iis_tradingapi tests"
-      task :iis_tradingapi => :erase do
+      task :iis_tradingapi => "elasticsearch:delete_all_data_by_query" do
         run_integration_test("iis_tradingapi", "load_file_to_elasticsearch", "do-import-redis", 48)
       end
 
       desc "Run stackato_apptail tests"
-      task :stackato_apptail => :erase do
+      task :stackato_apptail => "elasticsearch:delete_all_data_by_query" do
         run_integration_test("stackato_apptail", "load_file_to_elasticsearch", "do-import-redis", 4)
       end
 
       desc "Run stackato_event tests"
-      task :stackato_event => :erase do
+      task :stackato_event => "elasticsearch:delete_all_data_by_query" do
         run_integration_test("stackato_event", "load_file_to_elasticsearch", "do-import-redis", 11)
       end
 
       desc "Run stackato_systail tests"
-      task :stackato_systail => :erase do
+      task :stackato_systail => "elasticsearch:delete_all_data_by_query" do
         run_integration_test("stackato_systail", "load_file_to_elasticsearch", "do-import-redis", 18)
       end
 
       desc "Run ci_appmetrics tests"
-      task :ci_appmetrics => :erase do
+      task :ci_appmetrics => "elasticsearch:delete_all_data_by_query" do
         run_integration_test("ci_appmetrics", "load_file_to_elasticsearch", "do-import-redis", 47)
       end
 
@@ -151,17 +151,17 @@ namespace :logstash do
       end
 
       desc "Run ci_log4net tests"
-      task :ci_log4net => :erase do
+      task :ci_log4net => "elasticsearch:delete_all_data_by_query" do
         run_integration_test("ci_log4net", "load_file_to_elasticsearch", "do-import-redis", 2)
       end
 
       desc "Run ci_ip_diagnostics tests"
-      task :ci_ip_diagnostics => :erase do
+      task :ci_ip_diagnostics => "elasticsearch:delete_all_data_by_query" do
         run_integration_test("ci_ip_diagnostics", "load_file_to_elasticsearch", "do-import-redis", 32)
       end
 
       desc "Run ci_ip_diagnostics_kv tests"
-      task :ci_ip_diagnostics_kv => :erase do
+      task :ci_ip_diagnostics_kv => "elasticsearch:delete_all_data_by_query" do
         run_integration_test("ci_ip_diagnostics_kv", "load_file_to_elasticsearch", "do-import-redis", 31)
       end
 
@@ -183,7 +183,7 @@ def run_integration_test(type, task = "file", importer = "do-import-redis", expe
     end
 
     # dependencies would have marked these to not run again, so reset that
-    Rake::Task['erase'].reenable
+    Rake::Task['elasticsearch:delete_all_data_by_query'].reenable
 
     begin
         if pid
