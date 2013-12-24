@@ -19,13 +19,15 @@ filter {
         mutate {
             rename => [ "message", "@message" ]
         }
+    } else if [message] == '' and [@message] !~ /^.+$/ {
+        drop { }
     }
 
     #
     # ignore particularly useless lines
     #
 
-    if [@message] =~ /^(\w)*$/ or [@message] =~ /^#/ {
+    if [@message] =~ /^\s*$/ or [@message] =~ /^#.*$/ {
         drop { }
     }
 

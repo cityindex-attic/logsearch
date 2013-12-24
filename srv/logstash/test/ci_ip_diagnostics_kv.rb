@@ -2,12 +2,6 @@ require_relative 'common'
 require "test/unit"
 
 class SimpleCiIPDiagnosticsTest < Test::Unit::TestCase
-  def test_all_the_test_logs_were_imported
-    res = eslog_simple_search('*')
-
-    assert_equal 31, res['hits']['total']
-  end
-
   def test_timestamps_are_parsed_correctly_from_DateTime
     res = eslog_simple_search(
       nil,
