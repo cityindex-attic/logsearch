@@ -202,7 +202,7 @@ def run_integration_test(type, method, expected_messages)
                 puts "---> Ensuring lumberjack and lumberjack keys are installed"
 
                 unless File.exists? "#{ENV['APP_VENDOR_DIR']}/lumberjack"
-                    system "cd #{File.dirname(__FILE__)}/../../../ && rake lumberjack:provision"
+                    Rake::Task['lumberjack:provision'].invoke
                 end
 
                 unless File.exists? "#{ENV['APP_DATA_DIR']}/lumberjack.key"
