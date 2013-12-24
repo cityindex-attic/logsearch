@@ -3,6 +3,6 @@ namespace :redis do
   task :run do
     process_erb("#{ENV['APP_APP_DIR']}/srv/redis/config/config.conf.erb", "#{ENV['APP_APP_DIR']}/srv/redis/config/config.conf")
 
-    sh "#{ENV['APP_VENDOR_DIR']}/redis/src/redis-server #{ENV['APP_APP_DIR']}/srv/redis/config/config.conf"
+    sh "redis-server #{ENV['APP_APP_DIR']}/srv/redis/config/config.conf"
   end
 end

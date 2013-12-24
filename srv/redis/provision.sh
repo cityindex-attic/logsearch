@@ -8,20 +8,19 @@ set -e
 # redis
 #
 
-if [ ! -e $APP_VENDOR_DIR/redis ] ; then
-    echo "Downloading redis-2.6.14..."
+if ! (which redis-server 1>/dev/null 2>&1) ; then
+    echo "Installing redis..."
 
-    pushd $APP_VENDOR_DIR/
-    curl --location -o redis-2.6.14.tar.gz http://redis.googlecode.com/files/redis-2.6.14.tar.gz
-    tar -xzf redis-2.6.14.tar.gz
-    mv redis-2.6.14 redis
-    rm redis-2.6.14.tar.gz
-    pushd redis/
-    make
-    popd
+    echo "deb http://ppa.launchpad.net/rwky/redis/ubuntu precise main" | sudo tee -a /etc/apt/sources.list
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5862E31D
+    sudo apt-get update
+    sudo apt-get install redis-server
+    sudo service redis-server stop
+    sudo rm /etc/init/redis-server.conf
+    sudo rm /etc/init.d/redis-server
 fi
 
-echo "redis:$($APP_VENDOR_DIR/redis/src/redis-server -v | awk -F '=' '/v=/ { print $2 }')"
+echo "redis:$(redis-server -v | awk -F '=' '/v=/ { print $2 }')"
 
 
 #
