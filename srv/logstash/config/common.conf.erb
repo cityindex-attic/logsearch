@@ -40,6 +40,14 @@ filter {
     }
 
     #
+    # trim excess whitespace
+    #
+
+    mutate {
+        strip => [ "@message" ]
+    }
+
+    #
     # the various log types that we're interested in
     #
 
