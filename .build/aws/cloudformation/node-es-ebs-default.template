@@ -363,12 +363,12 @@
                 }
             }
         },
-        "Instance0StatusAlarm": {
+        "Instance0InstanceStatusAlarm": {
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
-                "AlarmDescription": "Alarm if the system or instance status checks are failing.",
+                "AlarmDescription": "Alarm if the instance status check is failing.",
                 "Namespace": "AWS/EC2",
-                "MetricName": "StatusCheckFailed",
+                "MetricName": "StatusCheckFailed_Instance",
                 "Dimensions": [
                     {
                         "Name": "InstanceId",
@@ -376,8 +376,42 @@
                     }
                 ],
                 "Statistic": "Maximum",
-                "Period": "300",
-                "EvaluationPeriods": "2",
+                "Period": "60",
+                "EvaluationPeriods": "5",
+                "Threshold": "1",
+                "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+                "AlarmActions": [
+                    {
+                        "Ref": "AlarmTopicArn"
+                    }
+                ],
+                "InsufficientDataActions": [
+                    {
+                        "Ref": "AlarmTopicArn"
+                    }
+                ],
+                "OKActions": [
+                    {
+                        "Ref": "AlarmTopicArn"
+                    }
+                ]
+            }
+        },
+        "Instance0SystemStatusAlarm": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmDescription": "Alarm if the system status check is failing.",
+                "Namespace": "AWS/EC2",
+                "MetricName": "StatusCheckFailed_System",
+                "Dimensions": [
+                    {
+                        "Name": "InstanceId",
+                        "Value" : { "Ref" : "Instance0" }
+                    }
+                ],
+                "Statistic": "Maximum",
+                "Period": "60",
+                "EvaluationPeriods": "1",
                 "Threshold": "1",
                 "ComparisonOperator": "GreaterThanOrEqualToThreshold",
                 "AlarmActions": [
