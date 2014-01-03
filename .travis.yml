@@ -18,3 +18,6 @@ before_script:
 script: bundle exec rake logstash:test:all_types
 notifications:
   flowdock: 803b1aaf805716f8a7822ff582b2e5f5
+branches:
+  except:
+    - cfn-ec2-as-elasticsearch
