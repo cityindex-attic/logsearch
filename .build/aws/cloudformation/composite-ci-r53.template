@@ -248,7 +248,7 @@
                     ]
                 },
                 "Parameters" : {
-                    "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
+                    "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
                     "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
                     "ClusterName"           : { "Ref" : "ClusterName" },
                     "CostCentre"            : { "Ref" : "CostCentre" },
