@@ -301,7 +301,7 @@
                     "/",
                     [
                         { "Ref": "S3StackBase" },
-                        "node-redis-default.template"
+                        "node-kibana-default.template"
                     ]
                     ]
                 },

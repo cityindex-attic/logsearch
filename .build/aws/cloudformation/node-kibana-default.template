@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "A default EBS-backed elasticsearch + kibana node.",
+    "Description": "An elasticsearch and kibana proxy node.",
     "Parameters": {
         "AlarmTopicArn": {
             "Type": "String",
