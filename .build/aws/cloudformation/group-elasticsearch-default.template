@@ -1,0 +1,443 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "A default logstash parser node auto scaling group.",
+    "Parameters": {
+        "AutoScalingTopicArn": {
+            "Type": "String",
+            "Description": "ARN of SNS topic for Auto Scaling notifications.",
+            "Default": ""
+        },
+        "GroupDesiredCapacity": {
+            "Type": "Number",
+            "Description": "Desired capacity of node auto scaling group within the cluster.",
+            "Default": "1"
+        },
+        "GroupMinSize": {
+            "Type": "Number",
+            "Description": "Minimum size of node auto scaling group within the cluster.",
+            "Default": "1"
+        },
+        "GroupMaxSize": {
+            "Type": "Number",
+            "Description": "Maximum size of node auto scaling group within the cluster.",
+            "Default": "4"
+        },
+        "AvailabilityZone": {
+            "Type": "String",
+            "Description": "Availability Zone to start the node in.",
+            "Default": "us-east-1a"
+        },
+        "ClusterName": {
+            "Type": "String",
+            "Description": "The cluster name the node is registered to.",
+            "MinLength" : "1"
+        },
+        "CostCentre": {
+            "Type": "String",
+            "Description": "A specific cost center to affiliate with resources.",
+            "Default": "logsearch-dev"
+        },
+        "DisableApiTermination": {
+            "Type": "String",
+            "Description": "Prevent EC2 instance termination (if true, requires to actively enable it to successfully delete the stack).",
+            "Default": "false",
+            "AllowedValues": [
+                "false",
+                "true"
+            ]
+        },
+        "ElasticsearchMasterNodesMin": {
+            "Type": "Number",
+            "Description": "Minimum number of elasticsearch master nodes required.",
+            "Default": "1"
+        },
+        "InstancePostScript": {
+            "Type": "String",
+            "Description": "A final command to run when provisioning instances.",
+            "Default": "/bin/true"
+        },
+        "InstanceProfile": {
+            "Type": "String",
+            "Description": "An IAM role for the node."
+        },
+        "InstanceType": {
+            "Default": "m1.large",
+            "Type": "String",
+            "Description": "The instance type to create the node on.",
+            "AllowedValues": [
+                "t1.micro",
+                "m1.small",
+                "m1.medium",
+                "m1.large",
+                "m1.xlarge",
+                "m2.xlarge",
+                "m2.2xlarge",
+                "m2.4xlarge",
+                "m3.xlarge",
+                "m3.2xlarge",
+                "c1.medium",
+                "c1.xlarge",
+                "c3.large",
+                "c3.xlarge",
+                "c3.2xlarge",
+                "c3.4xlarge",
+                "c3.8xlarge",
+                "cc2.8xlarge",
+                "cr1.8xlarge",
+                "cg1.4xlarge",
+                "g2.2xlarge",
+                "hi1.4xlarge",
+                "hs1.8xlarge"
+            ],
+            "ConstraintDescription": "must be a valid EC2 instance type."
+        },
+        "KeyName": {
+            "Type": "String",
+            "Description": "A key pair name for configuring the node.",
+            "Default": "default"
+        },
+        "RepositoryCommit": {
+            "Default" : "master",
+            "Type": "String",
+            "Description": "A branch to use for bootstrapping."
+        },
+        "SnapshotId": {
+            "Type": "String",
+            "Description": "Conditional: A Snapshot ID to start the node from (use snap-00000000 to request a new volume instead).",
+            "AllowedPattern": "snap-([0-9a-f]{8})",
+            "Default": "snap-00000000"
+        },
+        "SecurityGroup": {
+            "Type": "String",
+            "Description": "A security group to create the node in.",
+            "Default" : "default",
+            "MinLength" : "1"
+        },
+        "VolumeSize": {
+            "Type": "Number",
+            "Description": "Conditional: Size (GiBs) of a new volume to use for the EBS-based elasticsearch node (only used when requested via snapshot id snap-00000000).",
+            "MinValue": "10",
+            "MaxValue": "1024",
+            "Default": "64"
+        }
+    },
+    "Conditions": {
+        "UseAutoScalingNotifications": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "AutoScalingTopicArn"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "UseSnapshot": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "SnapshotId"
+                        },
+                        "snap-00000000"
+                    ]
+                }
+            ]
+        },
+        "UseVolume": {
+            "Fn::Equals": [
+                {
+                    "Ref": "SnapshotId"
+                },
+                "snap-00000000"
+            ]
+        }
+    },
+    "Mappings": {
+        "RegionMap": {
+            "us-east-1": {
+                "AMI": "ami-d0f89fb9"
+            },
+            "us-west-2": {
+                "AMI": "ami-70f96e40"
+            },
+            "us-west-1": {
+                "AMI": "ami-fe002cbb"
+            },
+            "eu-west-1": {
+                "AMI": "ami-ce7b6fba"
+            },
+            "ap-southeast-1": {
+                "AMI": "ami-64084736"
+            },
+            "ap-northeast-1": {
+                "AMI": "ami-fe6ceeff"
+            },
+            "ap-southeast-2": {
+                "AMI": "ami-04ea7a3e"
+            },
+            "sa-east-1": {
+                "AMI": "ami-a3da00be"
+            }
+        }
+    },
+    "Resources": {
+        "LaunchConfiguration": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Metadata" : {
+                "AWS::CloudFormation::Init" : {
+                    "config" : {
+                        "files" : {
+                            "/app/.env" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
+                                            "export APP_ROOT_DIR=/app", "\n",
+                                            "export APP_APP_DIR=/app/app", "\n",
+                                            "export APP_VENDOR_DIR=/app/vendor", "\n",
+                                            "export APP_LOG_DIR=/app/var/log", "\n",
+                                            "export APP_RUN_DIR=/app/var/run", "\n",
+                                            "export APP_TMP_DIR=/app/tmp", "\n",
+                                            "export APP_DATA_DIR=/app/data", "\n",
+                                            "export APP_USER=ubuntu", "\n",
+                                            "export APP_DEPLOY_NAME=", { "Ref" : "AWS::StackName" }, "\n",
+                                            "export APP_CLUSTER_NAME=", { "Ref" : "ClusterName" }, "\n",
+                                            "export APP_NODE_NAME=ElasticsearchEbs", "\n",
+                                            "export APP_CONFIG_ES_IPADDRESS=0.0.0.0", "\n",
+                                            "export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup" }, "\n",
+                                            "export APP_CONFIG_ES_MASTER_NODES_MIN=", { "Ref": "ElasticsearchMasterNodesMin" }, "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000755"
+                            },
+                            "/home/ubuntu/provision" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "#!/bin/bash", "\n",
+                                            "set -e", "\n",
+                                            "/app/app/.build/ubuntu-12/provision.sh", "\n",
+                                            "/app/app/bin/data-mount-device xvdf dvol-abcd1234 ubuntu", "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
+                            },
+                            "/home/ubuntu/bootstrap" : {
+                                "source" : {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "https://raw.github.com/cityindex/logsearch/",
+                                            { "Ref": "RepositoryCommit" },
+                                            "/bin/bootstrap"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
+                            },
+                            "/home/ubuntu/cron.conf" : {
+                                "content" : {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "* * * * * (. /app/.env ; /app/app/example/aws-cloudwatch/push-latest-rrd.sh ",
+                                            { "Ref": "ClusterName" },
+                                            " /var/lib/collectd/rrd/$(/bin/hostname --fqdn)/elasticsearch_logstash/gauge-lag.rrd IndexLag) >> /app/var/log/cron.log 2>&1",
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "BlockDeviceMappings" : [
+                    {
+                        "DeviceName" : "/dev/sdf",
+                        "Ebs" : {
+                            "DeleteOnTermination" : false,
+                            "SnapshotId": {
+                                "Fn::If": [
+                                    "UseSnapshot",
+                                    {
+                                        "Ref": "SnapshotId"
+                                    },
+                                    {
+                                        "Ref": "AWS::NoValue"
+                                    }
+                                ]
+                            },
+                            "VolumeSize": {
+                                "Fn::If": [
+                                    "UseVolume",
+                                    {
+                                        "Ref": "VolumeSize"
+                                    },
+                                    {
+                                        "Ref": "AWS::NoValue"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "InstanceMonitoring": "true",
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "RegionMap",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "AMI"
+                    ]
+                },
+                "IamInstanceProfile": {
+                    "Ref": "InstanceProfile"
+                },
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SecurityGroups": [{
+                    "Ref": "SecurityGroup"
+                }],
+                "UserData" : {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash", "\n",
+                                "# Error handling helper function\n",
+                                "function error_exit\n",
+                                "{\n",
+                                " cfn-signal --exit-code $? --reason \"$1\" '", { "Ref": "WaitConditionHandle" }, "'\n",
+                                " exit $?\n",
+                                "}\n",
+                                "apt-get update", "\n",
+                                "apt-get -y install python-pip", "\n",
+                                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
+                                "cfn-init --verbose ",
+                                " --region ", { "Ref": "AWS::Region" },
+                                " --stack ", { "Ref": "AWS::StackName" },
+                                " --resource LaunchConfiguration",
+                                " || error_exit 'Failed to run cfn-init'", "\n",
+                                "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch,kibana ", { "Ref": "RepositoryCommit" }, "\n",
+                                "/app/app/.build/dev_server/extra.sh", "\n",
+                                "sudo -H -u ubuntu crontab /home/ubuntu/cron.conf", "\n",
+                                { "Ref" : "InstancePostScript" }, "\n",
+                                "cfn-signal --exit-code 0 --reason 'Provisioning complete' '", { "Ref": "WaitConditionHandle" }, "'\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "AutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Version": "2009-05-15",
+            "Properties": {
+                "AvailabilityZones": {
+                    "Fn::GetAZs" : ""
+                },
+                "Cooldown": "300",
+                "DesiredCapacity": {
+                    "Ref": "GroupDesiredCapacity"
+                },
+                "LaunchConfigurationName": {
+                    "Ref": "LaunchConfiguration"
+                },
+                "MinSize": {
+                    "Ref": "GroupMinSize"
+                },
+                "MaxSize": {
+                    "Ref": "GroupMaxSize"
+                },
+                "NotificationConfiguration" : {
+                    "Fn::If": [
+                        "UseAutoScalingNotifications",
+                        {
+                            "TopicARN": {
+                                "Ref": "AutoScalingTopicArn"
+                            },
+                            "NotificationTypes": [
+                                "autoscaling:EC2_INSTANCE_LAUNCH",
+                                "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+                                "autoscaling:EC2_INSTANCE_TERMINATE",
+                                "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
+                                "autoscaling:TEST_NOTIFICATION"
+                            ]
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                                "Ref": "AWS::StackName"
+                        },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "logsearch-cluster",
+                        "Value": {
+                            "Ref" : "ClusterName"
+                        },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "cost-centre",
+                        "Value" : {
+                            "Ref" : "CostCentre"
+                        },
+                        "PropagateAtLaunch" : "true"
+                    }
+                ]
+            }
+        },
+        "WaitConditionHandle": {
+            "Type": "AWS::CloudFormation::WaitConditionHandle"
+        },
+        "WaitCondition": {
+            "Type": "AWS::CloudFormation::WaitCondition",
+            "DependsOn": "AutoScalingGroup",
+            "Properties": {
+                "Handle": {
+                    "Ref": "WaitConditionHandle"
+                },
+                "Timeout": "900"
+            }
+        }
+    },
+    "Outputs" : {
+        "AutoScalingGroupId" : {
+            "Description" : "The physical ID of the created auto scaling group.",
+            "Value" : {
+                "Ref" : "AutoScalingGroup"
+            }
+        }
+    }
+}
