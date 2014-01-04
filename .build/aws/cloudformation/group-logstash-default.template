@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "A default elasticsearch auto scaling group.",
+    "Description": "A default logstash parser node auto scaling group.",
     "Parameters": {
         "AutoScalingTopicArn": {
             "Type": "String",
