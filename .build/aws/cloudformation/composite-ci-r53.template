@@ -154,7 +154,7 @@
         "S3StackBase": {
             "Description": "S3 base URL to compose template source from.",
             "Type": "String",
-            "Default": "https://s3.amazonaws.com/ci-elasticsearch-development-flow/aws-cloudformation/master"
+            "Default": "https://s3.amazonaws.com/ci-logsearch/aws-cloudformation/master"
         }
     },
     "Resources": {

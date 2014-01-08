@@ -10,10 +10,10 @@ for DATE in 20130702 20130704 ; do
     mkdir $DATE/
     cd $DATE/
 
-    for FILE in $(aws s3 list-objects --bucket ci-elasticsearch-development-flow | grep '"Key": "' | sed -r 's/.*: "([^"]+)",.*$/\1/' | grep $DATE) ; do
+    for FILE in $(aws s3 list-objects --bucket ci-logsearch | grep '"Key": "' | sed -r 's/.*: "([^"]+)",.*$/\1/' | grep $DATE) ; do
         echo " + $FILE"
 
-        aws s3 get-object --bucket ci-elasticsearch-development-flow --key $FILE `echo $FILE | openssl md5 | cut -c10-`.zip > /dev/null
+        aws s3 get-object --bucket ci-logsearch --key $FILE `echo $FILE | openssl md5 | cut -c10-`.zip > /dev/null
     done
 
     unzip -qq -B '*.zip' 1>/dev/null 2>&1
