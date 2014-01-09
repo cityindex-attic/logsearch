@@ -28,7 +28,7 @@ if [ ! -e /etc/collectd/collectd.d/librato.conf ] ; then
         Source "$SOURCE_NAME"
         Email "$1"
         APIToken "$2"
-        IncludeRegex "collectd\.cpu\..*,collectd\.df\..*,collectd\.disk-.*,collectd\.elasticsearch\..*,collectd\.entropy\..*,collectd\.interface\..*,collectd\.load\..*,collectd\.memory\..*,collectd\.processes\..*,collectd\.redis_.*,collectd\.users\..*"
+        IncludeRegex "collectd\.cpu\..*,collectd\.df\..*,collectd\.disk\..*,collectd\.elasticsearch\..*,collectd\.entropy\..*,collectd\.interface\..*,collectd\.load\..*,collectd\.memory\..*,collectd\.processes\..*,collectd\.redis_.*,collectd\.users\..*"
     </Module>
 </Plugin>
 EOF
