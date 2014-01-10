@@ -138,6 +138,9 @@
                                         "",
                                         [
                                             "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
+                                            "export APP_ENVIRONMENT_NAME=", { "Ref" : "EnvironmentName" }, "\n",
+                                            "export APP_SERVICE_NAME=", { "Ref" : "ServiceName" }, "\n",
+                                            "export APP_ROLE_NAME=elasticsearch-ephemeral", "\n",
                                             "export APP_ROOT_DIR=/app", "\n",
                                             "export APP_APP_DIR=/app/app", "\n",
                                             "export APP_VENDOR_DIR=/app/vendor", "\n",
@@ -146,7 +149,6 @@
                                             "export APP_TMP_DIR=/app/tmp", "\n",
                                             "export APP_DATA_DIR=/app/data", "\n",
                                             "export APP_USER=ubuntu", "\n",
-                                            "export APP_DEPLOY_NAME=", { "Ref" : "AWS::StackName" }, "\n",
                                             "export APP_CLUSTER_NAME=",
                                             {
                                                 "Fn::If": [
@@ -165,7 +167,6 @@
                                                     }
                                                 ]
                                             }, "\n",
-                                            "export APP_NODE_NAME=ElasticsearchEphemeral", "\n",
                                             "export APP_CONFIG_ES_IPADDRESS=0.0.0.0", "\n",
                                             "export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup" }, "\n",
                                             "export APP_CONFIG_ES_EXTRA='\"node\":{\"master\":false}'", "\n"

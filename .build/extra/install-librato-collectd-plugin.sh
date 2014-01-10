@@ -11,7 +11,7 @@ if [ ! -e /etc/collectd/collectd.d/librato.conf ] ; then
     fi
 
     if [ "" == "$3" ]; then
-        export SOURCE_NAME="$APP_CLUSTER_NAME.$APP_NODE_NAME.$APP_DEPLOY_NAME.`hostname`"
+        export SOURCE_NAME="$APP_ENVIRONMENT_NAME.$APP_SERVICE_NAME.$APP_ROLE_NAME.`hostname`"
     else
         export SOURCE_NAME="$3"
     fi
