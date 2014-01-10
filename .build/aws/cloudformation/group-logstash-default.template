@@ -2,15 +2,22 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "A default logstash parser node auto scaling group.",
     "Parameters": {
+        "EnvironmentName" : {
+            "Type" : "String",
+            "Description" : "The environment the service should run under (e.g. dev, live, test).",
+            "Default" : "dev",
+            "AllowedPattern" : "[0-9a-z]+"
+        },
+        "ServiceName" : {
+            "Type" : "String",
+            "Description" : "The name the service should run under (e.g. logsearch, logsearch-labs).",
+            "Default" : "logsearch-repodev",
+            "AllowedPattern" : "[0-9a-z\\-]+"
+        },
         "AutoScalingTopicArn": {
             "Type": "String",
             "Description": "ARN of SNS topic for Auto Scaling notifications.",
             "Default": ""
-        },
-        "ClusterName": {
-            "Type": "String",
-            "Description": "The cluster name the node is registered to.",
-            "MinLength" : "1"
         },
         "CostCentre": {
             "Type": "String",
@@ -180,7 +187,6 @@
                                             "export APP_DATA_DIR=/app/data", "\n",
                                             "export APP_USER=ubuntu", "\n",
                                             "export APP_DEPLOY_NAME=", { "Ref" : "AWS::StackName" }, "\n",
-                                            "export APP_CLUSTER_NAME=", { "Ref" : "ClusterName" }, "\n",
                                             "export APP_NODE_NAME=LogstashGroup", "\n",
                                             "export APP_CONFIG_ES_IPADDRESS=",
                                             {
@@ -327,15 +333,20 @@
                 "Tags": [
                     {
                         "Key": "Name",
+                        "Value": "logstash",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Environment",
                         "Value": {
-                                "Ref": "AWS::StackName"
+                            "Ref" : "EnvironmentName"
                         },
                         "PropagateAtLaunch": "true"
                     },
                     {
-                        "Key": "logsearch-cluster",
+                        "Key": "Service",
                         "Value": {
-                            "Ref" : "ClusterName"
+                            "Ref" : "ServiceName"
                         },
                         "PropagateAtLaunch": "true"
                     },

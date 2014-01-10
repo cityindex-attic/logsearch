@@ -449,7 +449,7 @@
                 "Handle": {
                     "Ref": "WaitConditionHandle"
                 },
-                "Timeout": "900"
+                "Timeout": "1800"
             }
         }
     },
