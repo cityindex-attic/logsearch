@@ -39,9 +39,10 @@
             "Description": "Availability Zone to start the node in.",
             "Default": "us-east-1a"
         },
-        "ClusterName": {
+        "ElasticsearchClusterName": {
             "Type": "String",
-            "Description": "A unique name for the cluster (leave blank for \"{EnvironmentName}-{ServiceName}\")."
+            "Description": "A name for the elasticsearch cluster (\"default\" becomes \"{EnvironmentName}-{ServiceName}\").",
+            "Default" : "default"
         },
         "CostCentre": {
             "Type": "String",
@@ -114,7 +115,7 @@
         },
         "SnapshotId": {
             "Type": "String",
-            "Description": "Conditional: A Snapshot ID to start the node from (use snap-00000000 to request a new volume instead).",
+            "Description": "A Snapshot ID to use when creating a new service. Optional.",
             "AllowedPattern": "snap-([0-9a-f]{8})",
             "Default": "snap-00000000"
         },
@@ -126,7 +127,7 @@
         },
         "VolumeSize": {
             "Type": "Number",
-            "Description": "Conditional: Size (GiBs) of a new volume to use for the EBS-based elasticsearch node (only used when requested via snapshot id snap-00000000).",
+            "Description": "Size (GiBs) of a new volume if creating a new service.",
             "MinValue": "10",
             "MaxValue": "1024",
             "Default": "64"
@@ -143,6 +144,14 @@
                         ""
                     ]
                 }
+            ]
+        },
+        "UseAutoElasticsearchClusterName": {
+            "Fn::Equals": [
+                {
+                    "Ref": "ElasticsearchClusterName"
+                },
+                "default"
             ]
         }
     },
@@ -196,7 +205,24 @@
                                             "export APP_DATA_DIR=/app/data", "\n",
                                             "export APP_USER=ubuntu", "\n",
                                             "export APP_DEPLOY_NAME=", { "Ref" : "AWS::StackName" }, "\n",
-                                            "export APP_CLUSTER_NAME=", { "Ref" : "ClusterName" }, "\n",
+                                            "export APP_CLUSTER_NAME=",
+                                            {
+                                                "Fn::If": [
+                                                    "UseAutoElasticsearchClusterName",
+                                                    {
+                                                        "Fn::Join" : [
+                                                            "-",
+                                                            [
+                                                                { "Ref": "EnvironmentName" },
+                                                                { "Ref": "ServiceName" }
+                                                            ]
+                                                        ]
+                                                    },
+                                                    {
+                                                        "Ref" : "ElasticsearchClusterName"
+                                                    }
+                                                ]
+                                            }, "\n",
                                             "export APP_NODE_NAME=ElasticsearchEbs", "\n",
                                             "export APP_CONFIG_ES_IPADDRESS=0.0.0.0", "\n",
                                             "export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup" }, "\n",
@@ -207,6 +233,38 @@
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
                                 "mode" : "000755"
+                            },
+                            "/home/ubuntu/provision" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "#!/bin/bash", "\n",
+                                            "set -e", "\n",
+                                            "/app/app/.build/ubuntu-12/provision.sh", "\n",
+                                            "pip install pyyaml simplejson", "\n",
+                                            "pip install --upgrade boto", "\n",
+                                            "mkdir -p /app/data", "\n",
+                                            "chown ubuntu:ubuntu /app/data", "\n",
+                                            "/usr/bin/fs-mount-aws-ebs",
+                                                " --fstab",
+                                                " --mkfs-type ext4",
+                                                " --aws-ebs-size ", { "Ref" : "VolumeSize" },
+                                                " --aws-ebs-snapshot-id ", { "Ref" : "SnapshotId" },
+                                                " -vvv",
+                                                " ", { "Ref" : "EnvironmentName" },
+                                                " ", { "Ref" : "ServiceName" },
+                                                " elasticsearch",
+                                                " /dev/xvdf",
+                                                " /app/data/elasticsearch",
+                                                "\n",
+                                            "chown ubuntu:ubuntu /app/data/elasticsearch", "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
                             },
                             "/home/ubuntu/bootstrap" : {
                                 "source" : {
@@ -257,36 +315,6 @@
                 }
             },
             "Properties": {
-                "BlockDeviceMappings" : [
-                    {
-                        "DeviceName" : "/dev/sdf",
-                        "Ebs" : {
-                            "DeleteOnTermination" : false,
-                            "SnapshotId": {
-                                "Fn::If": [
-                                    "UseSnapshot",
-                                    {
-                                        "Ref": "SnapshotId"
-                                    },
-                                    {
-                                        "Ref": "AWS::NoValue"
-                                    }
-                                ]
-                            },
-                            "VolumeSize": {
-                                "Fn::If": [
-                                    "UseVolume",
-                                    {
-                                        "Ref": "VolumeSize"
-                                    },
-                                    {
-                                        "Ref": "AWS::NoValue"
-                                    }
-                                ]
-                            }
-                        }
-                    }
-                ],
                 "InstanceMonitoring": "true",
                 "ImageId": {
                     "Fn::FindInMap": [
@@ -322,7 +350,7 @@
                                 " exit $?\n",
                                 "}\n",
                                 "apt-get update", "\n",
-                                "apt-get -y install python-pip pyyaml simplejson", "\n",
+                                "apt-get -y install python-pip", "\n",
                                 "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
                                 "cfn-init --verbose ",
                                 " --region ", { "Ref": "AWS::Region" },
@@ -330,20 +358,7 @@
                                 " --resource LaunchConfiguration",
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
-                                "/usr/bin/fs-mount-aws-ebs",
-                                    " --fstab",
-                                    " --mkfs-type ext4",
-                                    " --aws-ebs-size ", { "Ref" : "VolumeSize" },
-                                    " --aws-ebs-snapshot-id ", { "Ref" : "SnapshotId" },
-                                    " -vvv",
-                                    " ", { "Ref" : "EnvironmentName" },
-                                    " ", { "Ref" : "ServiceName" },
-                                    " elasticsearch",
-                                    " /dev/xvdf",
-                                    " /app/data",
-                                    "\n",
-                                "chown ubuntu:ubuntu /app/data", "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /app/app/.build/ubuntu-12/provision.sh elasticsearch ", { "Ref": "RepositoryCommit" }, "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch ", { "Ref": "RepositoryCommit" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n",
                                 "sudo -H -u ubuntu crontab /home/ubuntu/cron.conf", "\n",
                                 { "Ref" : "InstancePostScript" }, "\n",

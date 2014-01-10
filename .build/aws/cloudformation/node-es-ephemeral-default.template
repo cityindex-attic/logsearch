@@ -11,10 +11,10 @@
             "Description": "Availability Zone to start the node in.",
             "Default": "us-east-1a"
         },
-        "ClusterName": {
+        "ElasticsearchClusterName": {
             "Type": "String",
-            "Description": "The cluster name the node is registered to.",
-            "MinLength" : "1"
+            "Description": "A name for the elasticsearch cluster (\"default\" becomes \"{EnvironmentName}-{ServiceName}\").",
+            "Default" : "default"
         },
         "CostCentre": {
             "Type": "String",
@@ -115,6 +115,16 @@
             }
         }
     },
+    "Conditions": {
+        "UseAutoElasticsearchClusterName": {
+            "Fn::Equals": [
+                {
+                    "Ref": "ElasticsearchClusterName"
+                },
+                "default"
+            ]
+        }
+    },
     "Resources": {
         "Instance0": {
             "Type": "AWS::EC2::Instance",
@@ -137,7 +147,24 @@
                                             "export APP_DATA_DIR=/app/data", "\n",
                                             "export APP_USER=ubuntu", "\n",
                                             "export APP_DEPLOY_NAME=", { "Ref" : "AWS::StackName" }, "\n",
-                                            "export APP_CLUSTER_NAME=", { "Ref" : "ClusterName" }, "\n",
+                                            "export APP_CLUSTER_NAME=",
+                                            {
+                                                "Fn::If": [
+                                                    "UseAutoElasticsearchClusterName",
+                                                    {
+                                                        "Fn::Join" : [
+                                                            "-",
+                                                            [
+                                                                { "Ref": "EnvironmentName" },
+                                                                { "Ref": "ServiceName" }
+                                                            ]
+                                                        ]
+                                                    },
+                                                    {
+                                                        "Ref" : "ElasticsearchClusterName"
+                                                    }
+                                                ]
+                                            }, "\n",
                                             "export APP_NODE_NAME=ElasticsearchEphemeral", "\n",
                                             "export APP_CONFIG_ES_IPADDRESS=0.0.0.0", "\n",
                                             "export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup" }, "\n",
@@ -218,15 +245,20 @@
                 "Tags": [
                     {
                         "Key": "Name",
+                        "Value": "elasticsearch-ephemeral",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Environment",
                         "Value": {
-                            "Ref" : "AWS::StackName"
+                            "Ref" : "EnvironmentName"
                         },
                         "PropagateAtLaunch": "true"
                     },
                     {
-                        "Key": "logsearch-cluster",
+                        "Key": "Service",
                         "Value": {
-                            "Ref" : "ClusterName"
+                            "Ref" : "ServiceName"
                         },
                         "PropagateAtLaunch": "true"
                     },

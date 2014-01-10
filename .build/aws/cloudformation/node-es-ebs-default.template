@@ -2,6 +2,18 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "A default EBS-backed elasticsearch + kibana node.",
     "Parameters": {
+        "EnvironmentName" : {
+            "Type" : "String",
+            "Description" : "The environment the service should run under (e.g. dev, live, test).",
+            "Default" : "dev",
+            "AllowedPattern" : "[0-9a-z]+"
+        },
+        "ServiceName" : {
+            "Type" : "String",
+            "Description" : "The name the service should run under (e.g. logsearch, logsearch-labs).",
+            "Default" : "logsearch-repodev",
+            "AllowedPattern" : "[0-9a-z\\-]+"
+        },
         "AlarmTopicArn": {
             "Type": "String",
             "Description": "An SNS ARN for alarms to notify."
@@ -11,10 +23,10 @@
             "Description": "Availability Zone to start the node in.",
             "Default": "us-east-1a"
         },
-        "ClusterName": {
+        "ElasticsearchClusterName": {
             "Type": "String",
-            "Description": "The cluster name the node is registered to.",
-            "MinLength" : "1"
+            "Description": "A name for the elasticsearch cluster (\"default\" becomes \"{EnvironmentName}-{ServiceName}\").",
+            "Default" : "default"
         },
         "CostCentre": {
             "Type": "String",
@@ -87,7 +99,7 @@
         },
         "SnapshotId": {
             "Type": "String",
-            "Description": "Conditional: A Snapshot ID to start the node from (use snap-00000000 to request a new volume instead).",
+            "Description": "A Snapshot ID to use when creating a new service. Optional.",
             "AllowedPattern": "snap-([0-9a-f]{8})",
             "Default": "snap-00000000"
         },
@@ -99,31 +111,19 @@
         },
         "VolumeSize": {
             "Type": "Number",
-            "Description": "Conditional: Size (GiBs) of a new volume to use for the EBS-based elasticsearch node (only used when requested via snapshot id snap-00000000).",
+            "Description": "Size (GiBs) of a new volume if creating a new service.",
             "MinValue": "10",
             "MaxValue": "1024",
             "Default": "64"
         }
     },
     "Conditions": {
-        "UseSnapshot": {
-            "Fn::Not": [
-                {
-                    "Fn::Equals": [
-                        {
-                            "Ref": "SnapshotId"
-                        },
-                        "snap-00000000"
-                    ]
-                }
-            ]
-        },
-        "UseVolume": {
+        "UseAutoElasticsearchClusterName": {
             "Fn::Equals": [
                 {
-                    "Ref": "SnapshotId"
+                    "Ref": "ElasticsearchClusterName"
                 },
-                "snap-00000000"
+                "default"
             ]
         }
     },
@@ -156,37 +156,6 @@
         }
     },
     "Resources": {
-        "Volume0": {
-            "Type": "AWS::EC2::Volume",
-            "Properties": {
-                "AvailabilityZone": {
-                    "Ref": "AvailabilityZone"
-                },
-                "Size": {
-                    "Fn::If": [
-                        "UseVolume",
-                        {
-                            "Ref": "VolumeSize"
-                        },
-                        {
-                            "Ref": "AWS::NoValue"
-                        }
-                    ]
-                },
-                "SnapshotId": {
-                    "Fn::If": [
-                        "UseSnapshot",
-                        {
-                            "Ref": "SnapshotId"
-                        },
-                        {
-                            "Ref": "AWS::NoValue"
-                        }
-                    ]
-                }
-            },
-            "DeletionPolicy": "Snapshot"
-        },
         "Instance0": {
             "Type": "AWS::EC2::Instance",
             "Metadata" : {
@@ -208,7 +177,24 @@
                                             "export APP_DATA_DIR=/app/data", "\n",
                                             "export APP_USER=ubuntu", "\n",
                                             "export APP_DEPLOY_NAME=", { "Ref" : "AWS::StackName" }, "\n",
-                                            "export APP_CLUSTER_NAME=", { "Ref" : "ClusterName" }, "\n",
+                                            "export APP_CLUSTER_NAME=",
+                                            {
+                                                "Fn::If": [
+                                                    "UseAutoElasticsearchClusterName",
+                                                    {
+                                                        "Fn::Join" : [
+                                                            "-",
+                                                            [
+                                                                { "Ref": "EnvironmentName" },
+                                                                { "Ref": "ServiceName" }
+                                                            ]
+                                                        ]
+                                                    },
+                                                    {
+                                                        "Ref" : "ElasticsearchClusterName"
+                                                    }
+                                                ]
+                                            }, "\n",
                                             "export APP_NODE_NAME=ElasticsearchEbs", "\n",
                                             "export APP_CONFIG_ES_IPADDRESS=0.0.0.0", "\n",
                                             "export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup" }, "\n",
@@ -228,7 +214,23 @@
                                             "#!/bin/bash", "\n",
                                             "set -e", "\n",
                                             "/app/app/.build/ubuntu-12/provision.sh", "\n",
-                                            "/app/app/bin/data-mount-device xvdf ", { "Ref" : "Volume0" }, " ubuntu", "\n"
+                                            "pip install pyyaml simplejson", "\n",
+                                            "pip install --upgrade boto", "\n",
+                                            "mkdir -p /app/data", "\n",
+                                            "chown ubuntu:ubuntu /app/data", "\n",
+                                            "/usr/bin/fs-mount-aws-ebs",
+                                                " --fstab",
+                                                " --mkfs-type ext4",
+                                                " --aws-ebs-size ", { "Ref" : "VolumeSize" },
+                                                " --aws-ebs-snapshot-id ", { "Ref" : "SnapshotId" },
+                                                " -vvv",
+                                                " ", { "Ref" : "EnvironmentName" },
+                                                " ", { "Ref" : "ServiceName" },
+                                                " elasticsearch",
+                                                " /dev/xvdf",
+                                                " /app/data/elasticsearch",
+                                                "\n",
+                                            "chown ubuntu:ubuntu /app/data/elasticsearch", "\n"
                                         ]
                                     ]
                                 },
@@ -257,7 +259,7 @@
                                         "",
                                         [
                                             "* * * * * (. /app/.env ; /app/app/example/aws-cloudwatch/push-latest-rrd.sh ",
-                                            { "Ref": "ClusterName" },
+                                            { "Ref" : "EnvironmentName" }, "/", { "Ref" : "ServiceName" },
                                             " /var/lib/collectd/rrd/$(/bin/hostname --fqdn)/elasticsearch_logstash/gauge-lag.rrd IndexLag) >> /app/var/log/cron.log 2>&1",
                                             "\n"
                                         ]
@@ -300,26 +302,23 @@
                 "SecurityGroups": [{
                     "Ref": "SecurityGroup"
                 }],
-                "Volumes": [
-                    {
-                        "VolumeId": {
-                            "Ref": "Volume0"
-                        },
-                        "Device": "/dev/sdf"
-                    }
-                ],
                 "Tags": [
                     {
                         "Key": "Name",
+                        "Value": "elasticsearch",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Environment",
                         "Value": {
-                            "Ref" : "AWS::StackName"
+                            "Ref" : "EnvironmentName"
                         },
                         "PropagateAtLaunch": "true"
                     },
                     {
-                        "Key": "logsearch-cluster",
+                        "Key": "Service",
                         "Value": {
-                            "Ref" : "ClusterName"
+                            "Ref" : "ServiceName"
                         },
                         "PropagateAtLaunch": "true"
                     },
@@ -446,12 +445,6 @@
         }
     },
     "Outputs" : {
-        "Volume0Id" : {
-            "Description" : "Volume ID used for persistent storage.",
-            "Value" : {
-                "Ref" : "Volume0"
-            }
-        },
         "Instance0Id" : {
             "Description" : "The physical ID of the created instance.",
             "Value" : {
