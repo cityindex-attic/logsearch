@@ -2,6 +2,18 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "An elasticsearch and kibana proxy node.",
     "Parameters": {
+        "EnvironmentName" : {
+            "Type" : "String",
+            "Description" : "The environment the service should run under (e.g. dev, live, test).",
+            "Default" : "dev",
+            "AllowedPattern" : "[0-9a-z]+"
+        },
+        "ServiceName" : {
+            "Type" : "String",
+            "Description" : "The name the service should run under (e.g. logsearch, logsearch-labs).",
+            "Default" : "logsearch-repodev",
+            "AllowedPattern" : "[0-9a-z\\-]+"
+        },
         "AlarmTopicArn": {
             "Type": "String",
             "Description": "An SNS ARN for alarms to notify."
@@ -13,8 +25,7 @@
         },
         "ClusterName": {
             "Type": "String",
-            "Description": "The cluster name the node is registered to.",
-            "MinLength" : "1"
+            "Description": "A unique name for the cluster (leave blank for \"{EnvironmentName}-{ServiceName}\")."
         },
         "CostCentre": {
             "Type": "String",
@@ -200,15 +211,20 @@
                 "Tags": [
                     {
                         "Key": "Name",
+                        "Value": "frontend",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Environment",
                         "Value": {
-                            "Ref" : "AWS::StackName"
+                            "Ref" : "EnvironmentName"
                         },
                         "PropagateAtLaunch": "true"
                     },
                     {
-                        "Key": "logsearch-cluster",
+                        "Key": "Service",
                         "Value": {
-                            "Ref" : "ClusterName"
+                            "Ref" : "ServiceName"
                         },
                         "PropagateAtLaunch": "true"
                     },
@@ -233,7 +249,7 @@
                                 " exit $?\n",
                                 "}\n",
                                 "apt-get update", "\n",
-                                "apt-get -y install python-pip", "\n",
+                                "apt-get -y install python-pip pyyaml simplejson", "\n",
                                 "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
                                 "cfn-init --verbose ",
                                 " --region ", { "Ref": "AWS::Region" },

@@ -2,6 +2,18 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "A default elasticsearch auto scaling group.",
     "Parameters": {
+        "EnvironmentName" : {
+            "Type" : "String",
+            "Description" : "The environment the service should run under (e.g. dev, live, test).",
+            "Default" : "dev",
+            "AllowedPattern" : "[0-9a-z]+"
+        },
+        "ServiceName" : {
+            "Type" : "String",
+            "Description" : "The name the service should run under (e.g. logsearch, logsearch-labs).",
+            "Default" : "logsearch-repodev",
+            "AllowedPattern" : "[0-9a-z\\-]+"
+        },
         "AutoScalingTopicArn": {
             "Type": "String",
             "Description": "ARN of SNS topic for Auto Scaling notifications.",
@@ -29,8 +41,7 @@
         },
         "ClusterName": {
             "Type": "String",
-            "Description": "The cluster name the node is registered to.",
-            "MinLength" : "1"
+            "Description": "A unique name for the cluster (leave blank for \"{EnvironmentName}-{ServiceName}\")."
         },
         "CostCentre": {
             "Type": "String",
@@ -133,26 +144,6 @@
                     ]
                 }
             ]
-        },
-        "UseSnapshot": {
-            "Fn::Not": [
-                {
-                    "Fn::Equals": [
-                        {
-                            "Ref": "SnapshotId"
-                        },
-                        "snap-00000000"
-                    ]
-                }
-            ]
-        },
-        "UseVolume": {
-            "Fn::Equals": [
-                {
-                    "Ref": "SnapshotId"
-                },
-                "snap-00000000"
-            ]
         }
     },
     "Mappings": {
@@ -217,22 +208,6 @@
                                 "owner" : "ubuntu",
                                 "mode" : "000755"
                             },
-                            "/home/ubuntu/provision" : {
-                                "content" : {
-                                    "Fn::Join" : [
-                                        "",
-                                        [
-                                            "#!/bin/bash", "\n",
-                                            "set -e", "\n",
-                                            "/app/app/.build/ubuntu-12/provision.sh", "\n",
-                                            "/app/app/bin/data-mount-device xvdf dvol-abcd1234 ubuntu", "\n"
-                                        ]
-                                    ]
-                                },
-                                "group" : "ubuntu",
-                                "owner" : "ubuntu",
-                                "mode" : "000555"
-                            },
                             "/home/ubuntu/bootstrap" : {
                                 "source" : {
                                     "Fn::Join": [
@@ -254,7 +229,7 @@
                                         "",
                                         [
                                             "* * * * * (. /app/.env ; /app/app/example/aws-cloudwatch/push-latest-rrd.sh ",
-                                            { "Ref": "ClusterName" },
+                                            { "Ref" : "EnvironmentName" }, "/", { "Ref" : "ServiceName" },
                                             " /var/lib/collectd/rrd/$(/bin/hostname --fqdn)/elasticsearch_logstash/gauge-lag.rrd IndexLag) >> /app/var/log/cron.log 2>&1",
                                             "\n"
                                         ]
@@ -262,6 +237,19 @@
                                 },
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
+                                "mode" : "000555"
+                            },
+                            "/usr/bin/fs-mount-aws-ebs" : {
+                                "source" : {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "https://raw2.github.com/dpb587/scs-docker-utils/5829bfd507bfd549cf89b82ba87e36dfcbdab817/bin/fs-mount-aws-ebs"
+                                        ]
+                                    ]
+                                },
+                                "group" : "root",
+                                "owner" : "root",
                                 "mode" : "000555"
                             }
                         }
@@ -334,7 +322,7 @@
                                 " exit $?\n",
                                 "}\n",
                                 "apt-get update", "\n",
-                                "apt-get -y install python-pip", "\n",
+                                "apt-get -y install python-pip pyyaml simplejson", "\n",
                                 "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
                                 "cfn-init --verbose ",
                                 " --region ", { "Ref": "AWS::Region" },
@@ -342,7 +330,20 @@
                                 " --resource LaunchConfiguration",
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch ", { "Ref": "RepositoryCommit" }, "\n",
+                                "/usr/bin/fs-mount-aws-ebs",
+                                    " --fstab",
+                                    " --mkfs-type ext4",
+                                    " --aws-ebs-size ", { "Ref" : "VolumeSize" },
+                                    " --aws-ebs-snapshot-id ", { "Ref" : "SnapshotId" },
+                                    " -vvv",
+                                    " ", { "Ref" : "EnvironmentName" },
+                                    " ", { "Ref" : "ServiceName" },
+                                    " elasticsearch",
+                                    " /dev/xvdf",
+                                    " /app/data",
+                                    "\n",
+                                "chown ubuntu:ubuntu /app/data", "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /app/app/.build/ubuntu-12/provision.sh elasticsearch ", { "Ref": "RepositoryCommit" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n",
                                 "sudo -H -u ubuntu crontab /home/ubuntu/cron.conf", "\n",
                                 { "Ref" : "InstancePostScript" }, "\n",
@@ -396,15 +397,20 @@
                 "Tags": [
                     {
                         "Key": "Name",
+                        "Value": "elasticsearch",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Environment",
                         "Value": {
-                                "Ref": "AWS::StackName"
+                            "Ref" : "EnvironmentName"
                         },
                         "PropagateAtLaunch": "true"
                     },
                     {
-                        "Key": "logsearch-cluster",
+                        "Key": "Service",
                         "Value": {
-                            "Ref" : "ClusterName"
+                            "Ref" : "ServiceName"
                         },
                         "PropagateAtLaunch": "true"
                     },

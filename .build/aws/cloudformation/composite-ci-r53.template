@@ -2,6 +2,18 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "Create a basic elasticsearch/kibana cluster environment.",
     "Parameters": {
+        "EnvironmentName" : {
+            "Type" : "String",
+            "Description" : "The environment the service should run under (e.g. dev, live, test)."
+            "Default" : "dev",
+            "AllowedPattern" : "[0-9a-z]+"
+        },
+        "ServiceName" : {
+            "Type" : "String",
+            "Description" : "The name the service should run under (e.g. logsearch, logsearch-labs)."
+            "Default" : "dev",
+            "AllowedPattern" : "[0-9a-z\-]+"
+        },
         "AlarmTopicArn" : {
             "Type" : "String",
             "Description" : "An SNS Topic ARN to publish stability alarms to."
@@ -54,8 +66,7 @@
         },
         "ClusterName": {
             "Type": "String",
-            "Description": "A unique name for the cluster.",
-            "Default": "logsearch-test"
+            "Description": "A unique name for the cluster (leave blank for \"{EnvironmentName}-{ServiceName}\")."
         },
         "CostCentre": {
             "Type": "String",
@@ -154,7 +165,7 @@
         "S3StackBase": {
             "Description": "S3 base URL to compose template source from.",
             "Type": "String",
-            "Default": "https://s3.amazonaws.com/ci-elasticsearch-development-flow/aws-cloudformation/master"
+            "Default": "https://s3.amazonaws.com/ci-logsearch/aws-cloudformation/master"
         }
     },
     "Resources": {
@@ -163,11 +174,11 @@
             "Properties": {
                 "TemplateURL" : {
                     "Fn::Join": [
-                    "/",
-                    [
-                        { "Ref": "S3StackBase" },
-                        "secgrp-single-default.template"
-                    ]
+                        "/",
+                        [
+                            { "Ref": "S3StackBase" },
+                            "secgrp-single-default.template"
+                        ]
                     ]
                 },
                 "Parameters" : {
@@ -248,6 +259,8 @@
                     ]
                 },
                 "Parameters" : {
+                    "EnvironmentName"       : { "Ref" : "EnvironmentName" },
+                    "ServiceName"           : { "Ref" : "ServiceName" },
                     "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
                     "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
                     "ClusterName"           : { "Ref" : "ClusterName" },
@@ -279,9 +292,10 @@
                     ]
                 },
                 "Parameters" : {
+                    "EnvironmentName"       : { "Ref" : "EnvironmentName" },
+                    "ServiceName"           : { "Ref" : "ServiceName" },
                     "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
                     "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
-                    "ClusterName"           : { "Ref" : "ClusterName" },
                     "CostCentre"            : { "Ref" : "CostCentre" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
@@ -306,6 +320,8 @@
                     ]
                 },
                 "Parameters" : {
+                    "EnvironmentName"       : { "Ref" : "EnvironmentName" },
+                    "ServiceName"           : { "Ref" : "ServiceName" },
                     "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
                     "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
                     "ClusterName"           : { "Ref" : "ClusterName" },
@@ -333,6 +349,8 @@
                     ]
                 },
                 "Parameters" : {
+                    "EnvironmentName"       : { "Ref" : "EnvironmentName" },
+                    "ServiceName"           : { "Ref" : "ServiceName" },
                     "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
                     "ClusterName"           : { "Ref" : "ClusterName" },
                     "CostCentre"            : { "Ref" : "CostCentre" },
@@ -442,7 +460,15 @@
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
                 "AlarmDescription": "Alarm if average queue size is less than 1,000 messages for 50 minutes (scale down).",
-                "Namespace": "logsearch",
+                "Namespace": {
+                    "Fn::Join": [
+                        "/",
+                        [
+                            { "Ref" : "EnvironmentName" },
+                            { "Ref" : "ServiceName" }
+                        ]
+                    ]
+                },
                 "MetricName": "QueueSize",
                 "Dimensions": [
                     {
@@ -477,7 +503,15 @@
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
                 "AlarmDescription": "Alarm if average queue size is greater than 120,000 messages for 5 minutes (scale up).",
-                "Namespace": "logsearch",
+                "Namespace": {
+                    "Fn::Join": [
+                        "/",
+                        [
+                            { "Ref" : "EnvironmentName" },
+                            { "Ref" : "ServiceName" }
+                        ]
+                    ]
+                },
                 "MetricName": "QueueSize",
                 "Dimensions": [
                     {
@@ -525,7 +559,15 @@
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
                 "AlarmDescription": "Alarm if the index is consistently lagging more than 5 minutes.",
-                "Namespace": "logsearch",
+                "Namespace": {
+                    "Fn::Join": [
+                        "/",
+                        [
+                            { "Ref" : "EnvironmentName" },
+                            { "Ref" : "ServiceName" }
+                        ]
+                    ]
+                },
                 "MetricName": "IndexLag",
                 "Dimensions": [
                     {

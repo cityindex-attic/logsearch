@@ -150,7 +150,7 @@ dbfilename dump.rdb
 # The Append Only File will also be created inside this directory.
 # 
 # Note that you must specify a directory here, not a file name.
-dir <%= ENV['APP_DATA_DIR'] %>
+dir <%= ENV['APP_DATA_DIR'] %>/redis
 
 ################################# REPLICATION #################################
 
@@ -368,7 +368,7 @@ slave-priority 100
 appendonly yes
 
 # The name of the append only file (default: "appendonly.aof")
-appendfilename redis-appendonly.aof
+appendfilename default.aof
 
 # The fsync() call tells the Operating System to actually write data on disk
 # instead to wait for more data in the output buffer. Some OS will really flush 

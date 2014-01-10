@@ -2,6 +2,18 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "A default redis node.",
     "Parameters": {
+        "EnvironmentName" : {
+            "Type" : "String",
+            "Description" : "The environment the service should run under (e.g. dev, live, test).",
+            "Default" : "dev",
+            "AllowedPattern" : "[0-9a-z]+"
+        },
+        "ServiceName" : {
+            "Type" : "String",
+            "Description" : "The name the service should run under (e.g. logsearch, logsearch-labs).",
+            "Default" : "logsearch-repodev",
+            "AllowedPattern" : "[0-9a-z\\-]+"
+        },
         "AlarmTopicArn": {
             "Type": "String",
             "Description": "An SNS ARN for alarms to notify."
@@ -10,11 +22,6 @@
             "Type": "String",
             "Description": "Availability Zone to start the node in.",
             "Default": "us-east-1a"
-        },
-        "ClusterName": {
-            "Type": "String",
-            "Description": "The cluster name the node is registered to.",
-            "MinLength" : "1"
         },
         "CostCentre": {
             "Type": "String",
@@ -85,6 +92,19 @@
             "Description": "A security group to create the node in.",
             "Default" : "default",
             "MinLength" : "1"
+        },
+        "SnapshotId": {
+            "Type": "String",
+            "Description": "A Snapshot ID to use when creating a new service. Optional.",
+            "AllowedPattern": "snap-([0-9a-f]{8})",
+            "Default" : "snap-00000000"
+        },
+        "VolumeSize": {
+            "Type": "Number",
+            "Description": "Size (GiBs) of a new volume if creating a new service.",
+            "MinValue": "1",
+            "MaxValue": "1024",
+            "Default": "8"
         }
     },
     "Mappings": {
@@ -137,7 +157,6 @@
                                             "export APP_DATA_DIR=/app/data", "\n",
                                             "export APP_USER=ubuntu", "\n",
                                             "export APP_DEPLOY_NAME=", { "Ref" : "AWS::StackName" }, "\n",
-                                            "export APP_CLUSTER_NAME=", { "Ref" : "ClusterName" }, "\n",
                                             "export APP_NODE_NAME=Redis", "\n",
                                             "export APP_CONFIG_REDIS_IPADDRESS=0.0.0.0", "\n",
                                             "export APP_CONFIG_REDIS_KEY=logstash", "\n"
@@ -147,6 +166,38 @@
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
                                 "mode" : "000755"
+                            },
+                            "/home/ubuntu/provision" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "#!/bin/bash", "\n",
+                                            "set -e", "\n",
+                                            "/app/app/.build/ubuntu-12/provision.sh", "\n",
+                                            "pip install pyyaml simplejson", "\n",
+                                            "pip install --upgrade boto", "\n",
+                                            "mkdir -p /app/data", "\n",
+                                            "chown ubuntu:ubuntu /app/data", "\n",
+                                            "/usr/bin/fs-mount-aws-ebs",
+                                                " --fstab",
+                                                " --mkfs-type ext4",
+                                                " --aws-ebs-size ", { "Ref" : "VolumeSize" },
+                                                " --aws-ebs-snapshot-id ", { "Ref" : "SnapshotId" },
+                                                " -vvv",
+                                                " ", { "Ref" : "EnvironmentName" },
+                                                " ", { "Ref" : "ServiceName" },
+                                                " redis",
+                                                " /dev/xvdf",
+                                                " /app/data/redis",
+                                                "\n",
+                                            "chown ubuntu:ubuntu /app/data/redis", "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
                             },
                             "/home/ubuntu/bootstrap" : {
                                 "source" : {
@@ -169,7 +220,7 @@
                                         "",
                                         [
                                             "* * * * * (. /app/.env ; /app/app/example/aws-cloudwatch/push-latest-rrd.sh ",
-                                            { "Ref": "ClusterName" },
+                                            { "Ref" : "EnvironmentName" }, "/", { "Ref" : "ServiceName" },
                                             " /var/lib/collectd/rrd/$(/bin/hostname --fqdn)/redis_logstash/gauge-llen_logstash.rrd  QueueSize) >> /app/var/log/cron.log 2>&1",
                                             "\n"
                                         ]
@@ -177,6 +228,19 @@
                                 },
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
+                                "mode" : "000555"
+                            },
+                            "/usr/bin/fs-mount-aws-ebs" : {
+                                "source" : {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "https://raw2.github.com/dpb587/scs-docker-utils/13911631b6d2eb945b0bb3954ffac284040f8d51/bin/fs-mount-aws-ebs"
+                                        ]
+                                    ]
+                                },
+                                "group" : "root",
+                                "owner" : "root",
                                 "mode" : "000555"
                             }
                         }
@@ -215,15 +279,20 @@
                 "Tags": [
                     {
                         "Key": "Name",
+                        "Value": "redis",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Environment",
                         "Value": {
-                            "Ref" : "AWS::StackName"
+                            "Ref" : "EnvironmentName"
                         },
                         "PropagateAtLaunch": "true"
                     },
                     {
-                        "Key": "logsearch-cluster",
+                        "Key": "Service",
                         "Value": {
-                            "Ref" : "ClusterName"
+                            "Ref" : "ServiceName"
                         },
                         "PropagateAtLaunch": "true"
                     },
@@ -256,7 +325,7 @@
                                 " --resource Instance0 ",
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh redis,logstash,lumberjack_redis,syslog_redis ", { "Ref": "RepositoryCommit" }, "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision redis,logstash,lumberjack_redis,syslog_redis ", { "Ref": "RepositoryCommit" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n",
                                 "sudo -H -u ubuntu crontab /home/ubuntu/cron.conf", "\n",
                                 { "Ref" : "InstancePostScript" }, "\n",
