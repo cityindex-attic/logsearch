@@ -29,5 +29,6 @@ output {
         flush_size => <%= $bug_679_flush_size ? $bug_679_flush_size : 100 %>
         host => "<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>"
         index_type => "%{@type}"
+        manage_template => false
     }
 }
