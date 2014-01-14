@@ -68,7 +68,7 @@ task :deploy_aws_cloudformation_stack, :stack_name, :s3_bucket, :config_dir, :cf
     cmd += " --capabilities \"CAPABILITY_IAM\""
     cmd += " --parameters"
     cmd += " ParameterKey=S3StackBase,ParameterValue='https://s3.amazonaws.com/#{args[:s3_bucket]}/logsearch-deploy/#{args[:stack_name]}/template'"
-#    cmd += " ParameterKey=InstancePostScript,ParameterValue='. /app/.env && /usr/local/bin/aws s3api get-object --bucket #{args[:s3_bucket]} --key logsearch-deploy/#{args[:stack_name]}/post-script.sh /tmp/post-script.sh > /dev/null && /bin/bash /tmp/post-script.sh && rm /tmp/post-script.sh'"
+    cmd += " ParameterKey=InstancePostScript,ParameterValue='. /app/.env && /usr/local/bin/aws s3api get-object --bucket #{args[:s3_bucket]} --key logsearch-deploy/#{args[:stack_name]}/post-script.sh /tmp/post-script.sh > /dev/null && /bin/bash /tmp/post-script.sh && rm /tmp/post-script.sh'"
     cmd += " ParameterKey=RepositoryCommit,ParameterValue=#{commit}"
 
     JSON.parse(IO.read("#{args[:config_dir]}/cloudformation.json")).each do |k, v|
