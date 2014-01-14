@@ -2,6 +2,18 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "A default ephemeral-backed elasticsearch + kibana node.",
     "Parameters": {
+        "EnvironmentName" : {
+            "Type" : "String",
+            "Description" : "The environment the service should run under (e.g. dev, live, test).",
+            "Default" : "dev",
+            "AllowedPattern" : "[0-9a-z]+"
+        },
+        "ServiceName" : {
+            "Type" : "String",
+            "Description" : "The name the service should run under (e.g. logsearch, logsearch-labs).",
+            "Default" : "logsearch-repodev",
+            "AllowedPattern" : "[0-9a-z\\-]+"
+        },
         "AlarmTopicArn": {
             "Type": "String",
             "Description": "An SNS ARN for alarms to notify."

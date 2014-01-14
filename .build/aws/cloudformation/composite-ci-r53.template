@@ -460,20 +460,12 @@
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
                 "AlarmDescription": "Alarm if average queue size is less than 1,000 messages for 50 minutes (scale down).",
-                "Namespace": {
-                    "Fn::Join": [
-                        "/",
-                        [
-                            { "Ref" : "EnvironmentName" },
-                            { "Ref" : "ServiceName" }
-                        ]
-                    ]
-                },
+                "Namespace": { "Ref" : "EnvironmentName" },
                 "MetricName": "QueueSize",
                 "Dimensions": [
                     {
-                        "Name": "ClusterName",
-                        "Value" : { "Ref" : "ClusterName" }
+                        "Name": "ServiceName",
+                        "Value" : { "Ref" : "ServiceName" }
                     }
                 ],
                 "Statistic": "Average",
@@ -503,20 +495,12 @@
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
                 "AlarmDescription": "Alarm if average queue size is greater than 120,000 messages for 5 minutes (scale up).",
-                "Namespace": {
-                    "Fn::Join": [
-                        "/",
-                        [
-                            { "Ref" : "EnvironmentName" },
-                            { "Ref" : "ServiceName" }
-                        ]
-                    ]
-                },
+                "Namespace": { "Ref" : "EnvironmentName" },
                 "MetricName": "QueueSize",
                 "Dimensions": [
                     {
-                        "Name": "ClusterName",
-                        "Value" : { "Ref" : "ClusterName" }
+                        "Name": "ServiceName",
+                        "Value" : { "Ref" : "ServiceName" }
                     }
                 ],
                 "Statistic": "Average",
@@ -559,20 +543,12 @@
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
                 "AlarmDescription": "Alarm if the index is consistently lagging more than 5 minutes.",
-                "Namespace": {
-                    "Fn::Join": [
-                        "/",
-                        [
-                            { "Ref" : "EnvironmentName" },
-                            { "Ref" : "ServiceName" }
-                        ]
-                    ]
-                },
+                "Namespace": { "Ref" : "EnvironmentName" },
                 "MetricName": "IndexLag",
                 "Dimensions": [
                     {
-                        "Name": "ClusterName",
-                        "Value" : { "Ref" : "ClusterName" }
+                        "Name": "ServiceName",
+                        "Value" : { "Ref" : "ServiceName" }
                     }
                 ],
                 "Statistic": "Average",
