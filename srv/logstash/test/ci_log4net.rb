@@ -18,7 +18,7 @@ class SimpleCiLog4netTest < Test::Unit::TestCase
       'level:ERROR'
     )
 
-    assert_equal '2013-06-21T08:00:00.012Z', res['hits']['hits'][0]['_source']['@timestamp']
+    assert_equal '2013-06-21T08:00:00.012+00:00', res['hits']['hits'][0]['_source']['@timestamp']
     assert_equal '2013-06-21 09:00:00,012', res['hits']['hits'][0]['_source']['datetime']
   end
 

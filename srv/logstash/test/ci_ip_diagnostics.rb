@@ -10,7 +10,7 @@ class SimpleCiIPDiagnosticsTest < Test::Unit::TestCase
 
     assert_equal 1, res['hits']['total']
 
-    assert_equal "2013-09-03T01:04:54.258Z", res['hits']['hits'][0]['_source']['@timestamp']
+    assert_equal "2013-09-03T01:04:54.258+00:00", res['hits']['hits'][0]['_source']['@timestamp']
     assert_equal "2013-09-03T02:04:54.258+01:00", res['hits']['hits'][0]['_source']['arrival_time_tz']
   end
 

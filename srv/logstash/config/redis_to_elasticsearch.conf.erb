@@ -18,5 +18,6 @@ output {
         host => "<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>"
         flush_size => <%= ENV['APP_CONFIG_REDIS_FLUSH_SIZE'] || 100  %>
         index_type => "%{@type}"
+        manage_template => false
     }
 }

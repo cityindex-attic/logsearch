@@ -71,32 +71,32 @@
                 "true"
             ]
         },
-        "ElasticsearchEbsSnapshotId": {
+        "ElasticsearchFrontend0InstanceType": {
+            "Type": "String",
+            "Description": "Instance for frontend elasticsearch access.",
+            "Default" : "t1.micro"
+        },
+        "ElasticsearchSnapshotId": {
             "Type": "String",
             "Description": "Conditional: Snapshot to use for the EBS-based elasticsearch node (use snap-00000000 to request a new volume instead).",
             "AllowedPattern": "snap-([0-9a-f]{8})",
             "Default": "snap-00000000"
         },
-        "ElasticsearchEbsVolumeSize": {
+        "ElasticsearchVolumeSize": {
             "Type": "Number",
             "Description": "Conditional: Size (GiBs) of a new volume to use for the EBS-based elasticsearch node (only used when requested via snapshot id snap-00000000).",
             "MinValue": "10",
             "MaxValue": "1024",
             "Default": "64"
         },
-        "ElasticsearchEbs0InstanceType": {
+        "ElasticsearchInstanceType": {
             "Type": "String",
             "Description": "Instance type for the EBS-based elasticsearch node.",
             "Default" : "m2.xlarge"
         },
-        "ElasticsearchEbs1InstanceType": {
-            "Type": "String",
-            "Description": "Instance type for the ephemeral-based elasticsearch node.",
-            "Default" : "m2.xlarge"
-        },
-        "ElasticsearchMasterNodesMin": {
+        "ElasticsearchGroupDesiredCapacity": {
             "Type": "Number",
-            "Description": "Minimum number of elasticsearch master nodes required.",
+            "Description": "Number of elasticsearch nodes for the cluster.",
             "Default": "2"
         },
         "Redis0InstanceType": {
@@ -235,7 +235,7 @@
                 "ToPort" : "443"
             }
         },
-        "ElasticsearchEbs0" : {
+        "ElasticsearchGroup" : {
             "Type" : "AWS::CloudFormation::Stack",
             "Properties" : {
                 "TemplateURL" : {
@@ -243,55 +243,26 @@
                     "/",
                     [
                         { "Ref": "S3StackBase" },
-                        "node-es-ebs-default.template"
+                        "group-elasticsearch-default.template"
                     ]
                     ]
                 },
                 "Parameters" : {
-                    "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
+                    "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
                     "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
                     "ClusterName"           : { "Ref" : "ClusterName" },
                     "CostCentre"            : { "Ref" : "CostCentre" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
-                    "ElasticsearchMasterNodesMin" : "2",
+                    "GroupDesiredCapacity" : { "Ref" : "ElasticsearchGroupDesiredCapacity" },
+                    "ElasticsearchMasterNodesMin" : { "Ref" : "ElasticsearchGroupDesiredCapacity" },
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-                    "InstanceType"          : { "Ref" : "ElasticsearchEbs0InstanceType" },
+                    "InstanceType"          : { "Ref" : "ElasticsearchInstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
                     "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
-                    "SnapshotId"            : { "Ref" : "ElasticsearchEbsSnapshotId" },
+                    "SnapshotId"            : { "Ref" : "ElasticsearchSnapshotId" },
                     "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                    "VolumeSize"            : { "Ref" : "ElasticsearchEbsVolumeSize" }
-                }
-            }
-        },
-        "ElasticsearchEbs1" : {
-            "Type" : "AWS::CloudFormation::Stack",
-            "Properties" : {
-                "TemplateURL" : {
-                    "Fn::Join": [
-                    "/",
-                    [
-                        { "Ref": "S3StackBase" },
-                        "node-es-ebs-default.template"
-                    ]
-                    ]
-                },
-                "Parameters" : {
-                    "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
-                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
-                    "ClusterName"           : { "Ref" : "ClusterName" },
-                    "CostCentre"            : { "Ref" : "CostCentre" },
-                    "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
-                    "ElasticsearchMasterNodesMin" : "2",
-                    "InstancePostScript"    : { "Ref" : "InstancePostScript" },
-                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-                    "InstanceType"          : { "Ref" : "ElasticsearchEbs1InstanceType" },
-                    "KeyName"               : { "Ref" : "KeyName" },
-                    "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
-                    "SnapshotId"            : { "Ref" : "ElasticsearchEbsSnapshotId" },
-                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                    "VolumeSize"            : { "Ref" : "ElasticsearchEbsVolumeSize" }
+                    "VolumeSize"            : { "Ref" : "ElasticsearchVolumeSize" }
                 }
             }
         },
@@ -316,6 +287,33 @@
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
                     "InstanceType"          : { "Ref" : "Redis0InstanceType" },
+                    "KeyName"               : { "Ref" : "KeyName" },
+                    "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
+                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
+                }
+            }
+        },
+        "ElasticsearchFrontend0" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "Properties" : {
+                "TemplateURL" : {
+                    "Fn::Join": [
+                    "/",
+                    [
+                        { "Ref": "S3StackBase" },
+                        "node-kibana-default.template"
+                    ]
+                    ]
+                },
+                "Parameters" : {
+                    "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
+                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
+                    "ClusterName"           : { "Ref" : "ClusterName" },
+                    "CostCentre"            : { "Ref" : "CostCentre" },
+                    "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
+                    "InstancePostScript"    : { "Ref" : "InstancePostScript" },
+                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
+                    "InstanceType"          : { "Ref" : "ElasticsearchFrontend0InstanceType" },
                     "KeyName"               : { "Ref" : "KeyName" },
                     "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
                     "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
@@ -369,7 +367,7 @@
                 "TTL" : "90",
                 "ResourceRecords" : [
                     {
-                        "Fn::GetAtt" : [ "ElasticsearchEbs1", "Outputs.Instance0PublicIp" ]
+                        "Fn::GetAtt" : [ "ElasticsearchFrontend0", "Outputs.Instance0PublicIp" ]
                     }
                 ]
             }
@@ -435,7 +433,7 @@
                 "TTL" : "60",
                 "ResourceRecords" : [
                     {
-                        "Fn::GetAtt" : [ "ElasticsearchEbs0", "Outputs.Instance0PrivateIp" ]
+                        "Fn::GetAtt" : [ "ElasticsearchFrontend0", "Outputs.Instance0PrivateIp" ]
                     }
                 ]
             }
