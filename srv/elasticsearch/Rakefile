@@ -9,7 +9,7 @@ namespace :elasticsearch do
   desc 'Delete all Elastic Search data using DELETE all data query to http://127.0.0.1:9200'
   task :delete_all_data_by_query do
     puts "---> Deleting all Elastic Search data"
-    sh "curl -XDELETE 'http://127.0.0.1:9200/_all/_query?q=*:*'"
+    sh "curl -XDELETE 'http://127.0.0.1:9200/_all'"
     puts "---> Done."
   end
 
