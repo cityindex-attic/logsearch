@@ -59,10 +59,6 @@
                         "type" : "string",
                         "index" : "not_analyzed"
                     },
-                    "host" : {
-                        "type" : "string",
-                        "index" : "analyzed"
-                    },
                     "message" : {
                         "type" : "string",
                         "index" : "analyzed"
