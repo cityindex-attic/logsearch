@@ -1,7 +1,7 @@
 {
-    "template_default" : {
+    "logstash_default" : {
         "template" : "logstash-*",
-        "order" : 0,
+        "order" : 10,
         "settings" : {
             "number_of_shards" : 4,
             "number_of_replicas" : 1,
