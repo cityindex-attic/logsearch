@@ -21,16 +21,16 @@ Once it has completed, you can login to the nodes to investigate further or manu
 
 To analyze the statistics, pull down the files from S3, or use the included report-stats graph page. For example, here are the baseline profile results (while available):
 
- * [http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/index.html?perftest/baseline/broker-n0.json](http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/index.html?perftest/baseline/broker-n0.json)
- * [http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/index.html?perftest/baseline/elasticsearch-p0.json](http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/index.html?perftest/baseline/elasticsearch-p0.json)
- * [http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/index.html?perftest/baseline/elasticsearch-r0.json](http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/index.html?perftest/baseline/elasticsearch-r0.json)
- * [http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/index.html?perftest/baseline/parser-n0.json](http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/index.html?perftest/baseline/parser-n0.json)
- * [http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/index.html?perftest/baseline/shipper-n0.json](http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/index.html?perftest/baseline/shipper-n0.json)
+ * [http://ci-logsearch.s3.amazonaws.com/report-stats/index.html?perftest/baseline/broker-n0.json](http://ci-logsearch.s3.amazonaws.com/report-stats/index.html?perftest/baseline/broker-n0.json)
+ * [http://ci-logsearch.s3.amazonaws.com/report-stats/index.html?perftest/baseline/elasticsearch-p0.json](http://ci-logsearch.s3.amazonaws.com/report-stats/index.html?perftest/baseline/elasticsearch-p0.json)
+ * [http://ci-logsearch.s3.amazonaws.com/report-stats/index.html?perftest/baseline/elasticsearch-r0.json](http://ci-logsearch.s3.amazonaws.com/report-stats/index.html?perftest/baseline/elasticsearch-r0.json)
+ * [http://ci-logsearch.s3.amazonaws.com/report-stats/index.html?perftest/baseline/parser-n0.json](http://ci-logsearch.s3.amazonaws.com/report-stats/index.html?perftest/baseline/parser-n0.json)
+ * [http://ci-logsearch.s3.amazonaws.com/report-stats/index.html?perftest/baseline/shipper-n0.json](http://ci-logsearch.s3.amazonaws.com/report-stats/index.html?perftest/baseline/shipper-n0.json)
 
-There's also a second report-stats [summary page](http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/summarize.html) which takes a look at the raw JSON files to pull out some of the more notable stats into a more readable report. Just paste the list of uploaded JSON files and wait a few seconds for them to download and be analyzed; for example:
+There's also a second report-stats [summary page](http://ci-logsearch.s3.amazonaws.com/report-stats/summarize.html) which takes a look at the raw JSON files to pull out some of the more notable stats into a more readable report. Just paste the list of uploaded JSON files and wait a few seconds for them to download and be analyzed; for example:
 
- * http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/perftest/baseline/broker-n0.json
- * http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/perftest/baseline/elasticsearch-p0.json
- * http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/perftest/baseline/elasticsearch-r0.json
- * http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/perftest/baseline/parser-n0.json
- * http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/perftest/baseline/shipper-n0.json
+ * http://ci-logsearch.s3.amazonaws.com/report-stats/perftest/baseline/broker-n0.json
+ * http://ci-logsearch.s3.amazonaws.com/report-stats/perftest/baseline/elasticsearch-p0.json
+ * http://ci-logsearch.s3.amazonaws.com/report-stats/perftest/baseline/elasticsearch-r0.json
+ * http://ci-logsearch.s3.amazonaws.com/report-stats/perftest/baseline/parser-n0.json
+ * http://ci-logsearch.s3.amazonaws.com/report-stats/perftest/baseline/shipper-n0.json

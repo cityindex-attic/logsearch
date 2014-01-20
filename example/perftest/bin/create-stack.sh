@@ -70,5 +70,5 @@ for NODE in $(aws cloudformation list-stack-resources --stack-name $STACK_NAME |
     echo $NODE
     IPADDRESS=$(../../bin/find-instance-ip.sh $NODE)
 
-    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $2 ubuntu@$IPADDRESS "cd /app/app/ ; ./bin/upload-stats ci-elasticsearch-development-flow report-stats/ '$SESSION_START' '$SESSION_STOP'"
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $2 ubuntu@$IPADDRESS "cd /app/app/ ; ./bin/upload-stats ci-logsearch report-stats/ '$SESSION_START' '$SESSION_STOP'"
 done

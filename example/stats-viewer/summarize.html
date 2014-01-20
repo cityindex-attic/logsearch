@@ -21,7 +21,7 @@
             function statreload(sources) {
                 sources.each(
                     function (source) {
-                        append('[' + source.replace(/^.*\/([^\/]+)\.json$/, '$1') + '](http://ci-elasticsearch-development-flow.s3.amazonaws.com/report-stats/index.html?' + source + ')');
+                        append('[' + source.replace(/^.*\/([^\/]+)\.json$/, '$1') + '](http://ci-logsearch.s3.amazonaws.com/report-stats/index.html?' + source + ')');
 
                         new Request.JSON(
                             {

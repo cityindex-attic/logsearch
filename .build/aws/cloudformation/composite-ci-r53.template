@@ -103,7 +103,7 @@
         "ElasticsearchInstanceType": {
             "Type": "String",
             "Description": "Instance type for the EBS-based elasticsearch node.",
-            "Default" : "m2.xlarge"
+            "Default" : "m1.xlarge"
         },
         "ElasticsearchGroupDesiredCapacity": {
             "Type": "Number",

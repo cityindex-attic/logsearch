@@ -94,5 +94,12 @@ class SimpleCiIPDiagnosticsTest < Test::Unit::TestCase
     assert_equal type, value.class, "field is: #{value} \n===========Full query result============= #{JSON.pretty_generate(res)}"
   end
 
+  def test_Host_accepts_wildcard
+    res = eslog_simple_search(
+      nil,
+      'host:ip-10-*'
+    )
 
+    assert_equal 31, res['hits']['total']
+  end
 end
