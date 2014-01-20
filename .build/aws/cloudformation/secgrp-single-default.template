@@ -2,6 +2,18 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "A default single security group.",
     "Parameters": {
+        "EnvironmentName" : {
+            "Type" : "String",
+            "Description" : "The environment the service should run under (e.g. dev, live, test).",
+            "Default" : "dev",
+            "AllowedPattern" : "[0-9a-z]+"
+        },
+        "ServiceName" : {
+            "Type" : "String",
+            "Description" : "The name the service should run under (e.g. logsearch, logsearch-labs).",
+            "Default" : "logsearch-repodev",
+            "AllowedPattern" : "[0-9a-z\\-]+"
+        },
         "CidrRange": {
             "Description": "The management CIDR for remote access via tcp:22, tcp:80, tcp:443.",
             "Type": "String",
@@ -16,7 +28,16 @@
         "SecurityGroup0": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
-                "GroupDescription": "logsearch-single-default",
+                "GroupDescription": {
+                    "Fn::Join": [
+                        "/",
+                        [
+                            { "Ref" : "EnvironmentName" },
+                            { "Ref" : "ServiceName" },
+                            "default"
+                        ]
+                    ]
+                },
                 "SecurityGroupIngress": [
                     {
                         "IpProtocol": "icmp",
@@ -51,6 +72,27 @@
                         "CidrIp": {
                             "Ref": "CidrRange"
                         }
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "default",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Environment",
+                        "Value": {
+                            "Ref" : "EnvironmentName"
+                        },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Service",
+                        "Value": {
+                            "Ref" : "ServiceName"
+                        },
+                        "PropagateAtLaunch": "true"
                     }
                 ]
             }

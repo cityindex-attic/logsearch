@@ -42,46 +42,57 @@ task :install_system_services do
 end
 
 desc "Deploy an AWS CloudFormation Stack."
-task :deploy_aws_cloudformation_stack, :stack_name, :s3_bucket, :config_dir, :cfn_template, :passthru_cfn do |t, args|
+task :deploy_aws_cloudformation_stack, :environment_name, :config_dir, :passthru_cfn do |t, args|
+    deploy = DateTime.now.strftime '%Y%m%d%H%M%S'
     commit = `git rev-parse HEAD`.chomp
 
     raise "The commit #{commit} does not seem to be available upstream." unless system "git branch -r --contains #{commit} | grep -e '^\s*origin/' > /dev/null"
 
+    deploy_ref = commit
+    deploy_tag = "release-#{args[:environment_name]}-#{args[:stack_name]}-#{deploy}"
+
+    config = JSON.parse(IO.read("#{args[:config_dir]}/cloudformation.json"))
+
     puts "\n==> Tagging Release..."
-    sh "git tag release-#{args[:stack_name]} #{commit}"
+    sh "git tag #{deploy_tag} #{commit}"
+    puts ""
+
+    if 'live' == args[:environment_name]
+        puts "\n==> Pushing Release Tag..."
+        sh "git push origin #{deploy_tag}"
+        puts ""
+
+        deploy_ref = commit
+    end
 
     puts "\n==> Uploading Templates..."
-    sh "./bin/upload-aws-cloudformation #{args[:s3_bucket]} logsearch-deploy/#{args[:stack_name]}/template/"
+    sh "./bin/upload-aws-cloudformation '#{config['S3Bucket']}' 'deploy/#{args[:environment_name]}/#{config['ServiceName']}/template/'"
     puts ""
 
     puts "\n==> Generating, Uploading post-script..."
     sh "( cd #{args[:config_dir]} && rake generate_post_provision_script ) > post-script-#{Process.pid}.sh"
-    sh "aws s3api put-object --bucket #{args[:s3_bucket]} --key 'logsearch-deploy/#{args[:stack_name]}/post-script.sh' --acl private --body post-script-#{Process.pid}.sh"
+    sh "aws s3api put-object --bucket '#{config['S3Bucket']}' --key 'deploy/#{args[:environment_name]}/#{config['ServiceName']}/post-script.sh' --acl private --body post-script-#{Process.pid}.sh"
     sh "rm post-script-#{Process.pid}.sh"
     puts ""
 
     puts "\n==> Creating Stack..."
 
     cmd = "aws cloudformation create-stack"
-    cmd += " --stack-name #{Shellwords.escape(args[:stack_name])}"
-    cmd += " --template-url 'https://s3.amazonaws.com/#{args[:s3_bucket]}/logsearch-deploy/#{args[:stack_name]}/template/#{args[:cfn_template]}.template'"
+    cmd += " --stack-name #{args[:environment_name]}-#{config['ServiceName']}"
+    cmd += " --template-url 'https://s3.amazonaws.com/#{config['S3Bucket']}/deploy/#{args[:environment_name]}/#{config['ServiceName']}/template/#{config['CloudFormationTemplate']}'"
     cmd += " --capabilities \"CAPABILITY_IAM\""
     cmd += " --parameters"
-    cmd += " ParameterKey=S3StackBase,ParameterValue='https://s3.amazonaws.com/#{args[:s3_bucket]}/logsearch-deploy/#{args[:stack_name]}/template'"
-    cmd += " ParameterKey=InstancePostScript,ParameterValue='. /app/.env && /usr/local/bin/aws s3api get-object --bucket #{args[:s3_bucket]} --key logsearch-deploy/#{args[:stack_name]}/post-script.sh /tmp/post-script.sh > /dev/null && /bin/bash /tmp/post-script.sh && rm /tmp/post-script.sh'"
-    cmd += " ParameterKey=RepositoryCommit,ParameterValue=#{commit}"
+    cmd += " ParameterKey=S3StackBase,ParameterValue='https://s3.amazonaws.com/#{config['S3Bucket']}/deploy/#{args[:environment_name]}/#{config['ServiceName']}/template'"
+    cmd += " ParameterKey=InstancePostScript,ParameterValue='. /app/.env && /usr/local/bin/aws s3api get-object --bucket #{config['S3Bucket']} --key deploy/#{args[:environment_name]}/#{config['ServiceName']}/post-script.sh /tmp/post-script.sh > /dev/null && /bin/bash /tmp/post-script.sh && rm /tmp/post-script.sh'"
+    cmd += " ParameterKey=RepositoryCommit,ParameterValue=#{deploy_ref}"
 
-    JSON.parse(IO.read("#{args[:config_dir]}/cloudformation.json")).each do |k, v|
+    config['CloudFormationParams'].each do |k, v|
         cmd += " ParameterKey=#{k.shellescape},ParameterValue=#{v.shellescape}"
     end
 
     cmd += " #{args[:passthru_cfn].gsub(';', ',')}"
 
     sh cmd
-
-    puts ""
-    puts "Don't forget to run: git push origin release-#{args[:stack_name]}"
-    puts ""
 end
 
 def process_erb(input, output, args = nil)
