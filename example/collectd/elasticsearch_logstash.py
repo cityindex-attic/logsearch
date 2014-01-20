@@ -72,7 +72,7 @@ def read_callback():
     resData = json.loads(res.read())
     res.close()
     
-    then = datetime.strptime(resData['hits']['hits'][0]['_source']['@timestamp'], '%Y-%m-%dT%H:%M:%S.%fZ')
+    then = datetime.strptime(resData['hits']['hits'][0]['_source']['@timestamp'].replace('+00:00', 'Z'), '%Y-%m-%dT%H:%M:%S.%fZ')
 
     val = collectd.Values(plugin = 'elasticsearch_logstash')
     val.type = 'gauge'
