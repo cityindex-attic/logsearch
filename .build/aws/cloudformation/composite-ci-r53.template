@@ -4,15 +4,15 @@
     "Parameters": {
         "EnvironmentName" : {
             "Type" : "String",
-            "Description" : "The environment the service should run under (e.g. dev, live, test)."
+            "Description" : "The environment the service should run under (e.g. dev, live, test).",
             "Default" : "dev",
             "AllowedPattern" : "[0-9a-z]+"
         },
         "ServiceName" : {
             "Type" : "String",
-            "Description" : "The name the service should run under (e.g. logsearch, logsearch-labs)."
-            "Default" : "dev",
-            "AllowedPattern" : "[0-9a-z\-]+"
+            "Description" : "The name the service should run under (e.g. logsearch, logsearch-labs).",
+            "Default" : "logsearch-repodev",
+            "AllowedPattern" : "[0-9a-z\\-]+"
         },
         "AlarmTopicArn" : {
             "Type" : "String",
@@ -64,9 +64,10 @@
             "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
             "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
         },
-        "ClusterName": {
+        "ElasticsearchClusterName": {
             "Type": "String",
-            "Description": "A unique name for the cluster (leave blank for \"{EnvironmentName}-{ServiceName}\")."
+            "Description": "A unique name for the cluster (leave blank for \"{EnvironmentName}-{ServiceName}\").",
+            "Default" : "default"
         },
         "CostCentre": {
             "Type": "String",
@@ -263,7 +264,7 @@
                     "ServiceName"           : { "Ref" : "ServiceName" },
                     "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
                     "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
-                    "ClusterName"           : { "Ref" : "ClusterName" },
+                    "ElasticsearchClusterName"           : { "Ref" : "ElasticsearchClusterName" },
                     "CostCentre"            : { "Ref" : "CostCentre" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "GroupDesiredCapacity" : { "Ref" : "ElasticsearchGroupDesiredCapacity" },
@@ -324,7 +325,7 @@
                     "ServiceName"           : { "Ref" : "ServiceName" },
                     "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
                     "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
-                    "ClusterName"           : { "Ref" : "ClusterName" },
+                    "ElasticsearchClusterName"           : { "Ref" : "ElasticsearchClusterName" },
                     "CostCentre"            : { "Ref" : "CostCentre" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
@@ -352,7 +353,6 @@
                     "EnvironmentName"       : { "Ref" : "EnvironmentName" },
                     "ServiceName"           : { "Ref" : "ServiceName" },
                     "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
-                    "ClusterName"           : { "Ref" : "ClusterName" },
                     "CostCentre"            : { "Ref" : "CostCentre" },
                     "ElasticsearchHost"     : { "Ref" : "DnsSrvPrivateElasticsearch" },
                     "GroupMinSize"          : { "Ref" : "LogstashGroupDesiredCapacity" },

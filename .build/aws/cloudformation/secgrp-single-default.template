@@ -77,22 +77,19 @@
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": "default",
-                        "PropagateAtLaunch": "true"
+                        "Value": "default"
                     },
                     {
                         "Key": "Environment",
                         "Value": {
                             "Ref" : "EnvironmentName"
-                        },
-                        "PropagateAtLaunch": "true"
+                        }
                     },
                     {
                         "Key": "Service",
                         "Value": {
                             "Ref" : "ServiceName"
-                        },
-                        "PropagateAtLaunch": "true"
+                        }
                     }
                 ]
             }
