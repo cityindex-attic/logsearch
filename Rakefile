@@ -48,10 +48,10 @@ task :deploy_aws_cloudformation_stack, :environment_name, :config_dir, :passthru
 
     raise "The commit #{commit} does not seem to be available upstream." unless system "git branch -r --contains #{commit} | grep -e '^\s*origin/' > /dev/null"
 
-    deploy_ref = commit
-    deploy_tag = "release-#{args[:environment_name]}-#{args[:stack_name]}-#{deploy}"
-
     config = JSON.parse(IO.read("#{args[:config_dir]}/cloudformation.json"))
+
+    deploy_ref = commit
+    deploy_tag = "release-#{args[:environment_name]}-#{config['ServiceName']}-#{deploy}"
 
     puts "\n==> Tagging Release..."
     sh "git tag #{deploy_tag} #{commit}"
@@ -76,7 +76,7 @@ task :deploy_aws_cloudformation_stack, :environment_name, :config_dir, :passthru
     puts ""
 
     puts "\n==> Finding Stack..."
-    stack = JSON.parse(`aws cloudformation describe-stacks --stack-name #{args[:environment_name]}-#{config['ServiceName']}`)
+    stack = JSON.parse(`aws cloudformation describe-stacks --stack-name #{args[:environment_name]}-#{config['ServiceName']} || echo '{"Stacks":[]}'`)
     puts ""
 
     if 1 == stack['Stacks'].length
