@@ -49,7 +49,8 @@ if [[ ! "$(ruby --version)" =~ "ruby 1.9.3" ]]; then
   sudo update-alternatives --auto ruby
   sudo update-alternatives --auto gem
 
-  echo -e "#Ensure gems are in path\nexport PATH=\$PATH:/var/lib/gems/1.9.1/bin/" >> /etc/profile
+  echo "Removing ruby 1.8"
+  sudo apt-get remove libruby1.8 ruby1.8 ruby1.8-dev rubygems1.8
 fi
 echo "ruby:\t$(ruby --version)"
 
