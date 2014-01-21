@@ -30,6 +30,9 @@ fi
 echo "curl:\t$(curl --version)" | head -n 1
 
 if [[ ! "$(ruby --version)" =~ "ruby 1.9.3" ]]; then
+  echo "Removing ruby 1.8"
+  sudo apt-get purge libruby1.8 ruby1.8 ruby1.8-dev rubygems1.8 -y
+
   echo "Upgrading ruby to 1.9.1"
   sudo apt-get install ruby1.9.1 ruby1.9.1-dev \
     rubygems1.9.1 irb1.9.1 ri1.9.1 rdoc1.9.1 \
@@ -48,9 +51,6 @@ if [[ ! "$(ruby --version)" =~ "ruby 1.9.3" ]]; then
   # /usr/bin/irb, /usr/bin/ri and man (1) ruby
   sudo update-alternatives --auto ruby
   sudo update-alternatives --auto gem
-
-  echo "Removing ruby 1.8"
-  sudo apt-get remove libruby1.8 ruby1.8 ruby1.8-dev rubygems1.8
 fi
 echo "ruby:\t$(ruby --version)"
 
