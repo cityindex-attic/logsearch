@@ -223,8 +223,10 @@
                                         "",
                                         [
                                             "* * * * * (. /app/.env ; /app/app/example/aws-cloudwatch/push-latest-rrd.sh ",
-                                            { "Ref" : "EnvironmentName" }, "/", { "Ref" : "ServiceName" },
-                                            " /var/lib/collectd/rrd/$(/bin/hostname --fqdn)/redis_logstash/gauge-llen_logstash.rrd  QueueSize) >> /app/var/log/cron.log 2>&1",
+                                            { "Ref" : "EnvironmentName" },
+                                            " ", { "Ref" : "ServiceName" },
+                                            " QueueSize",
+                                            " /var/lib/collectd/rrd/$(/bin/hostname --fqdn)/redis_logstash/gauge-llen_logstash.rrd) >> /app/var/log/cron.log 2>&1",
                                             "\n"
                                         ]
                                     ]
