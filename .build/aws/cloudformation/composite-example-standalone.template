@@ -69,6 +69,12 @@
             "m2.4xlarge" : {
                 "ElasticsearchHeapSize" : "35G"
             },
+            "m3.medium" : {
+                "ElasticsearchHeapSize" : "2G"
+            },
+            "m3.large" : {
+                "ElasticsearchHeapSize" : "4G"
+            },
             "m3.xlarge" : {
                 "ElasticsearchHeapSize" : "8G"
             },
