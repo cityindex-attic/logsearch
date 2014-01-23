@@ -55,15 +55,17 @@ task :deploy_aws_cloudformation_stack, :environment_name, :config_dir, :passthru
 
     puts "\n==> Tagging Release..."
     sh "git tag #{deploy_tag} #{commit}"
-    puts ""
 
     if 'live' == args[:environment_name]
-        puts "\n==> Pushing Release Tag..."
-        sh "git push origin #{deploy_tag}"
-        puts ""
+        puts "==> Don't forget to run: git push origin #{deploy_tag}"
+#        puts "\n==> Pushing Release Tag..."
+#        sh "git push origin #{deploy_tag}"
+#        puts ""
 
-        deploy_ref = commit
+#        deploy_ref = commit
     end
+
+    puts ""
 
     puts "\n==> Uploading Templates..."
     sh "./bin/upload-aws-cloudformation '#{config['S3Bucket']}' 'deploy/#{args[:environment_name]}/#{config['ServiceName']}/template/'"
@@ -94,7 +96,7 @@ task :deploy_aws_cloudformation_stack, :environment_name, :config_dir, :passthru
     cmd += " --capabilities \"CAPABILITY_IAM\""
     cmd += " --parameters"
     cmd += " ParameterKey=S3StackBase,ParameterValue='https://s3.amazonaws.com/#{config['S3Bucket']}/deploy/#{args[:environment_name]}/#{config['ServiceName']}/template'"
-    #cmd += " ParameterKey=InstancePostScript,ParameterValue='. /app/.env && /usr/local/bin/aws s3api get-object --bucket #{config['S3Bucket']} --key deploy/#{args[:environment_name]}/#{config['ServiceName']}/post-script.sh /tmp/post-script.sh > /dev/null && /bin/bash /tmp/post-script.sh && rm /tmp/post-script.sh'"
+    cmd += " ParameterKey=InstancePostScript,ParameterValue='. /app/.env && /usr/local/bin/aws s3api get-object --bucket #{config['S3Bucket']} --key deploy/#{args[:environment_name]}/#{config['ServiceName']}/post-script.sh /tmp/post-script.sh > /dev/null && /bin/bash /tmp/post-script.sh && rm /tmp/post-script.sh'"
     cmd += " ParameterKey=RepositoryCommit,ParameterValue=#{deploy_ref}"
     cmd += " ParameterKey=EnvironmentName,ParameterValue=#{args[:environment_name]}"
     cmd += " ParameterKey=ServiceName,ParameterValue=#{config['ServiceName']}"
@@ -103,7 +105,9 @@ task :deploy_aws_cloudformation_stack, :environment_name, :config_dir, :passthru
         cmd += " ParameterKey=#{k.shellescape},ParameterValue=#{v.shellescape}"
     end
 
-    cmd += " #{args[:passthru_cfn].gsub(';', ',')}"
+    if args[:passthru_cfn]
+        cmd += " #{args[:passthru_cfn].gsub(';', ',')}"
+    end
 
     sh cmd
 end
