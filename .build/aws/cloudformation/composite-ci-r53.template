@@ -23,9 +23,9 @@
             "Description": "ARN of SNS topic for Auto Scaling notifications.",
             "Default": ""
         },
-        "AvailabilityZone": {
+        "AvailabilityZone1": {
             "Type": "String",
-            "Description": "Availability Zone (AZ) to start the cluster in.",
+            "Description": "Availability Zone (AZ) for cluster operations (primary).",
             "Default": "us-east-1a"
         },
         "ElasticsearchClusterName": {
@@ -168,7 +168,7 @@
                     "EnvironmentName"       : { "Ref" : "EnvironmentName" },
                     "ServiceName"           : { "Ref" : "ServiceName" },
                     "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
-                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
+                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone1" },
                     "ElasticsearchClusterName"           : { "Ref" : "ElasticsearchClusterName" },
                     "CostCentre"            : { "Ref" : "CostCentre" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
@@ -201,7 +201,7 @@
                     "EnvironmentName"       : { "Ref" : "EnvironmentName" },
                     "ServiceName"           : { "Ref" : "ServiceName" },
                     "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
-                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
+                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone1" },
                     "CostCentre"            : { "Ref" : "CostCentre" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
@@ -229,7 +229,7 @@
                     "EnvironmentName"       : { "Ref" : "EnvironmentName" },
                     "ServiceName"           : { "Ref" : "ServiceName" },
                     "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
-                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone" },
+                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone1" },
                     "ElasticsearchClusterName"           : { "Ref" : "ElasticsearchClusterName" },
                     "CostCentre"            : { "Ref" : "CostCentre" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },

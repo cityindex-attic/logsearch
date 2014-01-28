@@ -378,9 +378,9 @@
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Version": "2009-05-15",
             "Properties": {
-                "AvailabilityZones": {
-                    "Fn::GetAZs" : ""
-                },
+                "AvailabilityZones": [
+                    { "Ref" : "AvailabilityZone" }
+                ],
                 "Cooldown": "300",
                 "DesiredCapacity": {
                     "Ref": "GroupDesiredCapacity"
