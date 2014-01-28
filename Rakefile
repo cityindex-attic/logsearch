@@ -112,10 +112,12 @@ task :deploy_aws_cloudformation_stack, :environment_name, :config_dir, :passthru
     config['CloudFormationParams']['EnvironmentName'] = args[:environment_name]
     config['CloudFormationParams']['ServiceName'] = config['ServiceName']
 
-    args[:passthru_cfn].gsub(/"$/, '').split('";').each do | v |
-        rv = v.split('="', 2)
+    if args[:passthru_cfn]
+        args[:passthru_cfn].gsub(/"$/, '').split('";').each do | v |
+            rv = v.split('="', 2)
 
-        config['CloudFormationParams'][rv[0]] = rv[1]
+            config['CloudFormationParams'][rv[0]] = rv[1]
+        end
     end
 
     config['CloudFormationParams'].each do |k, v|
