@@ -265,6 +265,19 @@
                             "Ref" : "CostCentre"
                         },
                         "PropagateAtLaunch" : "true"
+                    },
+                    {
+                        "Key" : "librato:displayName",
+                        "Value" : {
+                            "Fn::Join" : [
+                                ".",
+                                [
+                                    { "Ref" : "EnvironmentName" },
+                                    { "Ref" : "ServiceName" },
+                                    "frontend"
+                                ]
+                            ]
+                        }
                     }
                 ],
                 "UserData" : {
