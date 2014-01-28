@@ -261,11 +261,10 @@
                                     "Fn::Join": [
                                         "",
                                         [
-                                            "* * * * * (. /app/.env ; /app/app/example/aws-cloudwatch/push-latest-rrd.sh ",
+                                            "* * * * * (. /app/.env ; /app/app/example/aws-cloudwatch/push-latest-rrd.sh /var/lib/collectd/rrd/$(/bin/hostname --fqdn)/elasticsearch_logstash/gauge-lag.rrd ",
                                             { "Ref" : "EnvironmentName" },
                                             " ", { "Ref" : "ServiceName" },
-                                            " IndexLag",
-                                            " /var/lib/collectd/rrd/$(/bin/hostname --fqdn)/elasticsearch_logstash/gauge-lag.rrd) >> /app/var/log/cron.log 2>&1",
+                                            " IndexLag) >> /app/var/log/cron.log 2>&1",
                                             "\n"
                                         ]
                                     ]

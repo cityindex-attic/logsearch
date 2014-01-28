@@ -222,11 +222,10 @@
                                     "Fn::Join": [
                                         "",
                                         [
-                                            "* * * * * (. /app/.env ; /app/app/example/aws-cloudwatch/push-latest-rrd.sh ",
+                                            "* * * * * (. /app/.env ; /app/app/example/aws-cloudwatch/push-latest-rrd.sh /var/lib/collectd/rrd/$(/bin/hostname --fqdn)/redis_logstash/gauge-llen_logstash.rrd ",
                                             { "Ref" : "EnvironmentName" },
                                             " ", { "Ref" : "ServiceName" },
-                                            " QueueSize",
-                                            " /var/lib/collectd/rrd/$(/bin/hostname --fqdn)/redis_logstash/gauge-llen_logstash.rrd) >> /app/var/log/cron.log 2>&1",
+                                            " QueueSize) >> /app/var/log/cron.log 2>&1",
                                             "\n"
                                         ]
                                     ]
