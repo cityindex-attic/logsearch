@@ -38,7 +38,6 @@ if [[ ! `echo $RRD_LINE | grep -E ": -nan(\$| )"` ]] ; then
     }
 EOF
     )
-echo $ARG1
 
     /usr/local/bin/aws cloudwatch put-metric-data --namespace "$ENVIRONMENT_NAME" --metric-data "$ARG1" > /dev/null
 fi
