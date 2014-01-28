@@ -451,7 +451,8 @@
                                     "elasticsearch"
                                 ]
                             ]
-                        }
+                        },
+                        "PropagateAtLaunch" : "true"
                     }
                 ]
             }

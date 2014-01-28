@@ -318,7 +318,8 @@
                                     "redis"
                                 ]
                             ]
-                        }
+                        },
+                        "PropagateAtLaunch" : "true"
                     }
                 ],
                 "UserData" : {

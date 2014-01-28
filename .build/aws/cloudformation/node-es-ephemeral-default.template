@@ -295,7 +295,8 @@
                                     "elasticsearch"
                                 ]
                             ]
-                        }
+                        },
+                        "PropagateAtLaunch" : "true"
                     }
                 ],
                 "UserData" : {

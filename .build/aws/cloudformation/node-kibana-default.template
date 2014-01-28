@@ -277,7 +277,8 @@
                                     "frontend"
                                 ]
                             ]
-                        }
+                        },
+                        "PropagateAtLaunch" : "true"
                     }
                 ],
                 "UserData" : {

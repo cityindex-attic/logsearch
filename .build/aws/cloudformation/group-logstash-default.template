@@ -371,7 +371,8 @@
                                     "logstash"
                                 ]
                             ]
-                        }
+                        },
+                        "PropagateAtLaunch" : "true"
                     }
                 ]
             }
