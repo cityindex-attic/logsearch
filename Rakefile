@@ -89,32 +89,37 @@ task :deploy_aws_cloudformation_stack, :environment_name, :config_dir, :passthru
     stack = JSON.parse(`aws cloudformation describe-stacks --stack-name #{args[:environment_name]}-#{config['ServiceName']} || echo '{"Stacks":[]}'`)
     puts ""
 
+    cmd = "aws cloudformation "
+
     if 1 == stack['Stacks'].length
         puts "==> Updating Stack..."
 
-        cmd = "aws cloudformation update-stack"
+        cmd += "update-stack"
     else
         puts "==> Creating Stack..."
 
-        cmd = "aws cloudformation create-stack"
+        cmd += "create-stack"
     end
 
     cmd += " --stack-name #{args[:environment_name]}-#{config['ServiceName']}"
     cmd += " --template-url 'https://s3.amazonaws.com/#{config['S3Bucket']}/deploy/#{args[:environment_name]}/#{config['ServiceName']}/template/#{config['CloudFormationTemplate']}'"
     cmd += " --capabilities \"CAPABILITY_IAM\""
     cmd += " --parameters"
-    cmd += " ParameterKey=S3StackBase,ParameterValue='https://s3.amazonaws.com/#{config['S3Bucket']}/deploy/#{args[:environment_name]}/#{config['ServiceName']}/template'"
-    cmd += " ParameterKey=InstancePostScript,ParameterValue='. /app/.env && /usr/local/bin/aws s3api get-object --bucket #{config['S3Bucket']} --key deploy/#{args[:environment_name]}/#{config['ServiceName']}/post-script.sh /tmp/post-script.sh > /dev/null && /bin/bash /tmp/post-script.sh && rm /tmp/post-script.sh'"
-    cmd += " ParameterKey=RepositoryCommit,ParameterValue=#{deploy_ref}"
-    cmd += " ParameterKey=EnvironmentName,ParameterValue=#{args[:environment_name]}"
-    cmd += " ParameterKey=ServiceName,ParameterValue=#{config['ServiceName']}"
+
+    config['CloudFormationParams']['S3StackBase'] = "https://s3.amazonaws.com/#{config['S3Bucket']}/deploy/#{args[:environment_name]}/#{config['ServiceName']}/template"
+    config['CloudFormationParams']['InstancePostScript'] = ". /app/.env && /usr/local/bin/aws s3api get-object --bucket #{config['S3Bucket']} --key deploy/#{args[:environment_name]}/#{config['ServiceName']}/post-script.sh /tmp/post-script.sh > /dev/null && /bin/bash /tmp/post-script.sh && rm /tmp/post-script.sh"
+    config['CloudFormationParams']['RepositoryCommit'] = deploy_ref
+    config['CloudFormationParams']['EnvironmentName'] = args[:environment_name]
+    config['CloudFormationParams']['ServiceName'] = config['ServiceName']
+
+    args[:passthru_cfn].gsub(/"$/, '').split('";').each do | v |
+        rv = v.split('="', 2)
+
+        config['CloudFormationParams'][rv[0]] = rv[1]
+    end
 
     config['CloudFormationParams'].each do |k, v|
         cmd += " ParameterKey=#{k.shellescape},ParameterValue=#{v.shellescape}"
-    end
-
-    if args[:passthru_cfn]
-        cmd += " #{args[:passthru_cfn].gsub(';', ',')}"
     end
 
     sh cmd
