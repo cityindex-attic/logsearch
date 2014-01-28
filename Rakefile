@@ -67,15 +67,23 @@ task :deploy_aws_cloudformation_stack, :environment_name, :config_dir, :passthru
 
     puts ""
 
+
     puts "\n==> Uploading Templates..."
-    sh "./bin/upload-aws-cloudformation '#{config['S3Bucket']}' 'deploy/#{args[:environment_name]}/#{config['ServiceName']}/template/'"
+    sh "./bin/upload-aws-cloudformation .build/aws/cloudformation '#{config['S3Bucket']}' 'deploy/#{args[:environment_name]}/#{config['ServiceName']}/template/'"
+
+    if File.exists?("#{args[:config_dir]}/aws-cloudformation")
+        sh "./bin/upload-aws-cloudformation #{args[:config_dir]}/aws-cloudformation '#{config['S3Bucket']}' 'deploy/#{args[:environment_name]}/#{config['ServiceName']}/template/'"
+    end
+
     puts ""
+
 
     puts "\n==> Generating, Uploading post-script..."
     sh "( cd #{args[:config_dir]} && rake generate_post_provision_script ) > post-script-#{Process.pid}.sh"
     sh "aws s3api put-object --bucket '#{config['S3Bucket']}' --key 'deploy/#{args[:environment_name]}/#{config['ServiceName']}/post-script.sh' --acl private --body post-script-#{Process.pid}.sh"
     sh "rm post-script-#{Process.pid}.sh"
     puts ""
+
 
     puts "\n==> Finding Stack..."
     stack = JSON.parse(`aws cloudformation describe-stacks --stack-name #{args[:environment_name]}-#{config['ServiceName']} || echo '{"Stacks":[]}'`)

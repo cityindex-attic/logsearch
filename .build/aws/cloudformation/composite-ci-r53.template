@@ -28,42 +28,6 @@
             "Description": "Availability Zone (AZ) to start the cluster in.",
             "Default": "us-east-1a"
         },
-        "CidrRange0": {
-            "Description": "The CIDR range for remote access to advertised services like tcp:80, tcp:443.",
-            "Type": "String",
-            "MinLength": "9",
-            "MaxLength": "18",
-            "Default": "127.0.0.1/32",
-            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-            "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
-        },
-        "CidrRange1": {
-            "Description": "The CIDR range for secondary remote access to advertised services like tcp:80, tcp:443.",
-            "Type": "String",
-            "MinLength": "9",
-            "MaxLength": "18",
-            "Default": "127.0.0.1/32",
-            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-            "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
-        },
-        "CidrRange2": {
-            "Description": "The CIDR range for tertiary remote access to advertised services like tcp:80, tcp:443.",
-            "Type": "String",
-            "MinLength": "9",
-            "MaxLength": "18",
-            "Default": "127.0.0.1/32",
-            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-            "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
-        },
-        "CidrRange3": {
-            "Description": "The CIDR range for quaternary remote access to advertised services like tcp:80, tcp:443.",
-            "Type": "String",
-            "MinLength": "9",
-            "MaxLength": "18",
-            "Default": "127.0.0.1/32",
-            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-            "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
-        },
         "ElasticsearchClusterName": {
             "Type": "String",
             "Description": "A unique name for the cluster (leave blank for \"{EnvironmentName}-{ServiceName}\").",
@@ -178,73 +142,14 @@
                         "/",
                         [
                             { "Ref": "S3StackBase" },
-                            "secgrp-single-default.template"
+                            "secgrp-core.template"
                         ]
                     ]
                 },
                 "Parameters" : {
-                    "CidrRange"         : { "Ref" : "CidrRange0" }
+                    "EnvironmentName"       : { "Ref" : "EnvironmentName" },
+                    "ServiceName"           : { "Ref" : "ServiceName" }
                 }
-            }
-        },
-        "SecurityGroup0Cidr1Ingress1" : {
-            "Type" : "AWS::EC2::SecurityGroupIngress",
-            "Properties" : {
-                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                "CidrIp" : { "Ref" : "CidrRange1" },
-                "IpProtocol" : "tcp",
-                "FromPort" : "80",
-                "ToPort" : "80"
-            }
-        },
-        "SecurityGroup0Cidr1Ingress2" : {
-            "Type" : "AWS::EC2::SecurityGroupIngress",
-            "Properties" : {
-                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                "CidrIp" : { "Ref" : "CidrRange1" },
-                "IpProtocol" : "tcp",
-                "FromPort" : "443",
-                "ToPort" : "443"
-            }
-        },
-        "SecurityGroup0Cidr2Ingress1" : {
-            "Type" : "AWS::EC2::SecurityGroupIngress",
-            "Properties" : {
-                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                "CidrIp" : { "Ref" : "CidrRange2" },
-                "IpProtocol" : "tcp",
-                "FromPort" : "80",
-                "ToPort" : "80"
-            }
-        },
-        "SecurityGroup0Cidr2Ingress2" : {
-            "Type" : "AWS::EC2::SecurityGroupIngress",
-            "Properties" : {
-                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                "CidrIp" : { "Ref" : "CidrRange2" },
-                "IpProtocol" : "tcp",
-                "FromPort" : "443",
-                "ToPort" : "443"
-            }
-        },
-        "SecurityGroup0Cidr3Ingress1" : {
-            "Type" : "AWS::EC2::SecurityGroupIngress",
-            "Properties" : {
-                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                "CidrIp" : { "Ref" : "CidrRange3" },
-                "IpProtocol" : "tcp",
-                "FromPort" : "80",
-                "ToPort" : "80"
-            }
-        },
-        "SecurityGroup0Cidr3Ingress2" : {
-            "Type" : "AWS::EC2::SecurityGroupIngress",
-            "Properties" : {
-                "GroupName" : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                "CidrIp" : { "Ref" : "CidrRange3" },
-                "IpProtocol" : "tcp",
-                "FromPort" : "443",
-                "ToPort" : "443"
             }
         },
         "ElasticsearchGroup" : {
