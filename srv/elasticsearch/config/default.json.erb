@@ -23,6 +23,10 @@
             "discovery.zen.minimum_master_nodes" : <%= ENV['APP_CONFIG_ES_MASTER_NODES_MIN'] %>,
         <% end %>
     <% end %>
+    <% if ENV['APP_CONFIG_ES_ALLOC_ATTR_LOGSEARCH'] and 'default' != ENV['APP_CONFIG_ES_ALLOC_ATTR_LOGSEARCH'] then %>
+        "node.logsearch" : "<%= ENV['APP_CONFIG_ES_ALLOC_ATTR_LOGSEARCH'] %>",
+        "cluster.routing.allocation.awareness.attributes" : "logsearch",
+    <% end %>
     "path.conf" : "<%= ENV['APP_APP_DIR'] %>/srv/elasticsearch/config/",
     "path.logs" : "<%= ENV['APP_LOG_DIR'] %>/elasticsearch",
     "path.data" : "<%= ENV['APP_DATA_DIR'] %>/elasticsearch",
