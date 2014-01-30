@@ -42,7 +42,7 @@ task :install_system_services do
 end
 
 desc "Deploy an AWS CloudFormation Stack."
-task :deploy_aws_cloudformation_stack, :environment_name, :config_dir, :passthru_cfn do |t, args|
+task :deploy_aws_cloudformation_stack, :environment_name, :service_name, :config_dir, :passthru_cfn do |t, args|
     deploy = DateTime.now.strftime '%Y%m%d%H%M%S'
     commit = `git rev-parse HEAD`.chomp
 
@@ -51,7 +51,7 @@ task :deploy_aws_cloudformation_stack, :environment_name, :config_dir, :passthru
     config = JSON.parse(IO.read("#{args[:config_dir]}/cloudformation.json"))
 
     deploy_ref = commit
-    deploy_tag = "release-#{args[:environment_name]}-#{config['ServiceName']}-#{deploy}"
+    deploy_tag = "release-#{args[:environment_name]}-#{args[:service_name]}-#{deploy}"
 
     puts "\n==> Tagging Release..."
     sh "git tag #{deploy_tag} #{commit}"
@@ -69,10 +69,10 @@ task :deploy_aws_cloudformation_stack, :environment_name, :config_dir, :passthru
 
 
     puts "\n==> Uploading Templates..."
-    sh "./bin/upload-aws-cloudformation .build/aws/cloudformation '#{config['S3Bucket']}' 'deploy/#{args[:environment_name]}/#{config['ServiceName']}/template/'"
+    sh "./bin/upload-aws-cloudformation .build/aws/cloudformation '#{config['S3Bucket']}' 'deploy/#{args[:environment_name]}/#{args[:service_name]}/template/'"
 
     if File.exists?("#{args[:config_dir]}/aws-cloudformation")
-        sh "./bin/upload-aws-cloudformation #{args[:config_dir]}/aws-cloudformation '#{config['S3Bucket']}' 'deploy/#{args[:environment_name]}/#{config['ServiceName']}/template/'"
+        sh "./bin/upload-aws-cloudformation #{args[:config_dir]}/aws-cloudformation '#{config['S3Bucket']}' 'deploy/#{args[:environment_name]}/#{args[:service_name]}/template/'"
     end
 
     puts ""
@@ -80,13 +80,13 @@ task :deploy_aws_cloudformation_stack, :environment_name, :config_dir, :passthru
 
     puts "\n==> Generating, Uploading post-script..."
     sh "( cd #{args[:config_dir]} && rake generate_post_provision_script ) > post-script-#{Process.pid}.sh"
-    sh "aws s3api put-object --bucket '#{config['S3Bucket']}' --key 'deploy/#{args[:environment_name]}/#{config['ServiceName']}/post-script.sh' --acl private --body post-script-#{Process.pid}.sh"
+    sh "aws s3api put-object --bucket '#{config['S3Bucket']}' --key 'deploy/#{args[:environment_name]}/#{args[:service_name]}/post-script.sh' --acl private --body post-script-#{Process.pid}.sh"
     sh "rm post-script-#{Process.pid}.sh"
     puts ""
 
 
     puts "\n==> Finding Stack..."
-    stack = JSON.parse(`aws cloudformation describe-stacks --stack-name #{args[:environment_name]}-#{config['ServiceName']} || echo '{"Stacks":[]}'`)
+    stack = JSON.parse(`aws cloudformation describe-stacks --stack-name #{args[:environment_name]}-#{args[:service_name]} || echo '{"Stacks":[]}'`)
     puts ""
 
     cmd = "aws cloudformation "
@@ -101,16 +101,16 @@ task :deploy_aws_cloudformation_stack, :environment_name, :config_dir, :passthru
         cmd += "create-stack"
     end
 
-    cmd += " --stack-name #{args[:environment_name]}-#{config['ServiceName']}"
-    cmd += " --template-url 'https://s3.amazonaws.com/#{config['S3Bucket']}/deploy/#{args[:environment_name]}/#{config['ServiceName']}/template/#{config['CloudFormationTemplate']}'"
+    cmd += " --stack-name #{args[:environment_name]}-#{args[:service_name]}"
+    cmd += " --template-url 'https://s3.amazonaws.com/#{config['S3Bucket']}/deploy/#{args[:environment_name]}/#{args[:service_name]}/template/#{config['CloudFormationTemplate']}'"
     cmd += " --capabilities \"CAPABILITY_IAM\""
     cmd += " --parameters"
 
-    config['CloudFormationParams']['S3StackBase'] = "https://s3.amazonaws.com/#{config['S3Bucket']}/deploy/#{args[:environment_name]}/#{config['ServiceName']}/template"
-    config['CloudFormationParams']['InstancePostScript'] = ". /app/.env && /usr/local/bin/aws s3api get-object --bucket #{config['S3Bucket']} --key deploy/#{args[:environment_name]}/#{config['ServiceName']}/post-script.sh /tmp/post-script.sh > /dev/null && /bin/bash /tmp/post-script.sh && rm /tmp/post-script.sh"
+    config['CloudFormationParams']['S3StackBase'] = "https://s3.amazonaws.com/#{config['S3Bucket']}/deploy/#{args[:environment_name]}/#{args[:service_name]}/template"
+    config['CloudFormationParams']['InstancePostScript'] = ". /app/.env && /usr/local/bin/aws s3api get-object --bucket #{config['S3Bucket']} --key deploy/#{args[:environment_name]}/#{args[:service_name]}/post-script.sh /tmp/post-script.sh > /dev/null && /bin/bash /tmp/post-script.sh && rm /tmp/post-script.sh"
     config['CloudFormationParams']['RepositoryCommit'] = deploy_ref
     config['CloudFormationParams']['EnvironmentName'] = args[:environment_name]
-    config['CloudFormationParams']['ServiceName'] = config['ServiceName']
+    config['CloudFormationParams']['ServiceName'] = args[:service_name]
 
     if args[:passthru_cfn]
         args[:passthru_cfn].gsub(/"$/, '').split('";').each do | v |
