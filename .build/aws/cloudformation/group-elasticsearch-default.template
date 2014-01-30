@@ -34,9 +34,9 @@
             "Description": "Maximum size of node auto scaling group within the cluster.",
             "Default": "4"
         },
-        "AvailabilityZone": {
-            "Type": "String",
-            "Description": "Availability Zone to start the node in.",
+        "AvailabilityZones": {
+            "Type": "CommaDelimitedList",
+            "Description": "Availability Zones to start the node in.",
             "Default": "us-east-1a"
         },
         "ElasticsearchClusterName": {
@@ -383,9 +383,7 @@
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Version": "2009-05-15",
             "Properties": {
-                "AvailabilityZones": [
-                    { "Ref" : "AvailabilityZone" }
-                ],
+                "AvailabilityZones": { "Ref" : "AvailabilityZones" },
                 "Cooldown": "300",
                 "DesiredCapacity": {
                     "Ref": "GroupDesiredCapacity"
