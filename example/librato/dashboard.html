@@ -1,0 +1,191 @@
+<html>
+    <head>
+        <title>Dashboard</title>
+
+        <script type="text/javascript" src="https://sdk.librato.com/librato-sdk-v0.3.0-min.js"
+            data-librato_email="...snip..."
+            data-librato_token="...snip..."></script>
+
+        <link rel="stylesheet" href="https:////netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+
+        <style type="text/css">
+            body {
+                background-color: #191919;
+                margin: 57px 4px 6px;
+            }
+
+            h2 {
+                border-bottom: #666666 solid 1px;
+                color: #999999;
+                font-size: 16px;
+                margin-top: 32px;
+                padding-left: 5px;
+                padding-bottom: 5px;
+            }
+
+            h3 {
+                border-bottom: #292929 solid 1px;
+                color: #999999;
+                font-size: 14px;
+                font-weight: normal;
+                padding: 9px 0 6px 8px;
+                margin: 0;
+            }
+
+            h3 a {
+                color: inherit;
+            }
+
+            h3 a:hover {
+                color: inherit;
+            }
+
+            .widget:hover h3 {
+                color: #DEDEDE;
+            }
+
+            .widget {
+                background-color: #252525;
+                border: #333333 outset 1px;
+                float: left;
+                height: 258px;
+                margin: 6px;
+                overflow: hidden;
+                position: relative;
+                width: 32.3%;
+            }
+
+            .highcharts-container > svg > text {
+                display: none;
+            }
+
+            /* http://nicolasgallagher.com/micro-clearfix-hack/ */
+            .cf:before,
+            .cf:after {
+                content: " "; /* 1 */
+                display: table; /* 2 */
+            }
+            
+            .cf:after {
+                clear: both;
+            }
+        </style>
+    </head>
+    <body>
+        <nav class="navbar navbar-inverse navbar-fixed-top bs-docs-nav" role="navigation">
+            <a class="navbar-brand" href="https://metrics.librato.com/dashboards/6266?source=dev.logsearch-dpb587-test1*">dev.logsearch-dpb587-test1</a>
+        </nav>
+
+        <div class="cf">
+            <div class="widgets">
+                <div class="widget">
+                    <h3><a href="https://metrics.librato.com/instruments/10600695?source=dev.logsearch-dpb587-test1*">Messages: Queued</a></h3>
+                    <div class="librato-metrics" data-duration="3600" data-instrument_id="10600695" data-source="dev.logsearch-dpb587-test1*" style="height:225px;"></div>
+                </div>
+                <div class="widget">
+                    <h3><a href="https://metrics.librato.com/instruments/11208212?source=dev.logsearch-dpb587-test1*">Messages: Realtime Lag</a></h3>
+                    <div class="librato-metrics" data-duration="3600" data-instrument_id="11208212" data-source="dev.logsearch-dpb587-test1*" style="height:225px;"></div>
+                </div>
+                <div class="widget">
+                    <h3><a href="https://metrics.librato.com/instruments/10601570?source=dev.logsearch-dpb587-test1*">Messages: Searchable</a></h3>
+                    <div class="librato-metrics" data-duration="3600" data-instrument_id="10601570" data-source="dev.logsearch-dpb587-test1.elasticsearch-data*" style="height:225px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cf">
+            <div class="widgets">
+                <div class="widget">
+                    <h3><a href="https://metrics.librato.com/instruments/10600705?source=dev.logsearch-dpb587-test1*">redis: Processing</a></h3>
+                    <div class="librato-metrics" data-duration="3600" data-instrument_id="10600705" data-source="dev.logsearch-dpb587-test1*" style="height:225px;"></div>
+                </div>
+                <div class="widget">
+                    <h3><a href="https://metrics.librato.com/instruments/10606539?source=dev.logsearch-dpb587-test1*">elasticsearch: Indexing</a></h3>
+                    <div class="librato-metrics" data-duration="3600" data-instrument_id="10606539" data-source="dev.logsearch-dpb587-test1*" style="height:225px;"></div>
+                </div>
+                <div class="widget">
+                    <h3><a href="https://metrics.librato.com/instruments/10579862?source=dev.logsearch-dpb587-test1*">elasticsearch: Searching</a></h3>
+                    <div class="librato-metrics" data-duration="3600" data-instrument_id="10579862" data-source="dev.logsearch-dpb587-test1*" style="height:225px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cf">
+            <div class="widgets">
+                <div class="widget">
+                    <h3><a href="https://metrics.librato.com/instruments/10605156?source=dev.logsearch-dpb587-test1*">elasticsearch: Available Disk Space</a></h3>
+                    <div class="librato-metrics" data-duration="3600" data-instrument_id="10605156" data-source="dev.logsearch-dpb587-test1*" style="height:225px;"></div>
+                </div>
+                <div class="widget">
+                    <h3><a href="https://metrics.librato.com/instruments/10601577?source=dev.logsearch-dpb587-test1*">elasticsearch: JVM Heap</a></h3>
+                    <div class="librato-metrics" data-duration="3600" data-instrument_id="10601577" data-source="dev.logsearch-dpb587-test1*" style="height:225px;"></div>
+                </div>
+                <div class="widget">
+                    <h3><a href="https://metrics.librato.com/instruments/10604711?source=dev.logsearch-dpb587-test1*">elasticsearch: JVM Non-Heap</a></h3>
+                    <div class="librato-metrics" data-duration="3600" data-instrument_id="10604711" data-source="dev.logsearch-dpb587-test1*" style="height:225px;"></div>
+                </div>
+            </div>
+        </div>
+<!--
+        <div class="cf">
+            <h3>elasticsearch</h3>
+
+            <div class="widgets">
+                <div class="widget">
+                    <h3><a href="https://metrics.librato.com/instruments/14438750?source=dev.logsearch-dpb587-test1.elasticsearch*">CPU</a></h3>
+                    <div class="librato-metrics" data-duration="3600" data-instrument_id="14438750" data-source="dev.logsearch-dpb587-test1.elasticsearch*" style="height:225px;"></div>
+                </div>
+                <div class="widget">
+                    <h3><a href="https://metrics.librato.com/instruments/6015470?source=dev.logsearch-dpb587-test1.elasticsearch*">Network</a></h3>
+                    <div class="librato-metrics" data-duration="3600" data-instrument_id="6015470" data-source="dev.logsearch-dpb587-test1.elasticsearch*" style="height:225px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cf">
+            <h3>logstash</h3>
+
+            <div class="widgets">
+                <div class="widget">
+                    <h3><a href="https://metrics.librato.com/instruments/14438750?source=dev.logsearch-dpb587-test1.logstash*">CPU</a></h3>
+                    <div class="librato-metrics" data-duration="3600" data-instrument_id="14438750" data-source="dev.logsearch-dpb587-test1.logstash*" style="height:225px;"></div>
+                </div>
+                <div class="widget">
+                    <h3><a href="https://metrics.librato.com/instruments/6015470?source=dev.logsearch-dpb587-test1.logstash*">Network</a></h3>
+                    <div class="librato-metrics" data-duration="3600" data-instrument_id="6015470" data-source="dev.logsearch-dpb587-test1.logstash*" style="height:225px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cf">
+            <h3>redis</h3>
+
+            <div class="widgets">
+                <div class="widget">
+                    <h3><a href="https://metrics.librato.com/instruments/14438750?source=dev.logsearch-dpb587-test1.redis*">CPU</a></h3>
+                    <div class="librato-metrics" data-duration="3600" data-instrument_id="14438750" data-source="dev.logsearch-dpb587-test1.redis*" style="height:225px;"></div>
+                </div>
+                <div class="widget">
+                    <h3><a href="https://metrics.librato.com/instruments/6015470?source=dev.logsearch-dpb587-test1.redis*">Network</a></h3>
+                    <div class="librato-metrics" data-duration="3600" data-instrument_id="6015470" data-source="dev.logsearch-dpb587-test1.redis*" style="height:225px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cf">
+            <h3>frontend</h3>
+
+            <div class="widgets">
+                <div class="widget">
+                    <h3><a href="https://metrics.librato.com/instruments/14438750?source=dev.logsearch-dpb587-test1.frontend*">CPU</a></h3>
+                    <div class="librato-metrics" data-duration="3600" data-instrument_id="14438750" data-source="dev.logsearch-dpb587-test1.frontend*" style="height:225px;"></div>
+                </div>
+                <div class="widget">
+                    <h3><a href="https://metrics.librato.com/instruments/6015470?source=dev.logsearch-dpb587-test1.frontend*">Network</a></h3>
+                    <div class="librato-metrics" data-duration="3600" data-instrument_id="6015470" data-source="dev.logsearch-dpb587-test1.frontend*" style="height:225px;"></div>
+                </div>
+            </div>
+        </div>
+-->
+    </body>
+</html>
