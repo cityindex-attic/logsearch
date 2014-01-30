@@ -259,7 +259,7 @@
                     "ServiceName"           : { "Ref" : "ServiceName" },
                     "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
                     "AvailabilityZones"      : {
-                        "Join" : [
+                        "Fn::Join" : [
                             ",",
                             [
                                 { "Ref" : "AvailabilityZone1" },
@@ -271,6 +271,7 @@
                     "CostCentre"            : { "Ref" : "CostCentre" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "GroupDesiredCapacity" : { "Ref" : "ElasticsearchDaytimeNodes" },
+                    "GroupMinSize" : "0",
                     "ElasticsearchNodeMode" : "data",
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },

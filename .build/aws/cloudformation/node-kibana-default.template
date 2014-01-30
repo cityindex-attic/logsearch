@@ -28,6 +28,11 @@
             "Description": "A name for the elasticsearch cluster (\"default\" becomes \"{EnvironmentName}-{ServiceName}\").",
             "Default" : "default"
         },
+        "ElasticsearchNodeMode": {
+            "Type": "String",
+            "Description": "Optionally specify \"master\" or \"data\" to restrict elasticsearch node capabilities.",
+            "Default": "default"
+        },
         "CostCentre": {
             "Type": "String",
             "Description": "A specific cost center to affiliate with resources.",
@@ -182,8 +187,8 @@
                                                 ]
                                             }, "\n",
                                             "export APP_CONFIG_ES_IPADDRESS=0.0.0.0", "\n",
-                                            "export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup" }, "\n",
-                                            "export APP_CONFIG_ES_EXTRA='\"node\":{\"master\":false,\"data\":false}'", "\n"
+                                            "export APP_CONFIG_ES_NODE_MODE=", { "Ref": "ElasticsearchNodeMode" }, "\n",
+                                            "export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup" }, "\n"
                                         ]
                                     ]
                                 },
