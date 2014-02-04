@@ -17,20 +17,23 @@ if 0 == len(env.hosts):
 
     conn = ec2.connect_to_region(os.environ['AWS_DEFAULT_REGION'])
 
-    filters = {}
+    filters = {
+        'instance-state-name' : 'running'
+    }
 
     if 'APP_ENVIRONMENT_NAME' in os.environ:
         filters['tag:Environment'] = os.environ['APP_ENVIRONMENT_NAME']
     if 'APP_SERVICE_NAME' in os.environ:
         filters['tag:Service'] = os.environ['APP_SERVICE_NAME']
     if 'APP_ROLE_NAME' in os.environ:
-        filters['tag:Service'] = os.environ['APP_ROLE_NAME']
+        filters['tag:Role'] = os.environ['APP_ROLE_NAME']
 
     reservations = conn.get_all_instances(filters = filters)
 
     for reservation in reservations:
         for instance in reservation.instances:
-            env.hosts.append(instance.ip_address)
+            if instance.ip_address:
+                env.hosts.append(instance.ip_address)
 
 # tasks
 
