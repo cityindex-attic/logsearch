@@ -280,7 +280,7 @@
                     "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
                     "SnapshotId"            : { "Ref" : "ElasticsearchSnapshotId" },
                     "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                    "ElasticsearchAllocAttrLogsearch" : "fulltime_zone2",
+                    "ElasticsearchAllocAttrLogsearch" : "daytime_elastic",
                     "VolumeSize"            : { "Ref" : "ElasticsearchDaytimeVolumeSize" }
                 }
             }
