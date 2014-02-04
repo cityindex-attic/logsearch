@@ -26,7 +26,12 @@
         "AvailabilityZone1": {
             "Type": "String",
             "Description": "Availability Zone (AZ) for cluster operations (primary).",
-            "Default": "us-east-1a"
+            "Default": "eu-east-1a"
+        },
+        "AvailabilityZone2": {
+            "Type": "String",
+            "Description": "Availability Zone (AZ) for cluster operations (secondary).",
+            "Default": "eu-east-1c"
         },
         "ElasticsearchClusterName": {
             "Type": "String",
@@ -58,7 +63,14 @@
             "AllowedPattern": "snap-([0-9a-f]{8})",
             "Default": "snap-00000000"
         },
-        "ElasticsearchVolumeSize": {
+        "ElasticsearchFulltimeVolumeSize": {
+            "Type": "Number",
+            "Description": "Conditional: Size (GiBs) of a new volume to use for the EBS-based elasticsearch node (only used when requested via snapshot id snap-00000000).",
+            "MinValue": "10",
+            "MaxValue": "1024",
+            "Default": "64"
+        },
+        "ElasticsearchDaytimeVolumeSize": {
             "Type": "Number",
             "Description": "Conditional: Size (GiBs) of a new volume to use for the EBS-based elasticsearch node (only used when requested via snapshot id snap-00000000).",
             "MinValue": "10",
@@ -70,10 +82,20 @@
             "Description": "Instance type for the EBS-based elasticsearch node.",
             "Default" : "m1.xlarge"
         },
-        "ElasticsearchGroupDesiredCapacity": {
+        "ElasticsearchFulltimeZone1Nodes": {
             "Type": "Number",
-            "Description": "Number of elasticsearch nodes for the cluster.",
-            "Default": "2"
+            "Description": "Number of elasticsearch nodes for the first availability zone.",
+            "Default": "1"
+        },
+        "ElasticsearchFulltimeZone2Nodes": {
+            "Type": "Number",
+            "Description": "Number of elasticsearch nodes for the second availability zone.",
+            "Default": "1"
+        },
+        "ElasticsearchDaytimeNodes": {
+            "Type": "Number",
+            "Description": "Number of active, additional elasticsearch nodes during daytime operations.",
+            "Default": "0"
         },
         "Redis0InstanceType": {
             "Type": "String",
@@ -152,7 +174,7 @@
                 }
             }
         },
-        "ElasticsearchGroup" : {
+        "ElasticsearchFulltimeZone1Group" : {
             "Type" : "AWS::CloudFormation::Stack",
             "Properties" : {
                 "TemplateURL" : {
@@ -168,12 +190,12 @@
                     "EnvironmentName"       : { "Ref" : "EnvironmentName" },
                     "ServiceName"           : { "Ref" : "ServiceName" },
                     "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
-                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone1" },
+                    "AvailabilityZones"      : { "Ref" : "AvailabilityZone1" },
                     "ElasticsearchClusterName"           : { "Ref" : "ElasticsearchClusterName" },
                     "CostCentre"            : { "Ref" : "CostCentre" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
-                    "GroupDesiredCapacity" : { "Ref" : "ElasticsearchGroupDesiredCapacity" },
-                    "ElasticsearchMasterNodesMin" : { "Ref" : "ElasticsearchGroupDesiredCapacity" },
+                    "GroupDesiredCapacity" : { "Ref" : "ElasticsearchFulltimeZone1Nodes" },
+                    "ElasticsearchNodeMode" : "data",
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },
                     "InstanceProfile"       : { "Ref" : "InstanceProfile" },
                     "InstanceType"          : { "Ref" : "ElasticsearchInstanceType" },
@@ -181,7 +203,85 @@
                     "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
                     "SnapshotId"            : { "Ref" : "ElasticsearchSnapshotId" },
                     "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                    "VolumeSize"            : { "Ref" : "ElasticsearchVolumeSize" }
+                    "ElasticsearchAllocAttrLogsearch" : "fulltime_zone1",
+                    "VolumeSize"            : { "Ref" : "ElasticsearchFulltimeVolumeSize" }
+                }
+            }
+        },
+        "ElasticsearchFulltimeZone2Group" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "Properties" : {
+                "TemplateURL" : {
+                    "Fn::Join": [
+                    "/",
+                    [
+                        { "Ref": "S3StackBase" },
+                        "group-elasticsearch-default.template"
+                    ]
+                    ]
+                },
+                "Parameters" : {
+                    "EnvironmentName"       : { "Ref" : "EnvironmentName" },
+                    "ServiceName"           : { "Ref" : "ServiceName" },
+                    "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
+                    "AvailabilityZones"      : { "Ref" : "AvailabilityZone2" },
+                    "ElasticsearchClusterName"           : { "Ref" : "ElasticsearchClusterName" },
+                    "CostCentre"            : { "Ref" : "CostCentre" },
+                    "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
+                    "GroupDesiredCapacity" : { "Ref" : "ElasticsearchFulltimeZone2Nodes" },
+                    "ElasticsearchNodeMode" : "data",
+                    "InstancePostScript"    : { "Ref" : "InstancePostScript" },
+                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
+                    "InstanceType"          : { "Ref" : "ElasticsearchInstanceType" },
+                    "KeyName"               : { "Ref" : "KeyName" },
+                    "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
+                    "SnapshotId"            : { "Ref" : "ElasticsearchSnapshotId" },
+                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
+                    "ElasticsearchAllocAttrLogsearch" : "fulltime_zone2",
+                    "VolumeSize"            : { "Ref" : "ElasticsearchFulltimeVolumeSize" }
+                }
+            }
+        },
+        "ElasticsearchDaytimeGroup" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "Properties" : {
+                "TemplateURL" : {
+                    "Fn::Join": [
+                    "/",
+                    [
+                        { "Ref": "S3StackBase" },
+                        "group-elasticsearch-default.template"
+                    ]
+                    ]
+                },
+                "Parameters" : {
+                    "EnvironmentName"       : { "Ref" : "EnvironmentName" },
+                    "ServiceName"           : { "Ref" : "ServiceName" },
+                    "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
+                    "AvailabilityZones"      : {
+                        "Fn::Join" : [
+                            ",",
+                            [
+                                { "Ref" : "AvailabilityZone1" },
+                                { "Ref" : "AvailabilityZone2" }
+                            ]
+                        ]
+                    },
+                    "ElasticsearchClusterName"           : { "Ref" : "ElasticsearchClusterName" },
+                    "CostCentre"            : { "Ref" : "CostCentre" },
+                    "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
+                    "GroupDesiredCapacity" : { "Ref" : "ElasticsearchDaytimeNodes" },
+                    "GroupMinSize" : "0",
+                    "ElasticsearchNodeMode" : "data",
+                    "InstancePostScript"    : { "Ref" : "InstancePostScript" },
+                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
+                    "InstanceType"          : { "Ref" : "ElasticsearchInstanceType" },
+                    "KeyName"               : { "Ref" : "KeyName" },
+                    "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
+                    "SnapshotId"            : { "Ref" : "ElasticsearchSnapshotId" },
+                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
+                    "ElasticsearchAllocAttrLogsearch" : "daytime_elastic",
+                    "VolumeSize"            : { "Ref" : "ElasticsearchDaytimeVolumeSize" }
                 }
             }
         },
@@ -231,6 +331,7 @@
                     "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
                     "AvailabilityZone"      : { "Ref" : "AvailabilityZone1" },
                     "ElasticsearchClusterName"           : { "Ref" : "ElasticsearchClusterName" },
+                    "ElasticsearchNodeMode" : "master",
                     "CostCentre"            : { "Ref" : "CostCentre" },
                     "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
                     "InstancePostScript"    : { "Ref" : "InstancePostScript" },

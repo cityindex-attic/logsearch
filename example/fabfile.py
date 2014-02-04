@@ -1,40 +1,68 @@
 import os
-from fabric.context_managers import shell_env
+from fabric.context_managers import shell_env, settings
 from fabric.api import put, run, sudo
 from fabric.state import env
 from fabric.utils import puts
 from boto import ec2
 
-# APP_CLUSTER_NAME=logsearch-test1 fab githead
+# APP_ENVIRONMENT_NAME=dev \
+# APP_SERVICE_NAME=logsearch-dpb587-test1 \
+#   fab -i ~/.ssh/mykey.pem -f example/fabfile.py \
+#     runfile:path=patch.sh,withsudo=1
 
 env.user = 'ubuntu'
-
-# optionally, auto-configure hosts from ec2
 
 if 0 == len(env.hosts):
     env.hosts = []
 
     conn = ec2.connect_to_region(os.environ['AWS_DEFAULT_REGION'])
 
-    reservations = conn.get_all_instances(filters = { 'tag:logsearch-cluster' : os.environ['APP_CLUSTER_NAME'] });
+    filters = {
+        'instance-state-name' : 'running'
+    }
+
+    if 'APP_ENVIRONMENT_NAME' in os.environ:
+        filters['tag:Environment'] = os.environ['APP_ENVIRONMENT_NAME']
+    if 'APP_SERVICE_NAME' in os.environ:
+        filters['tag:Service'] = os.environ['APP_SERVICE_NAME']
+    if 'APP_ROLE_NAME' in os.environ:
+        filters['tag:Role'] = os.environ['APP_ROLE_NAME']
+
+    reservations = conn.get_all_instances(filters = filters)
 
     for reservation in reservations:
         for instance in reservation.instances:
-            env.hosts.append(instance.ip_address)
+            if instance.ip_address:
+                env.hosts.append(instance.ip_address)
 
 # tasks
 
 def pushfile(path):
     put(
-        os.path.dirname(__file__) + '/' + path,
+        os.path.abspath(path),
         '/app/app/' + path,
-        mirror_local_mode=True
+        mirror_local_mode=True,
     )
+
+def runfile(path, withsudo = '0'):
+    put(
+        os.path.abspath(path),
+        '/tmp/fabfile-runfile',
+        mirror_local_mode=True,
+    )
+
+    with settings(warn_only = True):
+        if '1' == withsudo:
+            sudo('/tmp/fabfile-runfile')
+        else:
+            run('/tmp/fabfile-runfile')
+
+    run('rm /tmp/fabfile-runfile')
 
 def githead():
     run('cd /app/app/ && git rev-parse HEAD')
 
-def up2date():
+def gitpull():
     run('cd /app/app/ && git pull --ff-only')
 
 def uploadstats(bucket, start, stop, path = "report-stats/"):

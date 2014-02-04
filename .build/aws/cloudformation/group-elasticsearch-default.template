@@ -34,9 +34,9 @@
             "Description": "Maximum size of node auto scaling group within the cluster.",
             "Default": "4"
         },
-        "AvailabilityZone": {
-            "Type": "String",
-            "Description": "Availability Zone to start the node in.",
+        "AvailabilityZones": {
+            "Type": "CommaDelimitedList",
+            "Description": "Availability Zones to start the node in.",
             "Default": "us-east-1a"
         },
         "ElasticsearchClusterName": {
@@ -62,6 +62,16 @@
             "Type": "Number",
             "Description": "Minimum number of elasticsearch master nodes required.",
             "Default": "1"
+        },
+        "ElasticsearchNodeMode": {
+            "Type": "String",
+            "Description": "Optionally specify \"master\" or \"data\" to restrict elasticsearch node capabilities.",
+            "Default": "default"
+        },
+        "ElasticsearchAllocAttrLogsearch": {
+            "Type": "String",
+            "Description": "An allocation awareness attribute for elasticsearch (\"default\" becomes ignored).",
+            "Default": "default"
         },
         "InstancePostScript": {
             "Type": "String",
@@ -228,8 +238,10 @@
                                                 ]
                                             }, "\n",
                                             "export APP_CONFIG_ES_IPADDRESS=0.0.0.0", "\n",
+                                            "export APP_CONFIG_ES_NODE_MODE=", { "Ref": "ElasticsearchNodeMode" }, "\n",
                                             "export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup" }, "\n",
-                                            "export APP_CONFIG_ES_MASTER_NODES_MIN=", { "Ref": "ElasticsearchMasterNodesMin" }, "\n"
+                                            "export APP_CONFIG_ES_MASTER_NODES_MIN=", { "Ref": "ElasticsearchMasterNodesMin" }, "\n",
+                                            "export APP_CONFIG_ES_ALLOC_ATTR_LOGSEARCH=", { "Ref" : "ElasticsearchAllocAttrLogsearch" }, "\n"
                                         ]
                                     ]
                                 },
@@ -377,9 +389,7 @@
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Version": "2009-05-15",
             "Properties": {
-                "AvailabilityZones": [
-                    { "Ref" : "AvailabilityZone" }
-                ],
+                "AvailabilityZones": { "Ref" : "AvailabilityZones" },
                 "Cooldown": "300",
                 "DesiredCapacity": {
                     "Ref": "GroupDesiredCapacity"
@@ -464,6 +474,7 @@
             "Type": "AWS::CloudFormation::WaitCondition",
             "DependsOn": "AutoScalingGroup",
             "Properties": {
+                "Count" : { "Ref" : "GroupMinSize" },
                 "Handle": {
                     "Ref": "WaitConditionHandle"
                 },
