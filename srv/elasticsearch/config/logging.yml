@@ -17,13 +17,6 @@ appender:
             type: consolePattern
             conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
 
-    file:
-        type: file
-        file: "${path.logs}/process.log"
-        layout:
-            type: pattern
-            conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
-
     request_log_file:
         type: file
         file: "${path.logs}/requests.log"
