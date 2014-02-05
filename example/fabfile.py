@@ -26,7 +26,7 @@ if 0 == len(env.hosts):
     if 'APP_SERVICE_NAME' in os.environ:
         filters['tag:Service'] = os.environ['APP_SERVICE_NAME']
     if 'APP_ROLE_NAME' in os.environ:
-        filters['tag:Role'] = os.environ['APP_ROLE_NAME']
+        filters['tag:Name'] = os.environ['APP_ROLE_NAME']
 
     reservations = conn.get_all_instances(filters = filters)
 
@@ -71,6 +71,9 @@ def uploadstats(bucket, start, stop, path = "report-stats/"):
 
 def uptime():
     run('uptime')
+
+def df(disk = ''):
+    run('df -h %s' % disk)
 
 def whoami():
     run('whoami')
