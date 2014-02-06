@@ -2,7 +2,7 @@
 
 if [@type] == "ci_appmetrics" {
     grok {
-        match => [ "@message", "%{TIMESTAMP_ISO8601:time}\t(?<name>[^\t]+)\t%{GREEDYDATA:value}" ]
+        match => [ "@message", "(?m)%{TIMESTAMP_ISO8601:time}\t(?<name>[^\t]+)\t%{GREEDYDATA:value}" ]
         match => [ "@message", "%{TIMESTAMP_ISO8601:time}\t(?<name>[^\t]+)" ]
     }
 

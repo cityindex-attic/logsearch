@@ -71,10 +71,19 @@ class SimpleCiLog4netTest < Test::Unit::TestCase
     assert_equal 1, res['hits']['total']
   end
 
-  def test_search_by_message
+  def test_search_by_message1
     res = eslog_simple_search(
       nil,
       'message:"MCATP:False"'
+    )
+
+    assert_equal 1, res['hits']['total']
+  end
+
+  def test_search_by_message_newline
+    res = eslog_simple_search(
+      nil,
+      'message:"MC - CA:400220534 MI:15.181891073288527743228387400\\\\r\\\\n  Ind:False MCP:True MCATP:False"'
     )
 
     assert_equal 1, res['hits']['total']
