@@ -57,6 +57,15 @@
                     "message" : {
                         "type" : "string",
                         "index" : "analyzed"
+                    },
+                    "message_obj" : {
+                        "type" : "object",
+                        "properties" : {
+                            "Message" : {
+                                "type" : "string",
+                                "index" : "analyzed"
+                            }
+                        }
                     }
                 }
             }
