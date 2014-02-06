@@ -18,6 +18,8 @@ if ! (which redis-server 1>/dev/null 2>&1) ; then
     sudo service redis-server stop
     sudo rm /etc/init/redis-server.conf
     sudo rm /etc/init.d/redis-server
+    
+    mkdir -p /app/data/redis
 fi
 
 echo "redis:$(redis-server -v | awk -F '=' '/v=/ { print $2 }')"
