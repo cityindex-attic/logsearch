@@ -131,7 +131,7 @@ task :deploy_aws_cloudformation_stack, :environment_name, :service_name, :config
         cmd += " ParameterKey=#{k.shellescape},ParameterValue=#{v.shellescape}"
     end
 
-    #sh cmd
+    sh cmd
 end
 
 def process_erb(input, output, args = nil)
