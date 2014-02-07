@@ -41,6 +41,51 @@ task :install_system_services do
     sh "sed -i '1s/^/limit nofile 32000 64000\\n/' /etc/init/app-elasticsearch-1.conf"
 end
 
+namespace :test do
+    desc "Validate CloudFormation templates via JSON and AWS API"
+    task :cloudformation_template_syntax, :path do | t, args |
+        failed = 0
+
+        Dir.glob(args[:path]).each_with_index do | path, index |
+            puts "" if index > 0
+            puts "> #{path}"
+
+            begin
+                JSON.parse(IO.read(path))
+            rescue Exception => e
+                puts "X ERROR: json syntax is not valid"
+                puts "X #{e.message}"
+
+                failed += 1
+
+                next
+            end
+
+            puts "+ json syntax is valid"
+
+
+            cloudformation = `aws cloudformation validate-template --template-body file://#{path} 2>&1`
+
+            if 0 < $?.to_i then
+                puts "X ERROR: cloudformation syntax is not valid"
+                puts "X #{cloudformation}"
+
+                failed += 1
+
+                next
+            end
+
+            JSON.parse(cloudformation)
+
+            puts "+ cloudformation syntax is valid"
+        end
+
+        if 0 < failed then
+            exit 1
+        end
+    end
+end
+
 desc "Deploy an AWS CloudFormation Stack."
 task :deploy_aws_cloudformation_stack, :environment_name, :service_name, :config_dir, :passthru_cfn do |t, args|
     deploy = DateTime.now.strftime '%Y%m%d%H%M%S'
