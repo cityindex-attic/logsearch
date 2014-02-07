@@ -41,6 +41,11 @@ task :install_system_services do
     sh "sed -i '1s/^/limit nofile 32000 64000\\n/' /etc/init/app-elasticsearch-1.conf"
 end
 
+desc "Upload a directory of CloudFormation templates."
+task :upload_cloudformation_templates, :local, :bucket, :prefix do | t, args |
+    sh "aws s3 sync --exclude '*' --include '*.template' #{args[:local]} s3://#{args[:bucket]}/#{args[:prefix]}"
+end
+
 desc "Deploy an AWS CloudFormation Stack."
 task :deploy_aws_cloudformation_stack, :environment_name, :service_name, :config_dir, :passthru_cfn do |t, args|
     deploy = DateTime.now.strftime '%Y%m%d%H%M%S'
@@ -69,10 +74,12 @@ task :deploy_aws_cloudformation_stack, :environment_name, :service_name, :config
 
 
     puts "\n==> Uploading Templates..."
-    sh "./bin/upload-aws-cloudformation .build/aws/cloudformation '#{config['S3Bucket']}' 'deploy/#{args[:environment_name]}/#{args[:service_name]}/template/'"
+
+    Rake::Task['upload_cloudformation_templates'].invoke '.build/aws/cloudformation', config['S3Bucket'], "deploy/#{args[:environment_name]}/#{args[:service_name]}/template/"
 
     if File.exists?("#{args[:config_dir]}/aws-cloudformation")
-        sh "./bin/upload-aws-cloudformation #{args[:config_dir]}/aws-cloudformation '#{config['S3Bucket']}' 'deploy/#{args[:environment_name]}/#{args[:service_name]}/template/'"
+        Rake::Task['upload_cloudformation_templates'].reenable
+        Rake::Task['upload_cloudformation_templates'].invoke "#{args[:config_dir]}/aws-cloudformation", config['S3Bucket'], "deploy/#{args[:environment_name]}/#{args[:service_name]}/template/"
     end
 
     puts ""
@@ -124,7 +131,7 @@ task :deploy_aws_cloudformation_stack, :environment_name, :service_name, :config
         cmd += " ParameterKey=#{k.shellescape},ParameterValue=#{v.shellescape}"
     end
 
-    sh cmd
+    #sh cmd
 end
 
 def process_erb(input, output, args = nil)
