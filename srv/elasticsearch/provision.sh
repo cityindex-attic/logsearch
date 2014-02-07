@@ -42,7 +42,7 @@ if [ ! -e $APP_VENDOR_DIR/elasticsearch/plugins/jetty-0.90.0 ] ; then
     echo "Downloading elasticsearch-jetty-0.90.0..."
 
     pushd $APP_VENDOR_DIR/elasticsearch/
-    ./bin/plugin -url https://oss-es-plugins.s3.amazonaws.com/elasticsearch-jetty/elasticsearch-jetty-0.90.0.zip -install
+    ./bin/plugin -url https://oss-es-plugins.s3.amazonaws.com/elasticsearch-jetty/elasticsearch-jetty-0.90.0.zip -install jetty-0.90.0
     popd
 fi
 
