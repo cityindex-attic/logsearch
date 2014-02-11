@@ -1,0 +1,229 @@
+#!/usr/bin/env python
+
+import argparse
+import boto.ec2
+import os
+import simplejson
+import subprocess
+import sys
+import time
+import urllib2
+
+cli = argparse.ArgumentParser(description='Utility for provisioning and mounting an AWS EBS Volume to localhost. This command is idempotent.')
+cli.add_argument('envname', help='Environment usage for (e.g. dev, prod, test)')
+cli.add_argument('servicename', help='Service usage (e.g. tle-www-blog)')
+cli.add_argument('rolename', help='Role usage (e.g. mysql/data)')
+cli.add_argument('device', help='Local device name to mount on')
+cli.add_argument('path', help='File system path to mount in')
+cli.add_argument('--fstab', help='Include entry in file system tables', action='store_true')
+cli.add_argument('--mkfs-type', help='Disk format for new volumes (passed as -t to mkfs)', metavar='TYPE')
+cli.add_argument('--mkfs-args', help='Arbitrary format options passed to mkfs for new volumes', metavar='OPTS')
+cli.add_argument('--volume-size', help='Size for new volumes; in GB', metavar='N', type=int)
+cli.add_argument('--volume-type', help='Volume type for new volumes (e.g. standard, io1)', metavar='TYPE')
+cli.add_argument('--volume-iops', help='IOPS for new, provisioned volumes', metavar='N', type=int)
+cli.add_argument('--volume-snapshot-id', help='Snapshot ID for new volumes (e.g. snap-abcd1234)', metavar='SNAPSHOT_ID')
+cli.add_argument('--verbose', '-v', action='count', help='Use multiple times to increase verbosity: none = quiet, 1 = completions, 2 = summaries, 3 = details')
+
+cliargs = cli.parse_args()
+
+
+#
+# validate our arguments
+#
+
+devicemap = {
+  '/dev/xvdf' : '/dev/sdf',
+  '/dev/xvdg' : '/dev/sdg',
+  '/dev/xvdh' : '/dev/sdh',
+  '/dev/xvdi' : '/dev/sdi',
+  '/dev/xvdj' : '/dev/sdj',
+  '/dev/xvdk' : '/dev/sdk',
+  '/dev/xvdl' : '/dev/sdl',
+  '/dev/xvdm' : '/dev/sdm',
+  '/dev/xvdn' : '/dev/sdn',
+  '/dev/xvdo' : '/dev/sdo',
+  '/dev/xvdp' : '/dev/sdp',
+}
+
+if cliargs.device not in devicemap:
+  raise RuntimeError('Device "%s" is not available.' % cliargs.device)
+
+
+#
+# setup our basics
+#
+
+DEVNULL = open(os.devnull, 'w')
+
+if cliargs.verbose > 2:
+  TASK_STDOUT = None
+  TASK_STDERR = None
+else:
+  TASK_STDOUT = DEVNULL
+  TASK_STDERR = DEVNULL
+
+ec2instance = simplejson.loads(urllib2.urlopen('http://169.254.169.254/latest/dynamic/instance-identity/document').read())
+ec2api = boto.ec2.connect_to_region(ec2instance['region'])
+
+
+#
+# verify we can/should mount to the device
+#
+
+mounted = False
+
+if 0 == subprocess.call('/sbin/fdisk -l %s | /bin/grep "%s"' % ( cliargs.device, cliargs.device ), shell=True, stdout=DEVNULL, stderr=DEVNULL):
+  #
+  # something's mounted; see if it's what we want
+  #
+
+  volume = ec2api.get_all_volumes(filters = {
+    'attachment.instance-id' : ec2instance['instanceId'],
+    'attachment.device' : devicemap[cliargs.device],
+  }).pop()
+
+  if 'Environment' in volume.tags and 'Service' in volume.tags and 'Name' in volume.tags \
+  and cliargs.envname == volume.tags['Environment'].encode('ascii') \
+  and cliargs.servicename == volume.tags['Service'].encode('ascii') \
+  and cliargs.rolename == volume.tags['Name'].encode('ascii'):
+    mounted = True
+  else:
+    raise RuntimeError('Device "%s" already has volume "%s" mounted.' % ( cliargs.device, volume.id ))
+
+if False == mounted:
+  #
+  # find or create an available volume
+  #
+
+  volume = None
+  volume_needs_tagging = False
+  volumes_available = ec2api.get_all_volumes(filters = {
+    'availability-zone' : ec2instance['availabilityZone'].encode('ascii'),
+    'status' : 'available',
+    'tag:Environment' : cliargs.envname,
+    'tag:Service' : cliargs.servicename,
+    'tag:Name' : cliargs.rolename,
+  })
+
+  if 0 == len(volumes_available):
+    if cliargs.verbose > 1:
+      sys.stdout.write('creating volume...\n')
+
+    dargs = {
+      'zone' : ec2instance['availabilityZone'].encode('ascii'),
+    }
+
+    if None != cliargs.volume_iops:
+      dargs['iops'] = cliargs.volume_iops
+    if None != cliargs.volume_size:
+      dargs['size'] = cliargs.volume_size
+    if None != cliargs.volume_snapshot_id and 'snap-00000000' != cliargs.volume_snapshot_id:
+      dargs['snapshot'] = cliargs.volume_snapshot_id
+    if None != cliargs.volume_type:
+      dargs['volume_type'] = cliargs.volume_type
+
+    volume = ec2api.create_volume(**dargs)
+
+    volume_needs_tagging = True
+
+    while True:
+      statuscheck = ec2api.get_all_volumes(volume.id).pop()
+
+      if 'available' == statuscheck.status:
+        break
+
+      time.sleep(2)
+
+    if cliargs.verbose > 0:
+      sys.stdout.write('created volume (%s)\n' % volume.id)
+
+  else:
+    volume = volumes_available.pop()
+
+  #
+  # physical mount
+  #
+
+  if cliargs.verbose > 1:
+    sys.stdout.write('physically mounting...\n')
+
+  ec2api.attach_volume(volume.id, ec2instance['instanceId'], devicemap[cliargs.device])
+
+  while True:
+    statuscheck = ec2api.get_all_volumes(volume.id).pop()
+
+    if 'in-use' == statuscheck.status:
+      break
+
+    time.sleep(2)
+
+  # just because aws says it's available, doesn't mean the os sees it
+
+  while True:
+    if 0 == subprocess.call('/sbin/fdisk -l %s | /bin/grep "%s"' % ( cliargs.device, cliargs.device ), shell=True, stdout=DEVNULL, stderr=DEVNULL):
+      break
+
+    time.sleep(2)
+
+  if cliargs.verbose > 0:
+    sys.stdout.write('physically mounted (%s)\n' % cliargs.device)
+
+  #
+  # tag new volumes
+  #
+
+  if True == volume_needs_tagging:
+    # deferred to avoid race condition of "claimed", but not mounted
+    ec2api.create_tags(volume.id, {
+      'Environment' : cliargs.envname,
+      'Service' : cliargs.servicename,
+      'Name' : cliargs.rolename,
+    })
+
+
+#
+# disk formatting
+#
+
+if subprocess.call('/sbin/dumpe2fs %s' % ( cliargs.device ), shell=True, stdout=DEVNULL, stderr=DEVNULL):
+  if cliargs.verbose > 1:
+    sys.stdout.write('formatting disk...\n')
+
+  mkfs_args = ''
+
+  if None != cliargs.mkfs_args:
+    mkfs_args = cliargs.mkfs_args
+
+  subprocess.check_call('/sbin/mkfs -t "%s" %s %s' % ( cliargs.mkfs_type, mkfs_args, cliargs.device ), shell=True, stdout=TASK_STDOUT, stderr=TASK_STDERR)
+
+  if cliargs.verbose > 0:
+    sys.stdout.write('formatted disk (%s)\n' % cliargs.mkfs_type)
+
+
+#
+# logical mount
+#
+
+if subprocess.call('/bin/cat /proc/mounts | /bin/grep %s' % cliargs.device, shell=True, stdout=DEVNULL, stderr=DEVNULL):
+  if not os.path.exists(cliargs.path):
+    os.mkdir(cliargs.path)
+
+  if cliargs.verbose > 1:
+    sys.stdout.write('logically mounting...\n')
+
+  subprocess.check_call('/bin/mount %s %s' % ( cliargs.device, cliargs.path ), shell=True, stdout=TASK_STDOUT, stderr=TASK_STDERR)
+
+  if cliargs.verbose > 0:
+    sys.stdout.write('logically mounted (%s)\n' % cliargs.path)
+
+
+#
+# fstab update
+#
+
+if cliargs.fstab:
+  if subprocess.call('/bin/grep "%s" /etc/fstab' % ( cliargs.device ), shell=True, stdout=DEVNULL, stderr=DEVNULL):
+    subprocess.check_call('/bin/echo "%s    %s    %s    defaults    0    2" >> /etc/fstab' % ( cliargs.device, cliargs.path, cliargs.mkfs_type ), shell=True, stdout=TASK_STDOUT, stderr=TASK_STDERR)
+
+    if cliargs.verbose > 0:
+      sys.stdout.write('fstab updated\n')

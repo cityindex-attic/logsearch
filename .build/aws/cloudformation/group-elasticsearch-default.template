@@ -261,7 +261,7 @@
                                             "pip install --upgrade boto", "\n",
                                             "mkdir -p /app/data", "\n",
                                             "chown ubuntu:ubuntu /app/data", "\n",
-                                            "/usr/bin/fs-mount-aws-ebs",
+                                            "/app/app/bin/aws-ec2-ebs-mount",
                                                 " --fstab",
                                                 " --mkfs-type ext4",
                                                 " --aws-ebs-size ", { "Ref" : "VolumeSize" },
@@ -311,19 +311,6 @@
                                 },
                                 "group" : "ubuntu",
                                 "owner" : "ubuntu",
-                                "mode" : "000555"
-                            },
-                            "/usr/bin/fs-mount-aws-ebs" : {
-                                "source" : {
-                                    "Fn::Join": [
-                                        "",
-                                        [
-                                            "https://raw2.github.com/dpb587/scs-docker-utils/5829bfd507bfd549cf89b82ba87e36dfcbdab817/bin/fs-mount-aws-ebs"
-                                        ]
-                                    ]
-                                },
-                                "group" : "root",
-                                "owner" : "root",
                                 "mode" : "000555"
                             }
                         }
