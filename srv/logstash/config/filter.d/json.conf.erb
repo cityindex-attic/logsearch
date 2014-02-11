@@ -11,7 +11,7 @@ if [@type] == "json" {
     }
 	
     ruby {
-        code => "event['message_obj'] = event.remove('message') if event.include?('message') and event['message'].is_a? Hash"
+        code => "event['message_data'] = event.remove('message') if event.include?('message') and event['message'].is_a? Hash"
     }
 
 }

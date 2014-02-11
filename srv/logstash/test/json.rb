@@ -30,19 +30,19 @@ class SimpleJsonDefaultTest < Test::Unit::TestCase
     assert_equal 1, res['hits']['total']
   end
 
-  def test_message_obj_message
+  def test_message_data_message
     res = eslog_simple_search(
       nil,
-      'message_obj.Message:"Quote has been accepted."'
+      'message_data.Message:"Quote has been accepted."'
     )
 
     assert_equal 1, res['hits']['total']
   end
 
-  def test_message_obj_message_partial
+  def test_message_data_message_partial
     res = eslog_simple_search(
       nil,
-      'message_obj.Message:"accepted"'
+      'message_data.Message:"accepted"'
     )
 
     assert_equal 1, res['hits']['total']
