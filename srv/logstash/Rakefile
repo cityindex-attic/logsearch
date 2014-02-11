@@ -89,6 +89,7 @@ namespace :logstash do
       puts "==> Running logstash tests"
 
       Rake::Task["logstash:test:common:trimming"].invoke
+      Rake::Task["logstash:test:type:json"].invoke
       Rake::Task["logstash:test:type:nginx_combined"].invoke
       Rake::Task["logstash:test:type:iis_default"].invoke
       Rake::Task["logstash:test:type:iis_tradingapi"].invoke
@@ -111,6 +112,11 @@ namespace :logstash do
     end
 
     namespace :type do
+      desc "Run json tests"
+      task :json => "elasticsearch:delete_all_data_by_query" do
+        run_integration_test("json", :redis, 2)
+      end
+
       desc "Run nginx_combined tests"
       task :nginx_combined => "elasticsearch:delete_all_data_by_query" do
         run_integration_test("nginx_combined", :redis, 5)
