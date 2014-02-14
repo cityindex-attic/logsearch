@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+
+import argparse
+import boto.ec2
+import os
+import simplejson
+import subprocess
+import sys
+import time
+import urllib2
+
+cli = argparse.ArgumentParser(description='Utility for restoring a set of snapshots, optionally under a different environment and service name.')
+cli.add_argument('description', help='Snapshot description')
+cli.add_argument('envname', help='Environment name for (e.g. dev, prod, test)')
+cli.add_argument('servicename', help='Service name (e.g. logsearch)')
+cli.add_argument('rolename', help='Role name (e.g. elasticsearch)', nargs='?')
+cli.add_argument('--availability-zone', help='AWS Availability Zone to create the volumes', required=True)
+cli.add_argument('--clone-envname', help='New environment name for (e.g. dev, prod, test)')
+cli.add_argument('--clone-servicename', help='New service name (e.g. logsearch)')
+cli.add_argument('--clone-rolename', help='New role name (e.g. elasticsearch)')
+cli.add_argument('--verbose', '-v', action='count', help='Use multiple times to increase verbosity: none = quiet, 1 = completions, 2 = summaries, 3 = details')
+
+cliargs = cli.parse_args()
+
+
+#
+# validate our arguments
+#
+
+ec2api = boto.ec2.connect_to_region(os.environ['AWS_DEFAULT_REGION'])
+
+
+#
+# find relevant snapshots
+#
+
+filters = {
+  'description' : cliargs.description,
+  'tag:Environment' : cliargs.envname,
+  'tag:Service' : cliargs.servicename,
+}
+
+if None != cliargs.rolename:
+  filters['tag:Name'] = cliargs.rolename
+
+if cliargs.verbose > 1:
+  sys.stdout.write('enumerating snapshots...\n')
+
+snapshots = ec2api.get_all_snapshots(filters = filters)
+
+if cliargs.verbose > 0:
+  sys.stdout.write('enumerated snapshots\n')
+
+
+#
+# create volumes
+#
+
+for snapshot in snapshots:
+  if cliargs.verbose > 1:
+    sys.stdout.write('creating volume from %s/%s...\n' % ( snapshot.id, snapshot.tags['Name'] ))
+
+  volume = ec2api.create_volume(snapshot.volume_size, cliargs.availability_zone, snapshot=snapshot.id)
+
+  if cliargs.verbose > 0:
+    sys.stdout.write('created volume from %s/%s (%s)\n' % ( snapshot.id, snapshot.tags['Name'], volume.id ))
+
+
+  newtags = snapshot.tags
+
+  if None != cliargs.clone_envname:
+    newtags['Environment'] = cliargs.clone_envname
+  if None != cliargs.clone_servicename:
+    newtags['Service'] = cliargs.clone_servicename
+  if None != cliargs.clone_rolename:
+    newtags['Name'] = cliargs.clone_rolename
+
+  if cliargs.verbose > 1:
+    sys.stdout.write('adding volume tags to %s...\n' % volume.id)
+
+  ec2api.create_tags(volume.id, snapshot.tags)
+
+  if cliargs.verbose > 0:
+    sys.stdout.write('added volume tags to %s\n' % volume.id)

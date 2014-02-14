@@ -10,10 +10,10 @@ import time
 import urllib2
 
 cli = argparse.ArgumentParser(description='Utility for snapshotting a collection of volumes for a particular environment/service. If a role is not specified, a snapshot is created for all volumes. This copies over volume tags to the snapshot.')
+cli.add_argument('description', help='Snapshot description')
 cli.add_argument('envname', help='Environment name for (e.g. dev, prod, test)')
 cli.add_argument('servicename', help='Service name (e.g. logsearch)')
 cli.add_argument('rolename', help='Role name (e.g. elasticsearch)', nargs='?')
-cli.add_argument('--description', help='Snapshot Description')
 cli.add_argument('--verbose', '-v', action='count', help='Use multiple times to increase verbosity: none = quiet, 1 = completions, 2 = summaries, 3 = details')
 
 cliargs = cli.parse_args()

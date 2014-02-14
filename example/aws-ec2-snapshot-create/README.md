@@ -53,4 +53,4 @@ the `AWS_DEFAULT_REGION` environment variable for API calls.
 
     docker run -e AWS_DEFAULT_REGION -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY \
         logsearch/aws-ec2-snapshot-create \
-        -v --description 'Hot Backup' live logsearch
+        -v 'Hot Backup' live logsearch
