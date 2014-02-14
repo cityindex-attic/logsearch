@@ -7,7 +7,6 @@ require 'tempfile'
 require 'shellwords'
 require 'date'
 
-
 # args: resource parameter newsize esattrval replication
 
 # setup
@@ -204,7 +203,8 @@ cmd += " --template-body file://#{cfntpl.path.shellescape}"
 cmd += " --parameters '#{JSON.generate(newparams)}'"
 
 if 0 != adjusting_nodes_count then
-  putlog " > #{JSON.generate(JSON.parse(`#{cmd}`))}"
+  result = JSON.generate(JSON.parse(`#{cmd}`))
+  putlog " > #{result}"
 end
 
 cfntpl.unlink
