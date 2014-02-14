@@ -14,7 +14,7 @@ require 'date'
 @elasticsearch = Net::HTTP.new 'localhost', 9200
 
 def putlog(msg)
-  puts "#{DateTime.now.strftime('%FT%T')}#{msg}"
+  puts "#{DateTime.now.new_offset(0).strftime('%FT%TZ')}#{msg}"
 end
 
 def update_replication_requirements()
