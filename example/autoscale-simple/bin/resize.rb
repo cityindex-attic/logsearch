@@ -145,7 +145,7 @@ if adjusting_nodes_count < 0 then
     significant_nodes[ARGV[3]].each do | id, node |
       state['routing_nodes']['nodes'][id].each do | shard |
         if shard['primary'] then
-          putlog " > node #{id} has a primary shard: index '#{shard[index]}', shard '#{shard}', replica '#{replicaidx}'"
+          putlog " > node #{id} has a primary shard: index '#{shard['index']}', shard '#{shard['shard']}'"
         end
       end
     end
