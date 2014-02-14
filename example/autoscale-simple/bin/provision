@@ -27,7 +27,7 @@ if [[ ! "$(ruby --version)" =~ "ruby 1.9.3" ]]; then
 fi
 
 if [[ "$(gem query -n bundler -d | wc -l)" =~ "1" ]]; then
-  gem install bundle --no-ri --no-rdoc
+  gem install bundler --no-ri --no-rdoc
 fi
 
 if ! (which python 1>/dev/null 2>&1) ; then

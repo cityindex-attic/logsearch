@@ -1,0 +1,367 @@
+#!/usr/bin/env ruby
+
+require 'dotenv'
+require 'json'
+require 'net/http'
+require 'tempfile'
+require 'shellwords'
+require 'date'
+require 'methadone'
+
+include Methadone::Main
+
+def putlog(msg)
+  puts "#{DateTime.now.new_offset(0).strftime('%FT%TZ')}#{msg}"
+end
+
+def review_allocations(elasticsearch, node_list, replica_attribute_name)
+  putlog ' + reviewing allocations...'
+
+  req_state = elasticsearch.start do | http |
+    http.get '/_cluster/state?filter_nodes&filter_metadata&filter_blocks&filter_indices', { 'Content-Type' => 'application/json' }
+  end
+
+  state = JSON.parse(req_state.body)
+
+  if node_list.has_key? replica_attribute_name then
+    node_list[replica_attribute_name].each do | id, node |
+      state['routing_nodes']['nodes'][id].each do | shard |
+        if shard['primary'] then
+          putlog " > node #{id} has a primary shard: index '#{shard['index']}', shard '#{shard['shard']}'"
+        end
+      end
+    end
+  end
+
+  putlog ' - reviewed allocations'
+end
+
+def wait_for_green_cluster(elasticsearch)
+  putlog " + cluster is not yet 'green'..."
+
+  while true do
+    sleep 10
+
+    found = false
+
+    req_health = elasticsearch.start do | http |
+      http.get '/_cluster/health', { 'Content-Type' => 'application/json' }
+    end
+
+    health = JSON.parse(req_health.body)
+
+    if 'green' == health['status'] then
+      break
+    end
+  end
+
+  putlog " - cluster is 'green'"
+end
+
+def update_replication_requirements(elasticsearch, replicas)
+  putlog ' + updating replication requirements...'
+
+  elasticsearch.start do | http |
+    req = Net::HTTP::Put.new(
+      '/_settings',
+      initheader = { 'Accept' => 'application/json' }
+    )
+    req.body = JSON.generate({
+      'index' => {
+        'number_of_replicas' => replicas,
+      },
+    })
+
+    http.request req
+  end
+
+  putlog ' - updated replication requirements'
+end
+
+def disable_allocations(elasticsearch)
+  putlog ' + disabling allocations...'
+
+  elasticsearch.start do | http |
+    http.post '/_cluster/settings', JSON.generate({
+        'transient' => {
+          'cluster.routing.allocation.disable_allocation' => true,
+        },
+      }), { 'Accept' => 'application/json' }
+  end
+
+  putlog ' - disabled allocations'
+end
+
+def enable_allocations(elasticsearch)
+  putlog ' + enabling allocations...'
+
+  elasticsearch.start do | http |
+    http.post '/_cluster/settings', JSON.generate({
+        'transient' => {
+          'cluster.routing.allocation.disable_allocation' => false,
+        },
+      }), { 'Accept' => 'application/json' }
+  end
+
+  putlog ' - enabled allocations'
+end
+
+def update_stack(stack_name, template, params)
+  putlog ' + updating stack...'
+
+  cfntpl = Tempfile.new('cfntpl')
+  cfntpl.write(JSON.generate(template))
+
+  cmd = 'aws cloudformation update-stack'
+  cmd += " --stack-name #{stack_name}"
+  cmd += " --template-body file://#{cfntpl.path.shellescape}"
+  cmd += " --parameters '#{JSON.generate(params)}'"
+
+  result = JSON.generate(JSON.parse(`#{cmd}`))
+  putlog " > #{result}"
+
+  cfntpl.unlink
+
+  putlog ' - updated stack'
+end
+
+def wait_for_nodes(elasticsearch, node_list, replica_attribute_name, expected_change)
+  putlog ' + nodes are not yet ready...'
+
+  node_count = node_list.reduce(| memo, node | memo += node.size)
+  expected_count = node_count + expected_change
+
+  while true do
+    sleep 2
+
+    req_nodes = elasticsearch.start do | http |
+      http.get '/_cluster/nodes', { 'Content-Type' => 'application/json' }
+    end
+
+    nodes = JSON.parse(req_nodes.body)
+
+    # look for new nodes
+    nodes['nodes'].each do | id, node |
+      if node['attributes'].has_key? replica_attribute_name then
+        if not node_list.has_key? node['attributes'][replica_attribute_name] then
+          node_list[node['attributes'][replica_attribute_name]] = {}
+        end
+
+        if not node_list[node['attributes'][replica_attribute_name]].has_key? id then
+          ip = node['transport_address'].gsub(/inet\[\/([^:]+):\d+\]/, '\1')
+
+          putlog " > node #{id} (#{ip}) joined the cluster"
+
+          node_list[node['attributes'][replica_attribute_name]][id] = node
+          node_count += 1
+        end
+      end
+    end
+
+    # look for dropped nodes
+    node_list.each do | attr, attrnodes |
+      attrnodes.each do | id, node |
+        if not nodes['nodes'].has_key? id then
+          ip = node['transport_address'].gsub(/inet\[\/([^:]+):\d+\]/, '\1')
+          putlog " > node #{id} (#{ip}) left the cluster"
+
+          node_list[attr].delete(id)
+          node_count -= 1
+        end
+      end
+    end
+
+    if node_count == expected_count then
+      break
+    end
+  end
+
+  putlog ' - nodes are ready'
+end
+
+def discover_nodes(elasticsearch, replica_attribute_name, replica_attribute_value)
+  req_nodes = elasticsearch.start do | http |
+    http.get "/_cluster/nodes", { 'Content-Type' => 'application/json' }
+  end
+
+  nodes = JSON.parse(req_nodes.body)
+
+  node_list = {}
+
+  putlog ' + discovering nodes...'
+
+  nodes['nodes'].each do | id, node |
+    if node['attributes'].has_key? replica_attribute_name then
+      if not node_list.has_key? node['attributes'][replica_attribute_name] then
+        node_list[node['attributes'][replica_attribute_name]] = {}
+      end
+
+      ip = node['transport_address'].gsub(/inet\[\/([^:]+):\d+\]/, '\1')
+
+      node_list[node['attributes'][replica_attribute_name]][id] = node
+
+      if replica_attribute_value == node['attributes'][replica_attribute_name] then
+        putlog " > node #{id} (#{ip}) will be terminated"
+      else
+        putlog " > node #{id} (#{ip}) is active"
+      end
+    end
+  end
+
+  putlog ' - discovered nodes'
+end
+
+main do | vresource, vparameter, vnewsize, replica_attribute_value, vreplicas |
+  replica_attribute_name = 'logsearch'
+
+  essplit = options['elasticsearch'].split(':')
+  elasticsearch = Net::HTTP.new essplit[0], essplit[1]
+
+  pid = false
+
+  if options['--tunnel'] then
+    pid = fork do
+        exec "#{options['--tunnel']}"
+    end
+
+    sleep options['--tunnel-delay']
+  end
+
+  begin
+    # describe cfn
+    # double check scaling arguments with the cloudformation stack
+
+    putlog ' + validating cloudformation references...'
+
+    cfn_root_stack_name = "#{options['environment-name']}-#{options['service-name']}"
+
+    rootstack = JSON.parse(`aws cloudformation describe-stacks --stack-name #{cfn_root_stack_name.shellescape}`)
+    putlog " > RootStack: #{rootstack['Stacks'][0]['StackName']} (#{rootstack['Stacks'][0]['CreationTime']})"
+
+    resource = JSON.parse(`aws cloudformation describe-stack-resource --stack-name #{cfn_root_stack_name.shellescape} --logical-resource-id #{vresource.shellescape}`)
+    putlog " > Target: #{resource['StackResourceDetail']['PhysicalResourceId']}"
+
+    substacktemplate = JSON.parse(`aws cloudformation get-template --stack-name #{resource['StackResourceDetail']['PhysicalResourceId'].shellescape}`)['TemplateBody']
+    substack = JSON.parse(`aws cloudformation describe-stacks --stack-name #{resource['StackResourceDetail']['PhysicalResourceId'].shellescape}`)
+
+    stackparams = {}
+
+    substack['Stacks'][0]['Parameters'].each do | parameter |
+      stackparams[parameter['ParameterKey']] = parameter
+    end
+
+    if nil == stackparams[vparameter] then
+      raise "Unable to find #{vparameter} parameter"
+    end
+
+    putlog " > #{stackparams[vparameter]['ParameterKey']}: #{stackparams[vparameter]['ParameterValue']}"
+
+    putlog ' - validated cloudformation references'
+
+
+    # todo
+    # figure out what needs to be done
+
+    if vnewsize == stackparams[vparameter]['ParameterValue'] then
+      putlog ' = seems like nothing needs to be done'
+
+      exit
+    elsif vnewsize > stackparams[vparameter]['ParameterValue'] then
+      putlog ' = we will be scaling up'
+    else
+      putlog ' = we will be scaling down'
+    end
+
+    adjusting_nodes_count = vnewsize.to_i - stackparams[vparameter]['ParameterValue'].to_i
+
+
+    # node discovery
+    # we should figure out which nodes are going down
+
+    discover_nodes elasticsearch, replica_attribute_name, replica_attribute_value
+
+
+    # relocate shards
+    # @todo? to be safe, manually move primary shards off elastic nodes
+
+    review_allocations elasticsearch, node_list, replica_attribute_value
+
+
+    # disable allocations
+    # prevent node scaling from thrashing disks
+
+    disable_allocations elasticsearch
+
+
+    # replication
+    # increase it if we're scaling up
+
+    if 0 < adjusting_nodes_count then
+      update_replication_requirements elasticsearch, vreplicas
+    end
+
+
+    # update stack
+    # reduce our auto-scaling groups
+
+    newparams = stackparams.clone
+    newparams[vparameter]['ParameterValue'] = vnewsize
+
+    update_stack substack['Stacks'][0]['StackName'], substacktemplate, newparams.values()
+
+
+    # wait
+    # watch for node changes
+
+    wait_for_nodes elasticsearch, node_list, replica_attribute_name, adjusting_nodes_count
+
+
+    # replication
+    # decrease it if we're scaling down
+
+    if 0 > adjusting_nodes_count then
+      update_replication_requirements elasticsearch, vreplicas
+    end
+
+
+    # enable allocations
+    # nodes are up, so let them rebalance
+
+    enable_allocations elasticsearch
+
+
+    # stability
+    # to be safe, make sure we're back to green
+
+    wait_for_green_cluster elasticsearch
+  ensure
+    if pid then
+      Process.kill 'TERM', pid
+      Process.waitpid pid
+    end
+end
+
+version '0.9.0'
+description 'Scale the cluster.'
+
+arg :resource, :required
+arg :parameter, :required
+arg :newsize, :required
+arg :esattrval, :required
+arg :replicas, :required
+
+on('--tunnel', 'A tunneling command to run before making changes')
+
+options['tunnel-delay'] = 0
+on('--tunnel-delay', 'An optional delay after starting the tunneling command')
+
+options['environment-name'] = ENV['APP_ENVIRONMENT_NAME']
+on('-en NAME', '--environment-name', 'Environment name')
+
+options['service-name'] = ENV['APP_SERVICE_NAME']
+on('-sn NAME', '--service-name', 'Service name')
+
+options['elasticsearch'] = '127.0.0.1:9200'
+on('--elasticsearch', 'The elasticsearch host to connect to')
+
+go!
