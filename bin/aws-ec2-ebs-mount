@@ -127,7 +127,7 @@ if False == mounted:
     volume_needs_tagging = True
 
     while True:
-      statuscheck = ec2api.get_all_volumes(volume.id).pop()
+      statuscheck = ec2api.get_all_volumes([ volume.id ]).pop()
 
       if 'available' == statuscheck.status:
         break
@@ -150,7 +150,7 @@ if False == mounted:
   ec2api.attach_volume(volume.id, ec2instance['instanceId'], devicemap[cliargs.device])
 
   while True:
-    statuscheck = ec2api.get_all_volumes(volume.id).pop()
+    statuscheck = ec2api.get_all_volumes([ volume.id ]).pop()
 
     if 'in-use' == statuscheck.status:
       break
@@ -174,7 +174,7 @@ if False == mounted:
 
   if True == volume_needs_tagging:
     # deferred to avoid race condition of "claimed", but not mounted
-    ec2api.create_tags(volume.id, {
+    ec2api.create_tags([ volume.id ], {
       'Environment' : cliargs.envname,
       'Service' : cliargs.servicename,
       'Name' : cliargs.rolename,
