@@ -8,6 +8,7 @@ require 'shellwords'
 require 'date'
 require 'methadone'
 
+include Methadone::CLILogging
 include Methadone::Main
 
 def putlog(msg)
@@ -128,7 +129,7 @@ end
 def wait_for_nodes(elasticsearch, node_list, replica_attribute_name, expected_change)
   putlog ' + nodes are not yet ready...'
 
-  node_count = node_list.reduce(| memo, node | memo += node.size)
+  node_count = node_list.reduce(1) { | memo, node | memo += node.size }
   expected_count = node_count + expected_change
 
   while true do
@@ -209,6 +210,8 @@ def discover_nodes(elasticsearch, replica_attribute_name, replica_attribute_valu
   end
 
   putlog ' - discovered nodes'
+
+  return node_list
 end
 
 main do | vresource, vparameter, vnewsize, replica_attribute_value, vreplicas |
@@ -219,12 +222,12 @@ main do | vresource, vparameter, vnewsize, replica_attribute_value, vreplicas |
 
   pid = false
 
-  if options['--tunnel'] then
+  if options['tunnel'] then
     pid = fork do
-        exec "#{options['--tunnel']}"
+        exec "#{options['tunnel']}"
     end
 
-    sleep options['--tunnel-delay']
+    sleep options['tunnel-delay'].to_i
   end
 
   begin
@@ -233,7 +236,7 @@ main do | vresource, vparameter, vnewsize, replica_attribute_value, vreplicas |
 
     putlog ' + validating cloudformation references...'
 
-    cfn_root_stack_name = "#{options['environment-name']}-#{options['service-name']}"
+    cfn_root_stack_name = "#{options['envname']}-#{options['servicename']}"
 
     rootstack = JSON.parse(`aws cloudformation describe-stacks --stack-name #{cfn_root_stack_name.shellescape}`)
     putlog " > RootStack: #{rootstack['Stacks'][0]['StackName']} (#{rootstack['Stacks'][0]['CreationTime']})"
@@ -278,7 +281,7 @@ main do | vresource, vparameter, vnewsize, replica_attribute_value, vreplicas |
     # node discovery
     # we should figure out which nodes are going down
 
-    discover_nodes elasticsearch, replica_attribute_name, replica_attribute_value
+    node_list = discover_nodes elasticsearch, replica_attribute_name, replica_attribute_value
 
 
     # relocate shards
@@ -339,6 +342,7 @@ main do | vresource, vparameter, vnewsize, replica_attribute_value, vreplicas |
       Process.kill 'TERM', pid
       Process.waitpid pid
     end
+  end
 end
 
 version '0.9.0'
@@ -350,16 +354,17 @@ arg :newsize, :required
 arg :esattrval, :required
 arg :replicas, :required
 
-on('--tunnel', 'A tunneling command to run before making changes')
+options['tunnel'] = false
+on('--tunnel COMMAND', 'A tunneling command to run before making changes')
 
 options['tunnel-delay'] = 0
-on('--tunnel-delay', 'An optional delay after starting the tunneling command')
+on('--tunnel-delay SECONDS', 'An optional delay after starting the tunneling command')
 
-options['environment-name'] = ENV['APP_ENVIRONMENT_NAME']
-on('-en NAME', '--environment-name', 'Environment name')
+options['envname'] = ENV['APP_ENVIRONMENT_NAME']
+on('--envname NAME', 'Environment name')
 
-options['service-name'] = ENV['APP_SERVICE_NAME']
-on('-sn NAME', '--service-name', 'Service name')
+options['servicename'] = ENV['APP_SERVICE_NAME']
+on('--servicename NAME', 'Service name')
 
 options['elasticsearch'] = '127.0.0.1:9200'
 on('--elasticsearch', 'The elasticsearch host to connect to')
