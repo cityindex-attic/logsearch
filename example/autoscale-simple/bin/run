@@ -41,7 +41,7 @@ def wait_for_green_cluster(elasticsearch)
   putlog " + cluster is not yet 'green'..."
 
   while true do
-    sleep 10
+    sleep 2
 
     found = false
 
