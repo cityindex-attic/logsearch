@@ -196,6 +196,37 @@
                                 "owner" : "ubuntu",
                                 "mode" : "000755"
                             },
+                            "/home/ubuntu/provision" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "#!/bin/bash", "\n",
+                                            "set -e", "\n",
+                                            "/app/app/.build/ubuntu-12/provision.sh", "\n",
+                                            "pip install pyyaml simplejson", "\n",
+                                            "pip install --upgrade boto", "\n",
+                                            "mkdir -p /app/data", "\n",
+                                            "chown ubuntu:ubuntu /app/data", "\n",
+                                            "/app/app/bin/aws-ec2-ebs-mount",
+                                                " --fstab",
+                                                " --mkfs-type ext4",
+                                                " --volume-size 1",
+                                                " -vvv",
+                                                " ", { "Ref" : "EnvironmentName" },
+                                                " ", { "Ref" : "ServiceName" },
+                                                " elasticsearch/master",
+                                                " /dev/xvdf",
+                                                " /app/data/elasticsearch",
+                                                "\n",
+                                            "chown ubuntu:ubuntu /app/data/elasticsearch", "\n"
+                                        ]
+                                    ]
+                                },
+                                "group" : "ubuntu",
+                                "owner" : "ubuntu",
+                                "mode" : "000555"
+                            },
                             "/home/ubuntu/bootstrap" : {
                                 "source" : {
                                     "Fn::Join": [
@@ -307,7 +338,7 @@
                                 " --resource Instance0",
                                 " || error_exit 'Failed to run cfn-init'", "\n",
                                 "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /app/app/.build/ubuntu-12/provision.sh elasticsearch,kibana ", { "Ref": "RepositoryCommit" }, "\n",
+                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch,kibana ", { "Ref": "RepositoryCommit" }, "\n",
                                 "/app/app/.build/dev_server/extra.sh", "\n",
                                 { "Ref" : "InstancePostScript" }, "\n",
                                 "cfn-signal --exit-code 0 --reason 'Provisioning complete' '", { "Ref": "WaitConditionHandle" }, "'\n"
