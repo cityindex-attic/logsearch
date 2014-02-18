@@ -28,9 +28,9 @@
       "Description": "A name for the elasticsearch cluster (\"default\" becomes \"{EnvironmentName}-{ServiceName}\").",
       "Default" : "default"
     },
-    "ElasticsearchAllocAttrLogsearch": {
+    "ElasticsearchReplicaRole": {
       "Type": "String",
-      "Description": "An allocation awareness attribute for elasticsearch (\"default\" becomes ignored).",
+      "Description": "An allocation awareness attribute for elasticsearch.",
       "Default": "default"
     },
     "CostCentre": {
@@ -207,7 +207,7 @@
                       "export APP_CONFIG_ES_IPADDRESS=0.0.0.0", "\n",
                       "export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup" }, "\n",
                       "export APP_CONFIG_ES_MASTER_NODES_MIN=", { "Ref": "ElasticsearchMasterNodesMin" }, "\n",
-                      "export APP_CONFIG_ES_ALLOC_ATTR_LOGSEARCH=", { "Ref" : "ElasticsearchAllocAttrLogsearch" }, "\n"
+                      "export APP_CONFIG_ES_REPLICAROLE=", { "Ref" : "ElasticsearchReplicaRole" }, "\n"
                     ]
                   ]
                 },
@@ -315,7 +315,15 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "elasticsearch",
+            "Value": {
+              "Fn::Join" : [
+                "/",
+                [
+                  "elasticsearch",
+                  { "Ref" : "ElasticsearchReplicaRole" }
+                ]
+              ]
+            },
             "PropagateAtLaunch": "true"
           },
           {

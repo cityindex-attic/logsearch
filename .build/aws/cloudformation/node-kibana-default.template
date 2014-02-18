@@ -187,6 +187,7 @@
                         ]
                       }, "\n",
                       "export APP_CONFIG_ES_IPADDRESS=0.0.0.0", "\n",
+                      "export APP_CONFIG_ES_REPLICAROLE=default", "\n",
                       "export APP_CONFIG_ES_NODE_MODE=", { "Ref": "ElasticsearchNodeMode" }, "\n",
                       "export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup" }, "\n"
                     ]
