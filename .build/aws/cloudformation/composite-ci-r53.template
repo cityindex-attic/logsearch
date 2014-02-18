@@ -204,7 +204,7 @@
           "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
           "SnapshotId"            : { "Ref" : "ElasticsearchSnapshotId" },
           "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-          "ElasticsearchAllocAttrLogsearch" : "fulltime_zone1",
+          "ElasticsearchReplicaRole" : "fulltime_zone1",
           "VolumeSize"            : { "Ref" : "ElasticsearchFulltimeVolumeSize" }
         }
       }
@@ -239,7 +239,7 @@
           "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
           "SnapshotId"            : { "Ref" : "ElasticsearchSnapshotId" },
           "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-          "ElasticsearchAllocAttrLogsearch" : "fulltime_zone2",
+          "ElasticsearchReplicaRole" : "fulltime_zone2",
           "VolumeSize"            : { "Ref" : "ElasticsearchFulltimeVolumeSize" }
         }
       }
@@ -282,7 +282,7 @@
           "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
           "SnapshotId"            : { "Ref" : "ElasticsearchSnapshotId" },
           "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-          "ElasticsearchAllocAttrLogsearch" : "daytime_elastic",
+          "ElasticsearchReplicaRole" : "daytime_elastic",
           "VolumeSize"            : { "Ref" : "ElasticsearchDaytimeVolumeSize" }
         }
       }
