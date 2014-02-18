@@ -37,7 +37,7 @@ if (which collectd 1>/dev/null 2>&1) ; then
   sudo /bin/bash <<EOF
     if ! grep 'Import redis_info' /etc/collectd/collectd.conf ; then
       wget -qO /opt/collectd/lib/collectd/plugins/python/redis_info.py 'https://raw.github.com/powdahound/redis-collectd-plugin/master/redis_info.py'
-      sed -ri 's@(^    # python-placeholder)@\1\n\
+      sed -ri 's@(^  # python-placeholder)@\1\n\
     Import "redis_info"\n\
     <Module redis_info>\n\
         Host "$APP_CONFIG_REDIS_IPADDRESS"\n\
@@ -47,7 +47,7 @@ if (which collectd 1>/dev/null 2>&1) ; then
 
     if ! grep 'Import redis_logstash' /etc/collectd/collectd.conf ; then
       cp /app/app/example/collectd/redis_logstash.py /opt/collectd/lib/collectd/plugins/python/redis_logstash.py
-      sed -ri 's@(^    # python-placeholder)@\1\n\
+      sed -ri 's@(^  # python-placeholder)@\1\n\
     Import "redis_logstash"\n\
     <Module redis_logstash>\n\
         Host "$APP_CONFIG_REDIS_IPADDRESS"\n\

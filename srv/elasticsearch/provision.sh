@@ -59,7 +59,7 @@ if (which collectd 1>/dev/null 2>&1) ; then
   sudo /bin/bash <<EOF
     if ! grep 'Import elasticsearch_logstash' /etc/collectd/collectd.conf ; then
       cp /app/app/example/collectd/elasticsearch_logstash.py /opt/collectd/lib/collectd/plugins/python/elasticsearch_logstash.py
-      sed -ri 's@(^    # python-placeholder)@\1\n\
+      sed -ri 's@(^  # python-placeholder)@\1\n\
   Import "elasticsearch_logstash"\n\
   <Module elasticsearch_logstash>\n\
       Host "$APP_CONFIG_ES_IPADDRESS"\n\
@@ -70,7 +70,7 @@ if (which collectd 1>/dev/null 2>&1) ; then
 
     if ! grep 'Import elasticsearch' /etc/collectd/collectd.conf ; then
       wget -qO /opt/collectd/lib/collectd/plugins/python/elasticsearch.py 'https://raw.github.com/phobos182/collectd-elasticsearch/master/elasticsearch.py'
-      sed -ri 's@(^    # python-placeholder)@\1\n\
+      sed -ri 's@(^  # python-placeholder)@\1\n\
   Import "elasticsearch"\n\
   <Module elasticsearch>\n\
       Host "$APP_CONFIG_ES_IPADDRESS"\n\
