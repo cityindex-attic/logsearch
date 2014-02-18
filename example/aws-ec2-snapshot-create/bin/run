@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+
+import argparse
+import boto.ec2
+import os
+import simplejson
+import subprocess
+import sys
+import time
+import urllib2
+
+cli = argparse.ArgumentParser(description='Utility for snapshotting a collection of volumes for a particular environment/service. If a role is not specified, a snapshot is created for all volumes. This copies over volume tags to the snapshot.')
+cli.add_argument('description', help='Snapshot description')
+cli.add_argument('envname', help='Environment name for (e.g. dev, prod, test)')
+cli.add_argument('servicename', help='Service name (e.g. logsearch)')
+cli.add_argument('rolename', help='Role name (e.g. elasticsearch)', nargs='?')
+cli.add_argument('--verbose', '-v', action='count', help='Use multiple times to increase verbosity: none = quiet, 1 = completions, 2 = summaries, 3 = details')
+
+cliargs = cli.parse_args()
+
+
+#
+# validate our arguments
+#
+
+ec2api = boto.ec2.connect_to_region(os.environ['AWS_DEFAULT_REGION'])
+
+
+#
+# find relevant volumes
+#
+
+filters = {
+  'tag:Environment' : cliargs.envname,
+  'tag:Service' : cliargs.servicename,
+}
+
+if None != cliargs.rolename:
+  filters['tag:Name'] = cliargs.rolename
+
+if cliargs.verbose > 1:
+  sys.stdout.write('enumerating volumes...\n')
+
+volumes_available = ec2api.get_all_volumes(filters = filters)
+
+if cliargs.verbose > 0:
+  sys.stdout.write('enumerated volumes\n')
+
+
+#
+# start snapshots
+#
+
+for volume in volumes_available:
+  if cliargs.verbose > 1:
+    sys.stdout.write('starting snapshot from %s/%s...\n' % ( volume.id, volume.tags['Name'] ))
+
+  snapshot = ec2api.create_snapshot(volume.id, cliargs.description)
+
+  if cliargs.verbose > 0:
+    sys.stdout.write('started snapshot from %s/%s (%s)\n' % ( volume.id, volume.tags['Name'], snapshot.id ))
+
+
+  if cliargs.verbose > 1:
+    sys.stdout.write('adding volume tags to %s...\n' % snapshot.id)
+
+  ec2api.create_tags(snapshot.id, volume.tags)
+
+  if cliargs.verbose > 0:
+    sys.stdout.write('added volume tags to %s\n' % snapshot.id)
