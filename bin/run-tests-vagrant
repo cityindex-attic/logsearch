@@ -21,7 +21,7 @@ EXITCODE=$?
 
 set -e
 
-if [ 'destroy' == $2 ]; then
+if [[ 'destroy' == $2 ]]; then
   vagrant destroy
 fi
 
