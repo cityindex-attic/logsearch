@@ -11,10 +11,10 @@ RES=$(aws ec2 describe-tags --filter Name="resource-id",Values="$(ec2metadata --
 REF_NAME=$(echo $RES | sed -r 's/.*"Value": "([^"]+)", "Key": "Name".*/\1/')
 
 if echo $REF_STACK | grep 'aws:cloudformation:stack-name' ; then
-    REF_STACK=$(echo $RES | sed -r 's/.*"Value": "([^"]+)", "Key": "aws:cloudformation:stack-name".*/\1/')
-    REF_NAME=$(echo $REF_NAME | cut -c $(echo $REF_STACK | wc -c)- | cut -c 2-)
+  REF_STACK=$(echo $RES | sed -r 's/.*"Value": "([^"]+)", "Key": "aws:cloudformation:stack-name".*/\1/')
+  REF_NAME=$(echo $REF_NAME | cut -c $(echo $REF_STACK | wc -c)- | cut -c 2-)
 else
-    REF_STACK=unknown
+  REF_STACK=unknown
 fi
 
 /app/app/bin/gather-stats $3 $4 > /tmp/gather-stats-$$.json

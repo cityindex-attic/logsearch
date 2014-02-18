@@ -1,115 +1,115 @@
 {
-    "bootstrap.mlockall" : true,
-    "indices.memory.index_buffer_size" : "50%",
-    "index.cache.field.type" : "soft",
-    "index.cache.field.expire" : "15m",
-    "index.translog.flush_threshold_ops" : 64000,
-    "node.max_local_storage_nodes" : 1,
-    "cluster.name" : "<%= ENV['APP_CLUSTER_NAME'] %>",
-    <% if ENV['APP_CONFIG_ES_NODE_MODE'] then %>
-        <% if 'master' == ENV['APP_CONFIG_ES_NODE_MODE'] %>
-            "node.master" : true,
-            "node.data" : false,
-        <% elsif 'data' == ENV['APP_CONFIG_ES_NODE_MODE'] %>
-            "node.master" : false,
-            "node.data" : true,
-        <% elsif 'client' == ENV['APP_CONFIG_ES_NODE_MODE'] %>
-            "node.client" : true,
-        <% end %>
+  "bootstrap.mlockall" : true,
+  "indices.memory.index_buffer_size" : "50%",
+  "index.cache.field.type" : "soft",
+  "index.cache.field.expire" : "15m",
+  "index.translog.flush_threshold_ops" : 64000,
+  "node.max_local_storage_nodes" : 1,
+  "cluster.name" : "<%= ENV['APP_CLUSTER_NAME'] %>",
+  <% if ENV['APP_CONFIG_ES_NODE_MODE'] then %>
+    <% if 'master' == ENV['APP_CONFIG_ES_NODE_MODE'] %>
+      "node.master" : true,
+      "node.data" : false,
+    <% elsif 'data' == ENV['APP_CONFIG_ES_NODE_MODE'] %>
+      "node.master" : false,
+      "node.data" : true,
+    <% elsif 'client' == ENV['APP_CONFIG_ES_NODE_MODE'] %>
+      "node.client" : true,
     <% end %>
-    <% if ENV['APP_CONFIG_ES_EXTRA'] then %>
-        <%= ENV['APP_CONFIG_ES_EXTRA'] %>,
+  <% end %>
+  <% if ENV['APP_CONFIG_ES_EXTRA'] then %>
+    <%= ENV['APP_CONFIG_ES_EXTRA'] %>,
+  <% end %>
+  <% if ENV['APP_CONFIG_ES_AWS_EC2_GROUP'] or ENV['APP_CONFIG_ES_AWS_ACCESS_KEY'] then %>
+    <% if ENV['AWS_DEFAULT_REGION'] then %>
+      "cloud.aws.region" : "<%= ENV['AWS_DEFAULT_REGION'] %>",
     <% end %>
-    <% if ENV['APP_CONFIG_ES_AWS_EC2_GROUP'] or ENV['APP_CONFIG_ES_AWS_ACCESS_KEY'] then %>
-        <% if ENV['AWS_DEFAULT_REGION'] then %>
-            "cloud.aws.region" : "<%= ENV['AWS_DEFAULT_REGION'] %>",
-        <% end %>
-        <% if ENV['APP_CONFIG_ES_AWS_ACCESS_KEY'] then %>
-            "cloud.aws.access_key" : "<%= ENV['APP_CONFIG_ES_AWS_ACCESS_KEY'] %>",
-            "cloud.aws.secret_key" : "<%= ENV['APP_CONFIG_ES_AWS_SECRET_KEY'] %>",
-        <% end %>
-        "discovery.type" : "ec2",
-        "discovery.ec2.groups" : "<%= ENV['APP_CONFIG_ES_AWS_EC2_GROUP'] %>",
-        <% if ENV['APP_CONFIG_ES_MASTER_NODES_MIN'] then %>
-            "discovery.zen.minimum_master_nodes" : <%= ENV['APP_CONFIG_ES_MASTER_NODES_MIN'] %>,
-        <% end %>
+    <% if ENV['APP_CONFIG_ES_AWS_ACCESS_KEY'] then %>
+      "cloud.aws.access_key" : "<%= ENV['APP_CONFIG_ES_AWS_ACCESS_KEY'] %>",
+      "cloud.aws.secret_key" : "<%= ENV['APP_CONFIG_ES_AWS_SECRET_KEY'] %>",
     <% end %>
-    <% if ENV['APP_CONFIG_ES_ALLOC_ATTR_LOGSEARCH'] and 'default' != ENV['APP_CONFIG_ES_ALLOC_ATTR_LOGSEARCH'] then %>
-        "node.logsearch" : "<%= ENV['APP_CONFIG_ES_ALLOC_ATTR_LOGSEARCH'] %>",
-        "cluster.routing.allocation.awareness.attributes" : "logsearch",
+    "discovery.type" : "ec2",
+    "discovery.ec2.groups" : "<%= ENV['APP_CONFIG_ES_AWS_EC2_GROUP'] %>",
+    <% if ENV['APP_CONFIG_ES_MASTER_NODES_MIN'] then %>
+      "discovery.zen.minimum_master_nodes" : <%= ENV['APP_CONFIG_ES_MASTER_NODES_MIN'] %>,
     <% end %>
-    "path.conf" : "<%= ENV['APP_APP_DIR'] %>/srv/elasticsearch/config/",
-    "path.logs" : "<%= ENV['APP_LOG_DIR'] %>/elasticsearch",
-    "path.data" : "<%= ENV['APP_DATA_DIR'] %>/elasticsearch",
-    "network.host" : "<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>",
-    "http.type" : "com.sonian.elasticsearch.http.filter.FilterHttpServerTransportModule",
-    "threadpool.search.type" : "fixed",
-    "threadpool.search.size" : 32,
-    "threadpool.search.queue_size" : 128,
-    "threadpool.index.type" : "fixed",
-    "threadpool.index.size" : 64,
-    "threadpool.index.queue_size" : 256,
+  <% end %>
+  <% if ENV['APP_CONFIG_ES_ALLOC_ATTR_LOGSEARCH'] and 'default' != ENV['APP_CONFIG_ES_ALLOC_ATTR_LOGSEARCH'] then %>
+    "node.logsearch" : "<%= ENV['APP_CONFIG_ES_ALLOC_ATTR_LOGSEARCH'] %>",
+    "cluster.routing.allocation.awareness.attributes" : "logsearch",
+  <% end %>
+  "path.conf" : "<%= ENV['APP_APP_DIR'] %>/srv/elasticsearch/config/",
+  "path.logs" : "<%= ENV['APP_LOG_DIR'] %>/elasticsearch",
+  "path.data" : "<%= ENV['APP_DATA_DIR'] %>/elasticsearch",
+  "network.host" : "<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>",
+  "http.type" : "com.sonian.elasticsearch.http.filter.FilterHttpServerTransportModule",
+  "threadpool.search.type" : "fixed",
+  "threadpool.search.size" : 32,
+  "threadpool.search.queue_size" : 128,
+  "threadpool.index.type" : "fixed",
+  "threadpool.index.size" : 64,
+  "threadpool.index.queue_size" : 256,
 
-    "sonian" : {
-        "elasticsearch" : {
-            "http" : {
-                "filter" : {
-                    "http_filter_chain" : [
-                        "logging"
-                    ],
-                    "http_filter" : {
-                        "logging" : {
-                            "type" : "com.sonian.elasticsearch.http.filter.logging.LoggingFilterHttpServerAdapter",
-                            "logger" : "request",
-                            "format" : "json",
-                            "level" : "INFO",
-                            "log_body" : false,
-                            "loggers" : {
-                                "stats" : {
-                                    "path" : [
-                                        "/_cluster/health",
-                                        "/_cluster/nodes",
-                                        "/_cluster/state",
-                                        "/_cluster/nodes/{node}/stats"
-                                    ],
-                                    "method" : [
-                                        "GET"
-                                    ],
-                                    "level" : "TRACE"
-                                },
-                                "searches" : {
-                                    "path" : [
-                                        "/_search",
-                                        "/_search/scroll",
-                                        "/_search/scroll/{scroll_id}",
-                                        "/{index}/_search",
-                                        "/{index}/{type}/_search",
-                                        "/{index}/{type}/{id}/_mlt"
-                                    ],
-                                    "method" : [
-                                        "GET",
-                                        "POST"
-                                    ],
-                                    "log_body": true
-                                },
-                                "count" : {
-                                    path: [
-                                        "/_count",
-                                        "/{index}/_count",
-                                        "/{index}/{type}/_count"
-                                    ],
-                                    "method" : [
-                                        "GET",
-                                        "POST"
-                                    ],
-                                    "log_body" : true
-                                }
-                            }
-                        }
-                    }
+  "sonian" : {
+    "elasticsearch" : {
+      "http" : {
+        "filter" : {
+          "http_filter_chain" : [
+            "logging"
+          ],
+          "http_filter" : {
+            "logging" : {
+              "type" : "com.sonian.elasticsearch.http.filter.logging.LoggingFilterHttpServerAdapter",
+              "logger" : "request",
+              "format" : "json",
+              "level" : "INFO",
+              "log_body" : false,
+              "loggers" : {
+                "stats" : {
+                  "path" : [
+                    "/_cluster/health",
+                    "/_cluster/nodes",
+                    "/_cluster/state",
+                    "/_cluster/nodes/{node}/stats"
+                  ],
+                  "method" : [
+                    "GET"
+                  ],
+                  "level" : "TRACE"
+                },
+                "searches" : {
+                  "path" : [
+                    "/_search",
+                    "/_search/scroll",
+                    "/_search/scroll/{scroll_id}",
+                    "/{index}/_search",
+                    "/{index}/{type}/_search",
+                    "/{index}/{type}/{id}/_mlt"
+                  ],
+                  "method" : [
+                    "GET",
+                    "POST"
+                  ],
+                  "log_body": true
+                },
+                "count" : {
+                  path: [
+                    "/_count",
+                    "/{index}/_count",
+                    "/{index}/{type}/_count"
+                  ],
+                  "method" : [
+                    "GET",
+                    "POST"
+                  ],
+                  "log_body" : true
                 }
+              }
             }
+          }
         }
+      }
     }
+  }
 }
 

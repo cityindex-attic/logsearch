@@ -7,22 +7,22 @@ set -e
 sudo mkdir -p /$2
 
 if ! (sudo dumpe2fs /dev/$1 > /dev/null) ; then
-    sudo mkfs.ext4 /dev/$1
+  sudo mkfs.ext4 /dev/$1
 fi
 
 if ! (cat /proc/mounts | grep /dev/$1 > /dev/null) ; then
-    sudo mount /dev/$1 /$2
+  sudo mount /dev/$1 /$2
 fi
 
 if ! (grep $2 /etc/fstab > /dev/null) ; then
-    sudo sh -c "echo '/dev/$1       /$2   ext4    defaults        0       2' >> /etc/fstab"
+  sudo sh -c "echo '/dev/$1       /$2   ext4    defaults        0       2' >> /etc/fstab"
 fi
 
 if [ ! -e /$2/default ] ; then
-    sudo mkdir -p /$2/default
-    sudo chown $3:$3 /$2/default
+  sudo mkdir -p /$2/default
+  sudo chown $3:$3 /$2/default
 fi
 
 if [ ! -e /app/data ] ; then
-    ln -s /$2/default /app/data
+  ln -s /$2/default /app/data
 fi

@@ -54,13 +54,13 @@ namespace :logstash do
   desc "Load a file with logstash with logstash_format => json and send to elasticsearch"
   task :load_file_jsonfile_to_elasticsearch, :logstash_type, :path do |t, args|
     process_erb(
-        "#{ENV['APP_APP_DIR']}/srv/logstash/config/load_file_to_elasticsearch.conf.erb",
-        "#{ENV['APP_APP_DIR']}/srv/logstash/config/load_file_to_elasticsearch.conf",
-        {
-            :logstash_format => "json",
-            :logstash_type => args[:logstash_type],
-            :path => args[:path]
-        }
+      "#{ENV['APP_APP_DIR']}/srv/logstash/config/load_file_to_elasticsearch.conf.erb",
+      "#{ENV['APP_APP_DIR']}/srv/logstash/config/load_file_to_elasticsearch.conf",
+      {
+        :logstash_format => "json",
+        :logstash_type => args[:logstash_type],
+        :path => args[:path]
+      }
     )
     sh "/usr/bin/pv -ept #{args[:path]} | TMP=#{ENV['APP_TMP_DIR']} /usr/bin/java -jar '#{ENV['APP_VENDOR_DIR']}/logstash.jar' agent -w #{$LOGSTASH_WORKERS} -f '#{ENV['APP_APP_DIR']}/srv/logstash/config/load_file_to_elasticsearch.conf'"
   end
@@ -180,64 +180,64 @@ end
 class ElasticsearchNotRunning < RuntimeError; end
 
 def run_integration_test(type, method, expected_messages)
-    pid = false
+  pid = false
 
-    if File.exists?("/etc/init/app-elasticsearch-1.conf")
-        if /start\/running/ !~ `service app-elasticsearch status` 
-            pid = fork do
-                exec "rake elasticsearch:run > /dev/null 2>&1"
-            end
-        end
+  if File.exists?("/etc/init/app-elasticsearch-1.conf")
+    if /start\/running/ !~ `service app-elasticsearch status` 
+      pid = fork do
+        exec "rake elasticsearch:run > /dev/null 2>&1"
+      end
+    end
+  end
+
+  # dependencies would have marked these to not run again, so reset that
+  Rake::Task['elasticsearch:delete_all_data_by_query'].reenable
+
+  begin
+    if pid
+      puts "==> Waiting for elasticsearch to be ready ..."
+      sh "while ! nc -vz #{ENV['APP_CONFIG_ES_IPADDRESS']} 9200 2>/dev/null ; do sleep 2 ; done"
     end
 
-    # dependencies would have marked these to not run again, so reset that
-    Rake::Task['elasticsearch:delete_all_data_by_query'].reenable
+    puts "==> Importing test data ..."
+    case method
+      when :redis
+        Rake::Task['logstash:load_file_to_redis'].reenable
+        Rake::Task['logstash:load_file_to_redis'].invoke type, "#{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"
+      when :lumberjack
+        puts "---> Ensuring lumberjack and lumberjack keys are installed"
 
-    begin
-        if pid
-            puts "==> Waiting for elasticsearch to be ready ..."
-            sh "while ! nc -vz #{ENV['APP_CONFIG_ES_IPADDRESS']} 9200 2>/dev/null ; do sleep 2 ; done"
+        unless File.exists? "#{ENV['APP_VENDOR_DIR']}/lumberjack"
+          Rake::Task['lumberjack:provision'].invoke
         end
 
-        puts "==> Importing test data ..."
-        case method
-            when :redis
-                Rake::Task['logstash:load_file_to_redis'].reenable
-                Rake::Task['logstash:load_file_to_redis'].invoke type, "#{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"
-            when :lumberjack
-                puts "---> Ensuring lumberjack and lumberjack keys are installed"
+        unless File.exists? "#{ENV['APP_DATA_DIR']}/lumberjack.key"
+          Rake::Task['lumberjack:generate_keys'].invoke
 
-                unless File.exists? "#{ENV['APP_VENDOR_DIR']}/lumberjack"
-                    Rake::Task['lumberjack:provision'].invoke
-                end
-
-                unless File.exists? "#{ENV['APP_DATA_DIR']}/lumberjack.key"
-                    Rake::Task['lumberjack:generate_keys'].invoke
-
-                    puts "Restarting app-lumberjack_redis to ensure its running the latest config file..."
-                    sh "sudo service app-lumberjack_redis restart"
-                end
-
-                puts "---> Shipping the test log file via lumberjack shipper -> lumberjack endpoint -> redis"
-                Rake::Task['lumberjack:ship_to_lumberjack_endpoint'].reenable
-                Rake::Task['lumberjack:ship_to_lumberjack_endpoint'].invoke "#{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"
-            else
-                raise "Unrecognised importer: #{method}"
+          puts "Restarting app-lumberjack_redis to ensure its running the latest config file..."
+          sh "sudo service app-lumberjack_redis restart"
         end
 
-        wait_for_message_count expected_messages
-
-        assert_no_grokparsefailure
-
-        puts "==> Ensuring elasticsearch has finished indexing our data ..."
-        sh "curl -sXPOST 'http://#{ENV['APP_CONFIG_ES_IPADDRESS']}:9200/_all/_flush' > /dev/null"
-      
-        puts "==> Running our test queries ..."
-        sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.rb"
-    ensure
-        if pid
-            Process.kill("TERM", File.read("#{ENV['APP_RUN_DIR']}/elasticsearch.pid").to_i)
-            Process.waitpid(pid)
-        end
+        puts "---> Shipping the test log file via lumberjack shipper -> lumberjack endpoint -> redis"
+        Rake::Task['lumberjack:ship_to_lumberjack_endpoint'].reenable
+        Rake::Task['lumberjack:ship_to_lumberjack_endpoint'].invoke "#{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"
+      else
+        raise "Unrecognised importer: #{method}"
     end
+
+    wait_for_message_count expected_messages
+
+    assert_no_grokparsefailure
+
+    puts "==> Ensuring elasticsearch has finished indexing our data ..."
+    sh "curl -sXPOST 'http://#{ENV['APP_CONFIG_ES_IPADDRESS']}:9200/_all/_flush' > /dev/null"
+  
+    puts "==> Running our test queries ..."
+    sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.rb"
+  ensure
+    if pid
+      Process.kill("TERM", File.read("#{ENV['APP_RUN_DIR']}/elasticsearch.pid").to_i)
+      Process.waitpid(pid)
+    end
+  end
 end

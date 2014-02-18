@@ -1,162 +1,162 @@
 {
-    "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "A default single security group.",
-    "Parameters": {
-        "EnvironmentName" : {
-            "Type" : "String",
-            "Description" : "The environment the service should run under (e.g. dev, live, test).",
-            "Default" : "dev",
-            "AllowedPattern" : "[0-9a-z]+"
-        },
-        "ServiceName" : {
-            "Type" : "String",
-            "Description" : "The name the service should run under (e.g. logsearch, logsearch-labs).",
-            "Default" : "logsearch-repodev",
-            "AllowedPattern" : "[0-9a-z\\-]+"
-        },
-        "CidrRange": {
-            "Description": "The management CIDR for remote access via tcp:22, tcp:80, tcp:443.",
-            "Type": "String",
-            "MinLength": "9",
-            "MaxLength": "18",
-            "Default": "127.0.0.1/32",
-            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-            "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
-        }
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "A default single security group.",
+  "Parameters": {
+    "EnvironmentName" : {
+      "Type" : "String",
+      "Description" : "The environment the service should run under (e.g. dev, live, test).",
+      "Default" : "dev",
+      "AllowedPattern" : "[0-9a-z]+"
     },
-    "Resources": {
-        "SecurityGroup0": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": {
-                    "Fn::Join": [
-                        "/",
-                        [
-                            { "Ref" : "EnvironmentName" },
-                            { "Ref" : "ServiceName" },
-                            "default"
-                        ]
-                    ]
-                },
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "icmp",
-                        "FromPort": "3",
-                        "ToPort": "4",
-                        "CidrIp": "0.0.0.0/0"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "5043",
-                        "ToPort": "5043",
-                        "CidrIp": "0.0.0.0/0"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "22",
-                        "ToPort": "22",
-                        "CidrIp": "0.0.0.0/0"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "80",
-                        "ToPort": "80",
-                        "CidrIp": {
-                            "Ref": "CidrRange"
-                        }
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "443",
-                        "ToPort": "443",
-                        "CidrIp": {
-                            "Ref": "CidrRange"
-                        }
-                    }
-                ],
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": "default"
-                    },
-                    {
-                        "Key": "Environment",
-                        "Value": {
-                            "Ref" : "EnvironmentName"
-                        }
-                    },
-                    {
-                        "Key": "Service",
-                        "Value": {
-                            "Ref" : "ServiceName"
-                        }
-                    }
-                ]
-            }
-        },
-        "SecurityGroup0InterSyslog5514": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupName": {
-                    "Ref": "SecurityGroup0"
-                },
-                "IpProtocol": "udp",
-                "FromPort": "5514",
-                "ToPort": "5514",
-                "SourceSecurityGroupName": {
-                    "Ref": "SecurityGroup0"
-                }
-            }
-        },
-        "SecurityGroup0InterElasticsearch9200": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupName": {
-                    "Ref": "SecurityGroup0"
-                },
-                "IpProtocol": "tcp",
-                "FromPort": "9200",
-                "ToPort": "9299",
-                "SourceSecurityGroupName": {
-                    "Ref": "SecurityGroup0"
-                }
-            }
-        },
-       "SecurityGroup0InterElasticsearch9300": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupName": {
-                    "Ref": "SecurityGroup0"
-                },
-                "IpProtocol": "tcp",
-                "FromPort": "9300",
-                "ToPort": "9399",
-                "SourceSecurityGroupName": {
-                    "Ref": "SecurityGroup0"
-                }
-            }
-        },
-        "SecurityGroup0InterRedis": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupName": {
-                    "Ref": "SecurityGroup0"
-                },
-                "IpProtocol": "tcp",
-                "FromPort": "6379",
-                "ToPort": "6379",
-                "SourceSecurityGroupName": {
-                    "Ref": "SecurityGroup0"
-                }
-            }
-        }
+    "ServiceName" : {
+      "Type" : "String",
+      "Description" : "The name the service should run under (e.g. logsearch, logsearch-labs).",
+      "Default" : "logsearch-repodev",
+      "AllowedPattern" : "[0-9a-z\\-]+"
     },
-    "Outputs" : {
-        "SecurityGroup0" : {
-            "Description" : "The physical ID of the created security group.",
-            "Value" : {
-                "Ref" : "SecurityGroup0"
-            }
-        }
+    "CidrRange": {
+      "Description": "The management CIDR for remote access via tcp:22, tcp:80, tcp:443.",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "127.0.0.1/32",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
     }
+  },
+  "Resources": {
+    "SecurityGroup0": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": {
+          "Fn::Join": [
+            "/",
+            [
+              { "Ref" : "EnvironmentName" },
+              { "Ref" : "ServiceName" },
+              "default"
+            ]
+          ]
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "icmp",
+            "FromPort": "3",
+            "ToPort": "4",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "5043",
+            "ToPort": "5043",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "CidrIp": {
+              "Ref": "CidrRange"
+            }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "443",
+            "ToPort": "443",
+            "CidrIp": {
+              "Ref": "CidrRange"
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "default"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref" : "EnvironmentName"
+            }
+          },
+          {
+            "Key": "Service",
+            "Value": {
+              "Ref" : "ServiceName"
+            }
+          }
+        ]
+      }
+    },
+    "SecurityGroup0InterSyslog5514": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {
+          "Ref": "SecurityGroup0"
+        },
+        "IpProtocol": "udp",
+        "FromPort": "5514",
+        "ToPort": "5514",
+        "SourceSecurityGroupName": {
+          "Ref": "SecurityGroup0"
+        }
+      }
+    },
+    "SecurityGroup0InterElasticsearch9200": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {
+          "Ref": "SecurityGroup0"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "9200",
+        "ToPort": "9299",
+        "SourceSecurityGroupName": {
+          "Ref": "SecurityGroup0"
+        }
+      }
+    },
+     "SecurityGroup0InterElasticsearch9300": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {
+          "Ref": "SecurityGroup0"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "9300",
+        "ToPort": "9399",
+        "SourceSecurityGroupName": {
+          "Ref": "SecurityGroup0"
+        }
+      }
+    },
+    "SecurityGroup0InterRedis": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {
+          "Ref": "SecurityGroup0"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "6379",
+        "ToPort": "6379",
+        "SourceSecurityGroupName": {
+          "Ref": "SecurityGroup0"
+        }
+      }
+    }
+  },
+  "Outputs" : {
+    "SecurityGroup0" : {
+      "Description" : "The physical ID of the created security group.",
+      "Value" : {
+        "Ref" : "SecurityGroup0"
+      }
+    }
+  }
 }

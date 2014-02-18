@@ -1,430 +1,430 @@
 {
-    "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Create a simple instance which runs all the logsearch services.",
-    "Parameters": {
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Create a simple instance which runs all the logsearch services.",
+  "Parameters": {
+    "AvailabilityZone": {
+      "Type": "String",
+      "Description": "Availability Zone (AZ) to start the cluster in.",
+      "Default": "us-east-1a"
+    },
+    "CidrRange": {
+      "Description": "The CIDR range for remote access to advertised services like tcp:22, tcp:80, tcp:443.",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "127.0.0.1/32",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
+    },
+    "ClusterName": {
+      "Type": "String",
+      "Description": "A unique name for the cluster.",
+      "Default": "logsearch-example"
+    },
+    "EbsVolumeSize": {
+      "Description": "Size of a dedicated EBS volume to be attached to the EC2 instance.",
+      "Type": "Number",
+      "MinValue": "10",
+      "MaxValue": "1024",
+      "Default": "32"
+    },
+    "InstanceType": {
+      "Type": "String",
+      "Description": "Instance type for the multi-purpose node.",
+      "Default" : "m1.large"
+    },
+    "KeyName": {
+      "Description": "Name of an existing EC2 key pair for remote access to the EC2 instance.",
+      "Type": "String"
+    },
+    "RepositoryCommit": {
+      "Description": "Repository branch to bootstrap from.",
+      "Type": "String",
+      "Default": "master"
+    }
+  },
+  "Mappings": {
+    "InstanceMemoryMap" : {
+      "t1.micro" : {
+        "ElasticsearchHeapSize" : "256M"
+      },
+      "m1.small" : {
+        "ElasticsearchHeapSize" : "896M"
+      },
+      "m1.medium" : {
+        "ElasticsearchHeapSize" : "1536M"
+      },
+      "m1.large" : {
+        "ElasticsearchHeapSize" : "4G"
+      },
+      "m1.xlarge" : {
+        "ElasticsearchHeapSize" : "8G"
+      },
+      "m2.xlarge" : {
+        "ElasticsearchHeapSize" : "9G"
+      },
+      "m2.2xlarge" : {
+        "ElasticsearchHeapSize" : "17G"
+      },
+      "m2.4xlarge" : {
+        "ElasticsearchHeapSize" : "35G"
+      },
+      "m3.medium" : {
+        "ElasticsearchHeapSize" : "2G"
+      },
+      "m3.large" : {
+        "ElasticsearchHeapSize" : "4G"
+      },
+      "m3.xlarge" : {
+        "ElasticsearchHeapSize" : "8G"
+      },
+      "m3.2xlarge" : {
+        "ElasticsearchHeapSize" : "15G"
+      },
+      "c1.medium" : {
+        "ElasticsearchHeapSize" : "896M"
+      },
+      "c1.xlarge" : {
+        "ElasticsearchHeapSize" : "3584M"
+      },
+      "c3.large" : {
+        "ElasticsearchHeapSize" : "2G"
+      },
+      "c3.xlarge" : {
+        "ElasticsearchHeapSize" : "4G"
+      },
+      "c3.2xlarge" : {
+        "ElasticsearchHeapSize" : "8G"
+      },
+      "c3.4xlarge" : {
+        "ElasticsearchHeapSize" : "16G"
+      },
+      "c3.8xlarge" : {
+        "ElasticsearchHeapSize" : "32G"
+      },
+      "cc2.8xlarge" : {
+        "ElasticsearchHeapSize" : "30G"
+      },
+      "cr1.8xlarge" : {
+        "ElasticsearchHeapSize" : "122G"
+      },
+      "cg1.4xlarge" : {
+        "ElasticsearchHeapSize" : "12G"
+      },
+      "g2.2xlarge" : {
+        "ElasticsearchHeapSize" : "8G"
+      },
+      "hi1.4xlarge" : {
+        "ElasticsearchHeapSize" : "31G"
+      },
+      "hs1.8xlarge" : {
+        "ElasticsearchHeapSize" : "59G"
+      }
+    },
+    "RegionMap": {
+      "us-east-1": {
+        "AMI": "ami-d0f89fb9"
+      },
+      "us-west-2": {
+        "AMI": "ami-70f96e40"
+      },
+      "us-west-1": {
+        "AMI": "ami-fe002cbb"
+      },
+      "eu-west-1": {
+        "AMI": "ami-ce7b6fba"
+      },
+      "ap-southeast-1": {
+        "AMI": "ami-64084736"
+      },
+      "ap-northeast-1": {
+        "AMI": "ami-fe6ceeff"
+      },
+      "ap-southeast-2": {
+        "AMI": "ami-04ea7a3e"
+      },
+      "sa-east-1": {
+        "AMI": "ami-a3da00be"
+      }
+    }
+  },
+  "Resources": {
+    "SecurityGroup0": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "logsearch-single-default",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "icmp",
+            "FromPort": "3",
+            "ToPort": "4",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": {
+              "Ref": "CidrRange"
+            }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "CidrIp": {
+              "Ref": "CidrRange"
+            }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "443",
+            "ToPort": "443",
+            "CidrIp": {
+              "Ref": "CidrRange"
+            }
+          }
+        ]
+      }
+    },
+    "SecurityGroup0InterElasticsearch9200": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {
+          "Ref": "SecurityGroup0"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "9200",
+        "ToPort": "9299",
+        "SourceSecurityGroupName": {
+          "Ref": "SecurityGroup0"
+        }
+      }
+    },
+     "SecurityGroup0InterElasticsearch9300": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {
+          "Ref": "SecurityGroup0"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "9300",
+        "ToPort": "9399",
+        "SourceSecurityGroupName": {
+          "Ref": "SecurityGroup0"
+        }
+      }
+    },
+    "SecurityGroup0InterRedis": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {
+          "Ref": "SecurityGroup0"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "6379",
+        "ToPort": "6379",
+        "SourceSecurityGroupName": {
+          "Ref": "SecurityGroup0"
+        }
+      }
+    },
+    "EbsVolume0": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "Size": {
+          "Ref": "EbsVolumeSize"
+        },
         "AvailabilityZone": {
-            "Type": "String",
-            "Description": "Availability Zone (AZ) to start the cluster in.",
-            "Default": "us-east-1a"
+          "Ref": "AvailabilityZone"
+        }
+      },
+      "DeletionPolicy": "Snapshot"
+    },
+    "Instance0": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata" : {
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "files" : {
+              "/app/.env" : {
+                "content" : {
+                  "Fn::Join" : [
+                    "",
+                    [
+                      "export ES_HEAP_SIZE=",
+                      {
+                        "Fn::FindInMap": [
+                          "InstanceMemoryMap",
+                          {
+                            "Ref": "InstanceType"
+                          },
+                          "ElasticsearchHeapSize"
+                        ]
+                      },
+                      "\n",
+                      "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
+                      "export APP_ROOT_DIR=/app", "\n",
+                      "export APP_APP_DIR=/app/app", "\n",
+                      "export APP_VENDOR_DIR=/app/vendor", "\n",
+                      "export APP_LOG_DIR=/app/var/log", "\n",
+                      "export APP_RUN_DIR=/app/var/run", "\n",
+                      "export APP_TMP_DIR=/app/tmp", "\n",
+                      "export APP_DATA_DIR=/app/data", "\n",
+                      "export APP_USER=ubuntu", "\n",
+                      "export APP_CLUSTER_NAME=", { "Ref" : "ClusterName" }, "\n",
+                      "export APP_CONFIG_ES_IPADDRESS=`ec2metadata --local-ipv4`", "\n",
+                      "#export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup0" }, "\n",
+                      "export APP_CONFIG_REDIS_IPADDRESS=`ec2metadata --local-ipv4`", "\n",
+                      "export APP_CONFIG_REDIS_KEY=logstash", "\n"
+                    ]
+                  ]
+                },
+                "group" : "ubuntu",
+                "owner" : "ubuntu",
+                "mode" : "000755"
+              },
+              "/home/ubuntu/bootstrap" : {
+                "source" : {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "https://raw.github.com/cityindex/logsearch/",
+                      { "Ref": "RepositoryCommit" },
+                      "/bin/bootstrap"
+                    ]
+                  ]
+                },
+                "group" : "ubuntu",
+                "owner" : "ubuntu",
+                "mode" : "000555"
+              },
+              "/home/ubuntu/provision" : {
+                "content" : {
+                  "Fn::Join" : [
+                    "",
+                    [
+                      "#!/bin/bash", "\n",
+                      "set -e", "\n",
+                      "/app/app/.build/ubuntu-12/provision.sh", "\n",
+                      "/app/app/bin/data-mount-device xvdf ", { "Ref" : "EbsVolume0" }, " ubuntu", "\n"
+                    ]
+                  ]
+                },
+                "group" : "ubuntu",
+                "owner" : "ubuntu",
+                "mode" : "000555"
+              }
+            }
+          }
+        }
+      },
+      "Properties": {
+        "AvailabilityZone": {
+          "Ref": "AvailabilityZone"
         },
-        "CidrRange": {
-            "Description": "The CIDR range for remote access to advertised services like tcp:22, tcp:80, tcp:443.",
-            "Type": "String",
-            "MinLength": "9",
-            "MaxLength": "18",
-            "Default": "127.0.0.1/32",
-            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-            "ConstraintDescription": "must be a valid CIDR IP address range of the form x.x.x.x/x."
-        },
-        "ClusterName": {
-            "Type": "String",
-            "Description": "A unique name for the cluster.",
-            "Default": "logsearch-example"
-        },
-        "EbsVolumeSize": {
-            "Description": "Size of a dedicated EBS volume to be attached to the EC2 instance.",
-            "Type": "Number",
-            "MinValue": "10",
-            "MaxValue": "1024",
-            "Default": "32"
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionMap",
+            {
+              "Ref": "AWS::Region"
+            },
+            "AMI"
+          ]
         },
         "InstanceType": {
-            "Type": "String",
-            "Description": "Instance type for the multi-purpose node.",
-            "Default" : "m1.large"
+          "Ref": "InstanceType"
         },
         "KeyName": {
-            "Description": "Name of an existing EC2 key pair for remote access to the EC2 instance.",
-            "Type": "String"
+          "Ref": "KeyName"
         },
-        "RepositoryCommit": {
-            "Description": "Repository branch to bootstrap from.",
-            "Type": "String",
-            "Default": "master"
-        }
-    },
-    "Mappings": {
-        "InstanceMemoryMap" : {
-            "t1.micro" : {
-                "ElasticsearchHeapSize" : "256M"
-            },
-            "m1.small" : {
-                "ElasticsearchHeapSize" : "896M"
-            },
-            "m1.medium" : {
-                "ElasticsearchHeapSize" : "1536M"
-            },
-            "m1.large" : {
-                "ElasticsearchHeapSize" : "4G"
-            },
-            "m1.xlarge" : {
-                "ElasticsearchHeapSize" : "8G"
-            },
-            "m2.xlarge" : {
-                "ElasticsearchHeapSize" : "9G"
-            },
-            "m2.2xlarge" : {
-                "ElasticsearchHeapSize" : "17G"
-            },
-            "m2.4xlarge" : {
-                "ElasticsearchHeapSize" : "35G"
-            },
-            "m3.medium" : {
-                "ElasticsearchHeapSize" : "2G"
-            },
-            "m3.large" : {
-                "ElasticsearchHeapSize" : "4G"
-            },
-            "m3.xlarge" : {
-                "ElasticsearchHeapSize" : "8G"
-            },
-            "m3.2xlarge" : {
-                "ElasticsearchHeapSize" : "15G"
-            },
-            "c1.medium" : {
-                "ElasticsearchHeapSize" : "896M"
-            },
-            "c1.xlarge" : {
-                "ElasticsearchHeapSize" : "3584M"
-            },
-            "c3.large" : {
-                "ElasticsearchHeapSize" : "2G"
-            },
-            "c3.xlarge" : {
-                "ElasticsearchHeapSize" : "4G"
-            },
-            "c3.2xlarge" : {
-                "ElasticsearchHeapSize" : "8G"
-            },
-            "c3.4xlarge" : {
-                "ElasticsearchHeapSize" : "16G"
-            },
-            "c3.8xlarge" : {
-                "ElasticsearchHeapSize" : "32G"
-            },
-            "cc2.8xlarge" : {
-                "ElasticsearchHeapSize" : "30G"
-            },
-            "cr1.8xlarge" : {
-                "ElasticsearchHeapSize" : "122G"
-            },
-            "cg1.4xlarge" : {
-                "ElasticsearchHeapSize" : "12G"
-            },
-            "g2.2xlarge" : {
-                "ElasticsearchHeapSize" : "8G"
-            },
-            "hi1.4xlarge" : {
-                "ElasticsearchHeapSize" : "31G"
-            },
-            "hs1.8xlarge" : {
-                "ElasticsearchHeapSize" : "59G"
-            }
-        },
-        "RegionMap": {
-            "us-east-1": {
-                "AMI": "ami-d0f89fb9"
-            },
-            "us-west-2": {
-                "AMI": "ami-70f96e40"
-            },
-            "us-west-1": {
-                "AMI": "ami-fe002cbb"
-            },
-            "eu-west-1": {
-                "AMI": "ami-ce7b6fba"
-            },
-            "ap-southeast-1": {
-                "AMI": "ami-64084736"
-            },
-            "ap-northeast-1": {
-                "AMI": "ami-fe6ceeff"
-            },
-            "ap-southeast-2": {
-                "AMI": "ami-04ea7a3e"
-            },
-            "sa-east-1": {
-                "AMI": "ami-a3da00be"
-            }
-        }
-    },
-    "Resources": {
-        "SecurityGroup0": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": "logsearch-single-default",
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "icmp",
-                        "FromPort": "3",
-                        "ToPort": "4",
-                        "CidrIp": "0.0.0.0/0"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "22",
-                        "ToPort": "22",
-                        "CidrIp": {
-                            "Ref": "CidrRange"
-                        }
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "80",
-                        "ToPort": "80",
-                        "CidrIp": {
-                            "Ref": "CidrRange"
-                        }
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "443",
-                        "ToPort": "443",
-                        "CidrIp": {
-                            "Ref": "CidrRange"
-                        }
-                    }
-                ]
-            }
-        },
-        "SecurityGroup0InterElasticsearch9200": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupName": {
-                    "Ref": "SecurityGroup0"
-                },
-                "IpProtocol": "tcp",
-                "FromPort": "9200",
-                "ToPort": "9299",
-                "SourceSecurityGroupName": {
-                    "Ref": "SecurityGroup0"
-                }
-            }
-        },
-       "SecurityGroup0InterElasticsearch9300": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupName": {
-                    "Ref": "SecurityGroup0"
-                },
-                "IpProtocol": "tcp",
-                "FromPort": "9300",
-                "ToPort": "9399",
-                "SourceSecurityGroupName": {
-                    "Ref": "SecurityGroup0"
-                }
-            }
-        },
-        "SecurityGroup0InterRedis": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupName": {
-                    "Ref": "SecurityGroup0"
-                },
-                "IpProtocol": "tcp",
-                "FromPort": "6379",
-                "ToPort": "6379",
-                "SourceSecurityGroupName": {
-                    "Ref": "SecurityGroup0"
-                }
-            }
-        },
-        "EbsVolume0": {
-            "Type": "AWS::EC2::Volume",
-            "Properties": {
-                "Size": {
-                    "Ref": "EbsVolumeSize"
-                },
-                "AvailabilityZone": {
-                    "Ref": "AvailabilityZone"
-                }
-            },
-            "DeletionPolicy": "Snapshot"
-        },
-        "Instance0": {
-            "Type": "AWS::EC2::Instance",
-            "Metadata" : {
-                "AWS::CloudFormation::Init" : {
-                    "config" : {
-                        "files" : {
-                            "/app/.env" : {
-                                "content" : {
-                                    "Fn::Join" : [
-                                        "",
-                                        [
-                                            "export ES_HEAP_SIZE=",
-                                            {
-                                                "Fn::FindInMap": [
-                                                    "InstanceMemoryMap",
-                                                    {
-                                                        "Ref": "InstanceType"
-                                                    },
-                                                    "ElasticsearchHeapSize"
-                                                ]
-                                            },
-                                            "\n",
-                                            "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
-                                            "export APP_ROOT_DIR=/app", "\n",
-                                            "export APP_APP_DIR=/app/app", "\n",
-                                            "export APP_VENDOR_DIR=/app/vendor", "\n",
-                                            "export APP_LOG_DIR=/app/var/log", "\n",
-                                            "export APP_RUN_DIR=/app/var/run", "\n",
-                                            "export APP_TMP_DIR=/app/tmp", "\n",
-                                            "export APP_DATA_DIR=/app/data", "\n",
-                                            "export APP_USER=ubuntu", "\n",
-                                            "export APP_CLUSTER_NAME=", { "Ref" : "ClusterName" }, "\n",
-                                            "export APP_CONFIG_ES_IPADDRESS=`ec2metadata --local-ipv4`", "\n",
-                                            "#export APP_CONFIG_ES_AWS_EC2_GROUP=", { "Ref": "SecurityGroup0" }, "\n",
-                                            "export APP_CONFIG_REDIS_IPADDRESS=`ec2metadata --local-ipv4`", "\n",
-                                            "export APP_CONFIG_REDIS_KEY=logstash", "\n"
-                                        ]
-                                    ]
-                                },
-                                "group" : "ubuntu",
-                                "owner" : "ubuntu",
-                                "mode" : "000755"
-                            },
-                            "/home/ubuntu/bootstrap" : {
-                                "source" : {
-                                    "Fn::Join": [
-                                        "",
-                                        [
-                                            "https://raw.github.com/cityindex/logsearch/",
-                                            { "Ref": "RepositoryCommit" },
-                                            "/bin/bootstrap"
-                                        ]
-                                    ]
-                                },
-                                "group" : "ubuntu",
-                                "owner" : "ubuntu",
-                                "mode" : "000555"
-                            },
-                            "/home/ubuntu/provision" : {
-                                "content" : {
-                                    "Fn::Join" : [
-                                        "",
-                                        [
-                                            "#!/bin/bash", "\n",
-                                            "set -e", "\n",
-                                            "/app/app/.build/ubuntu-12/provision.sh", "\n",
-                                            "/app/app/bin/data-mount-device xvdf ", { "Ref" : "EbsVolume0" }, " ubuntu", "\n"
-                                        ]
-                                    ]
-                                },
-                                "group" : "ubuntu",
-                                "owner" : "ubuntu",
-                                "mode" : "000555"
-                            }
-                        }
-                    }
-                }
-            },
-            "Properties": {
-                "AvailabilityZone": {
-                    "Ref": "AvailabilityZone"
-                },
-                "ImageId": {
-                    "Fn::FindInMap": [
-                        "RegionMap",
-                        {
-                            "Ref": "AWS::Region"
-                        },
-                        "AMI"
-                    ]
-                },
-                "InstanceType": {
-                    "Ref": "InstanceType"
-                },
-                "KeyName": {
-                    "Ref": "KeyName"
-                },
-                "SecurityGroups": [{
-                    "Ref": "SecurityGroup0"
-                }],
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": {
-                            "Ref" : "AWS::StackName"
-                        },
-                        "PropagateAtLaunch": "true"
-                    }
-                ],
-                "Volumes": [{
-                    "VolumeId": {
-                        "Ref": "EbsVolume0"
-                    },
-                    "Device": "/dev/sdf"
-                }],
-                "UserData" : {
-                    "Fn::Base64": {
-                        "Fn::Join": [
-                            "",
-                            [
-                                "#!/bin/bash", "\n",
-                                "# Error handling helper function\n",
-                                "function error_exit\n",
-                                "{\n",
-                                " cfn-signal --exit-code $? --reason \"$1\" '", { "Ref": "Instance0WaitConditionHandle" }, "'\n",
-                                " exit $?\n",
-                                "}\n",
-                                "apt-get update", "\n",
-                                "apt-get -y install python-pip", "\n",
-                                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
-                                "cfn-init --verbose ",
-                                " --region ", { "Ref": "AWS::Region" },
-                                " --stack ", { "Ref": "AWS::StackName" },
-                                " --resource Instance0 ",
-                                " || error_exit 'Failed to run cfn-init'", "\n",
-                                "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch,kibana,logstash,redis,logstash_redis ", { "Ref": "RepositoryCommit" }, "\n",
-                                "/app/app/.build/dev_server/extra.sh", "\n",
-                                "cfn-signal --exit-code 0 --reason 'Provisioning complete' '", { "Ref": "Instance0WaitConditionHandle" }, "'\n"
-                            ]
-                        ]
-                    }
-                }
-            }
-        },
-        "Instance0WaitConditionHandle": {
-            "Type": "AWS::CloudFormation::WaitConditionHandle"
-        },
-        "Instance0WaitCondition": {
-            "Type": "AWS::CloudFormation::WaitCondition",
-            "DependsOn": "Instance0",
-            "Properties": {
-                "Handle": {
-                    "Ref": "Instance0WaitConditionHandle"
-                },
-                "Timeout": "900"
-            }
-        }
-    },
-    "Outputs": {
-        "WebAccess": {
-            "Description": "Web Access",
+        "SecurityGroups": [{
+          "Ref": "SecurityGroup0"
+        }],
+        "Tags": [
+          {
+            "Key": "Name",
             "Value": {
-                "Fn::Join": [
-                    "",
-                    [
-                        "http://",
-                        { "Fn::GetAtt" : [ "Instance0", "PublicDnsName" ] },
-                        "/"
-                    ]
-                ]
-            }
-        },
-        "SshAccess": {
-            "Description": "SSH Access",
-            "Value": {
-                "Fn::Join": [
-                    "",
-                    [
-                        "ssh ubuntu@",
-                        { "Fn::GetAtt" : [ "Instance0", "PublicDnsName" ] }
-                    ]
-                ]
-            }
+              "Ref" : "AWS::StackName"
+            },
+            "PropagateAtLaunch": "true"
+          }
+        ],
+        "Volumes": [{
+          "VolumeId": {
+            "Ref": "EbsVolume0"
+          },
+          "Device": "/dev/sdf"
+        }],
+        "UserData" : {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash", "\n",
+                "# Error handling helper function\n",
+                "function error_exit\n",
+                "{\n",
+                " cfn-signal --exit-code $? --reason \"$1\" '", { "Ref": "Instance0WaitConditionHandle" }, "'\n",
+                " exit $?\n",
+                "}\n",
+                "apt-get update", "\n",
+                "apt-get -y install python-pip", "\n",
+                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
+                "cfn-init --verbose ",
+                " --region ", { "Ref": "AWS::Region" },
+                " --stack ", { "Ref": "AWS::StackName" },
+                " --resource Instance0 ",
+                " || error_exit 'Failed to run cfn-init'", "\n",
+                "\n",
+                "sudo -H -u ubuntu /home/ubuntu/bootstrap /home/ubuntu/provision elasticsearch,kibana,logstash,redis,logstash_redis ", { "Ref": "RepositoryCommit" }, "\n",
+                "/app/app/.build/dev_server/extra.sh", "\n",
+                "cfn-signal --exit-code 0 --reason 'Provisioning complete' '", { "Ref": "Instance0WaitConditionHandle" }, "'\n"
+              ]
+            ]
+          }
         }
+      }
+    },
+    "Instance0WaitConditionHandle": {
+      "Type": "AWS::CloudFormation::WaitConditionHandle"
+    },
+    "Instance0WaitCondition": {
+      "Type": "AWS::CloudFormation::WaitCondition",
+      "DependsOn": "Instance0",
+      "Properties": {
+        "Handle": {
+          "Ref": "Instance0WaitConditionHandle"
+        },
+        "Timeout": "900"
+      }
     }
+  },
+  "Outputs": {
+    "WebAccess": {
+      "Description": "Web Access",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "http://",
+            { "Fn::GetAtt" : [ "Instance0", "PublicDnsName" ] },
+            "/"
+          ]
+        ]
+      }
+    },
+    "SshAccess": {
+      "Description": "SSH Access",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "ssh ubuntu@",
+            { "Fn::GetAtt" : [ "Instance0", "PublicDnsName" ] }
+          ]
+        ]
+      }
+    }
+  }
 }

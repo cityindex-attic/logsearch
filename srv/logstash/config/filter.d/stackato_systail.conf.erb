@@ -1,9 +1,9 @@
 if [@type] == "stackato_systail" {
-    json {
-        source => "@message"
-    }
+  json {
+    source => "@message"
+  }
 
-    date {
-        match => [ "UnixTime", "UNIX" ]
-    }
+  date {
+    match => [ "UnixTime", "UNIX" ]
+  }
 }

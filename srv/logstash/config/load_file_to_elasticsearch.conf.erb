@@ -1,34 +1,34 @@
 <%= ERB.new(File.read("#{ENV['APP_APP_DIR']}/srv/logstash/config/common.conf.erb")).result(binding) %>
 
 input {
-    stdin {
-        type => "<%= @args[:logstash_type] %>"
-        codec => "<%= @args[:logstash_format] || 'line' %>"
-        add_field => [ "_logstash_input", "stdin" ]
-    }
+  stdin {
+    type => "<%= @args[:logstash_type] %>"
+    codec => "<%= @args[:logstash_format] || 'line' %>"
+    add_field => [ "_logstash_input", "stdin" ]
+  }
 }
 
 filter {
-    if [_logstash_input] == "stdin" {
-        mutate {
-            rename => [ 'host', '@source.host' ]
-            rename => [ 'path', '@source.path' ]
-            remove_field => [ '_logstash_input' ]
-        }
+  if [_logstash_input] == "stdin" {
+    mutate {
+      rename => [ 'host', '@source.host' ]
+      rename => [ 'path', '@source.path' ]
+      remove_field => [ '_logstash_input' ]
     }
+  }
 }
 
 output {
-    # uncomment for debugging
-#    stdout { codec => "rubydebug" }
+  # uncomment for debugging
+#  stdout { codec => "rubydebug" }
 
-    elasticsearch_http {
-        # this will lose #({events-in-log} % {flush_size}) events due to unflushed buffer on exit
-        # https://logstash.jira.com/browse/LOGSTASH-679 - supposedly almost fixed?
-        # once fixed, this hack and its references should be removed in favor of a static number
-        flush_size => <%= $bug_679_flush_size ? $bug_679_flush_size : 100 %>
-        host => "<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>"
-        index_type => "%{@type}"
-        manage_template => false
-    }
+  elasticsearch_http {
+    # this will lose #({events-in-log} % {flush_size}) events due to unflushed buffer on exit
+    # https://logstash.jira.com/browse/LOGSTASH-679 - supposedly almost fixed?
+    # once fixed, this hack and its references should be removed in favor of a static number
+    flush_size => <%= $bug_679_flush_size ? $bug_679_flush_size : 100 %>
+    host => "<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>"
+    index_type => "%{@type}"
+    manage_template => false
+  }
 }

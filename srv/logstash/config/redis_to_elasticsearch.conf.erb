@@ -1,23 +1,23 @@
 <%= ERB.new(File.read("#{ENV['APP_APP_DIR']}/srv/logstash/config/common.conf.erb")).result(binding) %>
 
 input {
-    redis {
-        host => "<%= ENV['APP_CONFIG_REDIS_IPADDRESS'] || '127.0.0.1'  %>"
-        type => "redis-input"
-        data_type => "list"
-        key => "<%= ENV['APP_CONFIG_REDIS_KEY'] || 'logstash'  %>"
-        threads => 8
-    }
+  redis {
+    host => "<%= ENV['APP_CONFIG_REDIS_IPADDRESS'] || '127.0.0.1'  %>"
+    type => "redis-input"
+    data_type => "list"
+    key => "<%= ENV['APP_CONFIG_REDIS_KEY'] || 'logstash'  %>"
+    threads => 8
+  }
 }
 
 output {
-    <% if ENV['DEBUG_OUTPUT'] %>
-    stdout { debug => true codec => "rubydebug" } 
-    <% end %>
-    elasticsearch_http {
-        host => "<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>"
-        flush_size => <%= ENV['APP_CONFIG_REDIS_FLUSH_SIZE'] || 100  %>
-        index_type => "%{@type}"
-        manage_template => false
-    }
+  <% if ENV['DEBUG_OUTPUT'] %>
+  stdout { debug => true codec => "rubydebug" } 
+  <% end %>
+  elasticsearch_http {
+    host => "<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>"
+    flush_size => <%= ENV['APP_CONFIG_REDIS_FLUSH_SIZE'] || 100  %>
+    index_type => "%{@type}"
+    manage_template => false
+  }
 }

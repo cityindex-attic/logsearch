@@ -1,11 +1,11 @@
 if [@type] == "iis_default" {
-    grok {
-        match => [ "@message", "%{TIMESTAMP_ISO8601:datetime} %{HOST:s_sitename} %{HOST:s_computername} %{IP:s_ip} %{WORD:cs_method} %{URIPATHPARAM:cs_uri_stem} (?:%{NOTSPACE:cs_uri_query}|-) %{POSINT:s_port} (?:%{USER:cs_username}|-) %{IP:c_ip} (?:HTTP/%{NUMBER:cs_version}|-) (?:%{NOTSPACE:cs_user_agent}|-) (?:%{NOTSPACE:cs_cookie}|-) (?:%{URI:cs_referer}|-) (?:%{URIHOST:cs_host}|-) %{POSINT:sc_status} %{INT:sc_substatus} %{INT:win32_status} %{NONNEGINT:sc_bytes} %{NONNEGINT:cs_bytes} %{NONNEGINT:time_taken}" ]
-        add_tag => "iis"
-        add_tag => "iis_default"
-    }
+  grok {
+    match => [ "@message", "%{TIMESTAMP_ISO8601:datetime} %{HOST:s_sitename} %{HOST:s_computername} %{IP:s_ip} %{WORD:cs_method} %{URIPATHPARAM:cs_uri_stem} (?:%{NOTSPACE:cs_uri_query}|-) %{POSINT:s_port} (?:%{USER:cs_username}|-) %{IP:c_ip} (?:HTTP/%{NUMBER:cs_version}|-) (?:%{NOTSPACE:cs_user_agent}|-) (?:%{NOTSPACE:cs_cookie}|-) (?:%{URI:cs_referer}|-) (?:%{URIHOST:cs_host}|-) %{POSINT:sc_status} %{INT:sc_substatus} %{INT:win32_status} %{NONNEGINT:sc_bytes} %{NONNEGINT:cs_bytes} %{NONNEGINT:time_taken}" ]
+    add_tag => "iis"
+    add_tag => "iis_default"
+  }
 
-    date {
-        match => [ "datetime", "yyyy-MM-dd HH:mm:ss" ]
-    }
+  date {
+    match => [ "datetime", "yyyy-MM-dd HH:mm:ss" ]
+  }
 }

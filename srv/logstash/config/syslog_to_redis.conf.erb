@@ -1,20 +1,20 @@
 input {
-    syslog {
-        add_field => [ "type", "syslog" ]
-        host => "<%= ENV['APP_CONFIG_SYSLOG_HOST'] || '0.0.0.0'  %>"
-        port => "<%= ENV['APP_CONFIG_SYSLOG_PORT'] || '5514'  %>"
-    }
+  syslog {
+    add_field => [ "type", "syslog" ]
+    host => "<%= ENV['APP_CONFIG_SYSLOG_HOST'] || '0.0.0.0'  %>"
+    port => "<%= ENV['APP_CONFIG_SYSLOG_PORT'] || '5514'  %>"
+  }
 }
 
 output {
-    # uncomment for debugging
-    #stdout { debug => true debug_format => "json"}
+  # uncomment for debugging
+  #stdout { debug => true debug_format => "json"}
 
-    redis {
-        host => "<%= ENV['APP_CONFIG_REDIS_IPADDRESS'] || '127.0.0.1'  %>"
-        data_type => "list"
-        key => "<%= ENV['APP_CONFIG_REDIS_KEY'] || 'logstash'  %>"
-        batch => true
-        batch_events => 50
-    }
+  redis {
+    host => "<%= ENV['APP_CONFIG_REDIS_IPADDRESS'] || '127.0.0.1'  %>"
+    data_type => "list"
+    key => "<%= ENV['APP_CONFIG_REDIS_KEY'] || 'logstash'  %>"
+    batch => true
+    batch_events => 50
+  }
 }

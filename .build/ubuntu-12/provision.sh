@@ -40,11 +40,11 @@ if [[ ! "$(ruby --version)" =~ "ruby 1.9.3" ]]; then
     libxslt-dev libxml2-dev -y
    
   sudo update-alternatives --install /usr/bin/ruby ruby /usr/bin/ruby1.9.1 400 \
-           --slave   /usr/share/man/man1/ruby.1.gz ruby.1.gz \
-                          /usr/share/man/man1/ruby1.9.1.1.gz \
-          --slave   /usr/bin/ri ri /usr/bin/ri1.9.1 \
-          --slave   /usr/bin/irb irb /usr/bin/irb1.9.1 \
-          --slave   /usr/bin/rdoc rdoc /usr/bin/rdoc1.9.1
+    --slave /usr/share/man/man1/ruby.1.gz ruby.1.gz \
+            /usr/share/man/man1/ruby1.9.1.1.gz \
+    --slave /usr/bin/ri ri /usr/bin/ri1.9.1 \
+    --slave /usr/bin/irb irb /usr/bin/irb1.9.1 \
+    --slave /usr/bin/rdoc rdoc /usr/bin/rdoc1.9.1
    
   # choose your interpreter
   # changes symlinks for /usr/bin/ruby , /usr/bin/gem
@@ -72,9 +72,9 @@ echo "git:\t$(git --version)"
 #
 
 if ! (which ntpd 1>/dev/null 2>&1) ; then
-    echo "Installing ntpd..."
+  echo "Installing ntpd..."
 
-    sudo apt-get install -y ntp
+  sudo apt-get install -y ntp
 fi
 
 
@@ -83,9 +83,9 @@ fi
 #
 
 if ! (which java 1>/dev/null 2>&1) ; then
-    echo "Installing java..."
+  echo "Installing java..."
 
-    sudo apt-get install -y openjdk-7-jre-headless
+  sudo apt-get install -y openjdk-7-jre-headless
 fi
 
 echo "java:$(java -version 2>&1 | awk -F '\\"' '/version/ { print $2 }')"
@@ -96,9 +96,9 @@ echo "java:$(java -version 2>&1 | awk -F '\\"' '/version/ { print $2 }')"
 #
 
 if ! (which nginx 1>/dev/null 2>&1) ; then
-    echo "Installing nginx..."
+  echo "Installing nginx..."
 
-    sudo apt-get install -y nginx
+  sudo apt-get install -y nginx
 fi
 
 echo "nginx:$(nginx -v 2>&1 | awk -F '/' '/nginx/ { print $2 }')"
@@ -112,9 +112,9 @@ sudo service nginx stop
 #
 
 if ! (which pv 1>/dev/null 2>&1) ; then
-    echo "Installing pv..."
+  echo "Installing pv..."
 
-    sudo apt-get install -y pv
+  sudo apt-get install -y pv
 fi
 
 echo "pv:$(pv -V | head -n1 | awk -F ' ' '/pv/ { print $2 }')"
@@ -124,9 +124,9 @@ echo "pv:$(pv -V | head -n1 | awk -F ' ' '/pv/ { print $2 }')"
 #
 
 if ! (which zip 1>/dev/null 2>&1) ; then
-    echo "Installing zip..."
+  echo "Installing zip..."
 
-    sudo apt-get install -y zip
+  sudo apt-get install -y zip
 fi
 
 echo "zip:$(zip -v | head -n2)"

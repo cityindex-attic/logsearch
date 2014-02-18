@@ -1,403 +1,403 @@
 {
-    "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "A default logstash parser node auto scaling group.",
-    "Parameters": {
-        "EnvironmentName" : {
-            "Type" : "String",
-            "Description" : "The environment the service should run under (e.g. dev, live, test).",
-            "Default" : "dev",
-            "AllowedPattern" : "[0-9a-z]+"
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "A default logstash parser node auto scaling group.",
+  "Parameters": {
+    "EnvironmentName" : {
+      "Type" : "String",
+      "Description" : "The environment the service should run under (e.g. dev, live, test).",
+      "Default" : "dev",
+      "AllowedPattern" : "[0-9a-z]+"
+    },
+    "ServiceName" : {
+      "Type" : "String",
+      "Description" : "The name the service should run under (e.g. logsearch, logsearch-labs).",
+      "Default" : "logsearch-repodev",
+      "AllowedPattern" : "[0-9a-z\\-]+"
+    },
+    "AutoScalingTopicArn": {
+      "Type": "String",
+      "Description": "ARN of SNS topic for Auto Scaling notifications.",
+      "Default": ""
+    },
+    "CostCentre": {
+      "Type": "String",
+      "Description": "A specific cost center to affiliate with resources.",
+      "Default": "logsearch-dev"
+    },
+    "ElasticsearchHost": {
+      "Type": "String",
+      "Description": "An elasticsearch host to send messages to.",
+      "MinLength" : "1"
+    },
+    "GroupDesiredCapacity": {
+      "Type": "Number",
+      "Description": "Desired capacity of node auto scaling group within the cluster.",
+      "Default": "1"
+    },
+    "GroupMinSize": {
+      "Type": "Number",
+      "Description": "Minimum size of node auto scaling group within the cluster.",
+      "Default": "1"
+    },
+    "GroupMaxSize": {
+      "Type": "Number",
+      "Description": "Maximum size of node auto scaling group within the cluster.",
+      "Default": "4"
+    },
+    "InstancePostScript": {
+      "Type": "String",
+      "Description": "A final command to run when provisioning instances.",
+      "Default": "/bin/true"
+    },
+    "InstanceProfile": {
+      "Type": "String",
+      "Description": "An IAM role for the nodes."
+    },
+    "InstanceType": {
+      "Default": "c3.large",
+      "Type": "String",
+      "Description": "The instance type to create the nodes on.",
+      "AllowedValues": [
+        "t1.micro",
+        "m1.small",
+        "m1.medium",
+        "m1.large",
+        "m1.xlarge",
+        "m2.xlarge",
+        "m2.2xlarge",
+        "m2.4xlarge",
+        "m3.medium",
+        "m3.large",
+        "m3.xlarge",
+        "m3.2xlarge",
+        "c1.medium",
+        "c1.xlarge",
+        "c3.large",
+        "c3.xlarge",
+        "c3.2xlarge",
+        "c3.4xlarge",
+        "c3.8xlarge",
+        "cc2.8xlarge",
+        "cr1.8xlarge",
+        "cg1.4xlarge",
+        "g2.2xlarge",
+        "hi1.4xlarge",
+        "hs1.8xlarge"
+      ],
+      "ConstraintDescription": "must be a valid EC2 instance type."
+    },
+    "KeyName": {
+      "Type": "String",
+      "Description": "A key pair name for configuring the nodes.",
+      "Default": "default"
+    },
+    "RedisHost": {
+      "Type": "String",
+      "Description": "A redis host to receive messages from.",
+      "MinLength" : "1"
+    },
+    "RepositoryCommit": {
+      "Default" : "master",
+      "Type": "String",
+      "Description": "A branch to use for bootstrapping."
+    },
+    "SecurityGroup": {
+      "Type": "String",
+      "Description": "A security group to create the nodes in.",
+      "Default" : "default",
+      "MinLength" : "1"
+    },
+    "SpotPrice": {
+      "Type": "Number",
+      "Description": "The spot price for instances to create the nodes on (use 0 to request on demand instances).",
+      "Default": "0.16"
+    }
+  },
+  "Conditions": {
+    "UseAutoScalingNotifications": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AutoScalingTopicArn"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "UseSpotInstances": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "SpotPrice"
+            },
+            "0"
+          ]
+        }
+      ]
+    }
+  },
+  "Mappings": {
+    "RegionMap": {
+      "us-east-1": {
+        "AMI": "ami-d0f89fb9"
+      },
+      "us-west-2": {
+        "AMI": "ami-70f96e40"
+      },
+      "us-west-1": {
+        "AMI": "ami-fe002cbb"
+      },
+      "eu-west-1": {
+        "AMI": "ami-ce7b6fba"
+      },
+      "ap-southeast-1": {
+        "AMI": "ami-64084736"
+      },
+      "ap-northeast-1": {
+        "AMI": "ami-fe6ceeff"
+      },
+      "ap-southeast-2": {
+        "AMI": "ami-04ea7a3e"
+      },
+      "sa-east-1": {
+        "AMI": "ami-a3da00be"
+      }
+    }
+  },
+  "Resources": {
+    "LaunchConfiguration": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Metadata": {
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "files" : {
+              "/app/.env" : {
+                "content" : {
+                  "Fn::Join" : [
+                    "",
+                    [
+                      "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
+                      "export APP_ENVIRONMENT_NAME=", { "Ref" : "EnvironmentName" }, "\n",
+                      "export APP_SERVICE_NAME=", { "Ref" : "ServiceName" }, "\n",
+                      "export APP_ROLE_NAME=logstash", "\n",
+                      "export APP_ROOT_DIR=/app", "\n",
+                      "export APP_APP_DIR=/app/app", "\n",
+                      "export APP_VENDOR_DIR=/app/vendor", "\n",
+                      "export APP_LOG_DIR=/app/var/log", "\n",
+                      "export APP_RUN_DIR=/app/var/run", "\n",
+                      "export APP_TMP_DIR=/app/tmp", "\n",
+                      "export APP_DATA_DIR=/app/data", "\n",
+                      "export APP_USER=ubuntu", "\n",
+                      "export APP_CONFIG_ES_IPADDRESS=",
+                      {
+                        "Ref": "ElasticsearchHost"
+                      },
+                      "\n",
+                      "export APP_CONFIG_REDIS_IPADDRESS=",
+                      {
+                        "Ref": "RedisHost"
+                      },
+                      "\n",
+                      "export APP_CONFIG_REDIS_KEY=logstash", "\n"
+                    ]
+                  ]
+                },
+                "group" : "ubuntu",
+                "owner" : "ubuntu",
+                "mode" : "000755"
+              },
+              "/home/ubuntu/bootstrap" : {
+                "source" : {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "https://raw.github.com/cityindex/logsearch/",
+                      { "Ref": "RepositoryCommit" },
+                      "/bin/bootstrap"
+                    ]
+                  ]
+                },
+                "group" : "ubuntu",
+                "owner" : "ubuntu",
+                "mode" : "000555"
+              }
+            }
+          }
+        }
+      },
+      "Properties": {
+        "InstanceMonitoring": "true",
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionMap",
+            {
+              "Ref": "AWS::Region"
+            },
+            "AMI"
+          ]
         },
-        "ServiceName" : {
-            "Type" : "String",
-            "Description" : "The name the service should run under (e.g. logsearch, logsearch-labs).",
-            "Default" : "logsearch-repodev",
-            "AllowedPattern" : "[0-9a-z\\-]+"
-        },
-        "AutoScalingTopicArn": {
-            "Type": "String",
-            "Description": "ARN of SNS topic for Auto Scaling notifications.",
-            "Default": ""
-        },
-        "CostCentre": {
-            "Type": "String",
-            "Description": "A specific cost center to affiliate with resources.",
-            "Default": "logsearch-dev"
-        },
-        "ElasticsearchHost": {
-            "Type": "String",
-            "Description": "An elasticsearch host to send messages to.",
-            "MinLength" : "1"
-        },
-        "GroupDesiredCapacity": {
-            "Type": "Number",
-            "Description": "Desired capacity of node auto scaling group within the cluster.",
-            "Default": "1"
-        },
-        "GroupMinSize": {
-            "Type": "Number",
-            "Description": "Minimum size of node auto scaling group within the cluster.",
-            "Default": "1"
-        },
-        "GroupMaxSize": {
-            "Type": "Number",
-            "Description": "Maximum size of node auto scaling group within the cluster.",
-            "Default": "4"
-        },
-        "InstancePostScript": {
-            "Type": "String",
-            "Description": "A final command to run when provisioning instances.",
-            "Default": "/bin/true"
-        },
-        "InstanceProfile": {
-            "Type": "String",
-            "Description": "An IAM role for the nodes."
+        "IamInstanceProfile": {
+          "Ref": "InstanceProfile"
         },
         "InstanceType": {
-            "Default": "c3.large",
-            "Type": "String",
-            "Description": "The instance type to create the nodes on.",
-            "AllowedValues": [
-                "t1.micro",
-                "m1.small",
-                "m1.medium",
-                "m1.large",
-                "m1.xlarge",
-                "m2.xlarge",
-                "m2.2xlarge",
-                "m2.4xlarge",
-                "m3.medium",
-                "m3.large",
-                "m3.xlarge",
-                "m3.2xlarge",
-                "c1.medium",
-                "c1.xlarge",
-                "c3.large",
-                "c3.xlarge",
-                "c3.2xlarge",
-                "c3.4xlarge",
-                "c3.8xlarge",
-                "cc2.8xlarge",
-                "cr1.8xlarge",
-                "cg1.4xlarge",
-                "g2.2xlarge",
-                "hi1.4xlarge",
-                "hs1.8xlarge"
-            ],
-            "ConstraintDescription": "must be a valid EC2 instance type."
+          "Ref": "InstanceType"
         },
         "KeyName": {
-            "Type": "String",
-            "Description": "A key pair name for configuring the nodes.",
-            "Default": "default"
+          "Ref": "KeyName"
         },
-        "RedisHost": {
-            "Type": "String",
-            "Description": "A redis host to receive messages from.",
-            "MinLength" : "1"
-        },
-        "RepositoryCommit": {
-            "Default" : "master",
-            "Type": "String",
-            "Description": "A branch to use for bootstrapping."
-        },
-        "SecurityGroup": {
-            "Type": "String",
-            "Description": "A security group to create the nodes in.",
-            "Default" : "default",
-            "MinLength" : "1"
-        },
+        "SecurityGroups": [{
+          "Ref": "SecurityGroup"
+        }],
         "SpotPrice": {
-            "Type": "Number",
-            "Description": "The spot price for instances to create the nodes on (use 0 to request on demand instances).",
-            "Default": "0.16"
-        }
-    },
-    "Conditions": {
-        "UseAutoScalingNotifications": {
-            "Fn::Not": [
-                {
-                    "Fn::Equals": [
-                        {
-                            "Ref": "AutoScalingTopicArn"
-                        },
-                        ""
-                    ]
-                }
+          "Fn::If": [
+            "UseSpotInstances",
+            {
+              "Ref": "SpotPrice"
+            },
+            {
+              "Ref": "AWS::NoValue"
+            }
+          ]
+        },
+        "UserData" : {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash", "\n",
+                "# Error handling helper function\n",
+                "function error_exit\n",
+                "{\n",
+                " cfn-signal --exit-code $? --reason \"$1\" '", { "Ref": "WaitConditionHandle" }, "'\n",
+                " exit $?\n",
+                "}\n",
+                "apt-get update", "\n",
+                "apt-get -y install python-pip", "\n",
+                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
+                "cfn-init --verbose ",
+                " --region ", { "Ref": "AWS::Region" },
+                " --stack ", { "Ref": "AWS::StackName" },
+                " --resource LaunchConfiguration ",
+                " || error_exit 'Failed to run cfn-init'", "\n",
+                "\n",
+                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh logstash,logstash_redis ", { "Ref": "RepositoryCommit" }, "\n",
+                "/app/app/.build/dev_server/extra.sh", "\n",
+                { "Ref" : "InstancePostScript" }, "\n",
+                "cfn-signal --exit-code 0 --reason 'Provisioning complete' '", { "Ref": "WaitConditionHandle" }, "'\n"
+              ]
             ]
-        },
-        "UseSpotInstances": {
-            "Fn::Not": [
-                {
-                    "Fn::Equals": [
-                        {
-                            "Ref": "SpotPrice"
-                        },
-                        "0"
-                    ]
-                }
-            ]
+          }
         }
+      }
     },
-    "Mappings": {
-        "RegionMap": {
-            "us-east-1": {
-                "AMI": "ami-d0f89fb9"
-            },
-            "us-west-2": {
-                "AMI": "ami-70f96e40"
-            },
-            "us-west-1": {
-                "AMI": "ami-fe002cbb"
-            },
-            "eu-west-1": {
-                "AMI": "ami-ce7b6fba"
-            },
-            "ap-southeast-1": {
-                "AMI": "ami-64084736"
-            },
-            "ap-northeast-1": {
-                "AMI": "ami-fe6ceeff"
-            },
-            "ap-southeast-2": {
-                "AMI": "ami-04ea7a3e"
-            },
-            "sa-east-1": {
-                "AMI": "ami-a3da00be"
-            }
-        }
-    },
-    "Resources": {
-        "LaunchConfiguration": {
-            "Type": "AWS::AutoScaling::LaunchConfiguration",
-            "Metadata": {
-                "AWS::CloudFormation::Init" : {
-                    "config" : {
-                        "files" : {
-                            "/app/.env" : {
-                                "content" : {
-                                    "Fn::Join" : [
-                                        "",
-                                        [
-                                            "export AWS_DEFAULT_REGION=", { "Ref": "AWS::Region" }, "\n",
-                                            "export APP_ENVIRONMENT_NAME=", { "Ref" : "EnvironmentName" }, "\n",
-                                            "export APP_SERVICE_NAME=", { "Ref" : "ServiceName" }, "\n",
-                                            "export APP_ROLE_NAME=logstash", "\n",
-                                            "export APP_ROOT_DIR=/app", "\n",
-                                            "export APP_APP_DIR=/app/app", "\n",
-                                            "export APP_VENDOR_DIR=/app/vendor", "\n",
-                                            "export APP_LOG_DIR=/app/var/log", "\n",
-                                            "export APP_RUN_DIR=/app/var/run", "\n",
-                                            "export APP_TMP_DIR=/app/tmp", "\n",
-                                            "export APP_DATA_DIR=/app/data", "\n",
-                                            "export APP_USER=ubuntu", "\n",
-                                            "export APP_CONFIG_ES_IPADDRESS=",
-                                            {
-                                                "Ref": "ElasticsearchHost"
-                                            },
-                                            "\n",
-                                            "export APP_CONFIG_REDIS_IPADDRESS=",
-                                            {
-                                                "Ref": "RedisHost"
-                                            },
-                                            "\n",
-                                            "export APP_CONFIG_REDIS_KEY=logstash", "\n"
-                                        ]
-                                    ]
-                                },
-                                "group" : "ubuntu",
-                                "owner" : "ubuntu",
-                                "mode" : "000755"
-                            },
-                            "/home/ubuntu/bootstrap" : {
-                                "source" : {
-                                    "Fn::Join": [
-                                        "",
-                                        [
-                                            "https://raw.github.com/cityindex/logsearch/",
-                                            { "Ref": "RepositoryCommit" },
-                                            "/bin/bootstrap"
-                                        ]
-                                    ]
-                                },
-                                "group" : "ubuntu",
-                                "owner" : "ubuntu",
-                                "mode" : "000555"
-                            }
-                        }
-                    }
-                }
-            },
-            "Properties": {
-                "InstanceMonitoring": "true",
-                "ImageId": {
-                    "Fn::FindInMap": [
-                        "RegionMap",
-                        {
-                            "Ref": "AWS::Region"
-                        },
-                        "AMI"
-                    ]
-                },
-                "IamInstanceProfile": {
-                    "Ref": "InstanceProfile"
-                },
-                "InstanceType": {
-                    "Ref": "InstanceType"
-                },
-                "KeyName": {
-                    "Ref": "KeyName"
-                },
-                "SecurityGroups": [{
-                    "Ref": "SecurityGroup"
-                }],
-                "SpotPrice": {
-                    "Fn::If": [
-                        "UseSpotInstances",
-                        {
-                            "Ref": "SpotPrice"
-                        },
-                        {
-                            "Ref": "AWS::NoValue"
-                        }
-                    ]
-                },
-                "UserData" : {
-                    "Fn::Base64": {
-                        "Fn::Join": [
-                            "",
-                            [
-                                "#!/bin/bash", "\n",
-                                "# Error handling helper function\n",
-                                "function error_exit\n",
-                                "{\n",
-                                " cfn-signal --exit-code $? --reason \"$1\" '", { "Ref": "WaitConditionHandle" }, "'\n",
-                                " exit $?\n",
-                                "}\n",
-                                "apt-get update", "\n",
-                                "apt-get -y install python-pip", "\n",
-                                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz", "\n",
-                                "cfn-init --verbose ",
-                                " --region ", { "Ref": "AWS::Region" },
-                                " --stack ", { "Ref": "AWS::StackName" },
-                                " --resource LaunchConfiguration ",
-                                " || error_exit 'Failed to run cfn-init'", "\n",
-                                "\n",
-                                "sudo -H -u ubuntu /home/ubuntu/bootstrap .build/ubuntu-12/provision.sh logstash,logstash_redis ", { "Ref": "RepositoryCommit" }, "\n",
-                                "/app/app/.build/dev_server/extra.sh", "\n",
-                                { "Ref" : "InstancePostScript" }, "\n",
-                                "cfn-signal --exit-code 0 --reason 'Provisioning complete' '", { "Ref": "WaitConditionHandle" }, "'\n"
-                            ]
-                        ]
-                    }
-                }
-            }
+    "AutoScalingGroup": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Version": "2009-05-15",
+      "Properties": {
+        "AvailabilityZones": {
+          "Fn::GetAZs" : ""
         },
-        "AutoScalingGroup": {
-            "Type": "AWS::AutoScaling::AutoScalingGroup",
-            "Version": "2009-05-15",
-            "Properties": {
-                "AvailabilityZones": {
-                    "Fn::GetAZs" : ""
-                },
-                "Cooldown": "300",
-                "DesiredCapacity": {
-                    "Ref": "GroupDesiredCapacity"
-                },
-                "LaunchConfigurationName": {
-                    "Ref": "LaunchConfiguration"
-                },
-                "MinSize": {
-                    "Ref": "GroupMinSize"
-                },
-                "MaxSize": {
-                    "Ref": "GroupMaxSize"
-                },
-                "NotificationConfiguration" : {
-                    "Fn::If": [
-                        "UseAutoScalingNotifications",
-                        {
-                            "TopicARN": {
-                                "Ref": "AutoScalingTopicArn"
-                            },
-                            "NotificationTypes": [
-                                "autoscaling:EC2_INSTANCE_LAUNCH",
-                                "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
-                                "autoscaling:EC2_INSTANCE_TERMINATE",
-                                "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
-                                "autoscaling:TEST_NOTIFICATION"
-                            ]
-                        },
-                        {
-                            "Ref": "AWS::NoValue"
-                        }
-                    ]
-                },
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": "logstash",
-                        "PropagateAtLaunch": "true"
-                    },
-                    {
-                        "Key": "Environment",
-                        "Value": {
-                            "Ref" : "EnvironmentName"
-                        },
-                        "PropagateAtLaunch": "true"
-                    },
-                    {
-                        "Key": "Service",
-                        "Value": {
-                            "Ref" : "ServiceName"
-                        },
-                        "PropagateAtLaunch": "true"
-                    },
-                    {
-                        "Key": "cost-centre",
-                        "Value" : {
-                            "Ref" : "CostCentre"
-                        },
-                        "PropagateAtLaunch" : "true"
-                    },
-                    {
-                        "Key" : "librato:displayName",
-                        "Value" : {
-                            "Fn::Join" : [
-                                ".",
-                                [
-                                    { "Ref" : "EnvironmentName" },
-                                    { "Ref" : "ServiceName" },
-                                    "logstash"
-                                ]
-                            ]
-                        },
-                        "PropagateAtLaunch" : "true"
-                    }
-                ]
-            }
+        "Cooldown": "300",
+        "DesiredCapacity": {
+          "Ref": "GroupDesiredCapacity"
         },
-        "WaitConditionHandle": {
-            "Type": "AWS::CloudFormation::WaitConditionHandle"
+        "LaunchConfigurationName": {
+          "Ref": "LaunchConfiguration"
         },
-        "WaitCondition": {
-            "Type": "AWS::CloudFormation::WaitCondition",
-            "DependsOn": "AutoScalingGroup",
-            "Properties": {
-                "Count" : { "Ref" : "GroupMinSize" },
-                "Handle": {
-                    "Ref": "WaitConditionHandle"
-                },
-                "Timeout": "900"
+        "MinSize": {
+          "Ref": "GroupMinSize"
+        },
+        "MaxSize": {
+          "Ref": "GroupMaxSize"
+        },
+        "NotificationConfiguration" : {
+          "Fn::If": [
+            "UseAutoScalingNotifications",
+            {
+              "TopicARN": {
+                "Ref": "AutoScalingTopicArn"
+              },
+              "NotificationTypes": [
+                "autoscaling:EC2_INSTANCE_LAUNCH",
+                "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+                "autoscaling:EC2_INSTANCE_TERMINATE",
+                "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
+                "autoscaling:TEST_NOTIFICATION"
+              ]
+            },
+            {
+              "Ref": "AWS::NoValue"
             }
-        }
-    },
-    "Outputs" : {
-        "AutoScalingGroupId" : {
-            "Description" : "The physical ID of the created auto scaling group.",
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "logstash",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref" : "EnvironmentName"
+            },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Service",
+            "Value": {
+              "Ref" : "ServiceName"
+            },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "cost-centre",
             "Value" : {
-                "Ref" : "AutoScalingGroup"
-            }
-        }
+              "Ref" : "CostCentre"
+            },
+            "PropagateAtLaunch" : "true"
+          },
+          {
+            "Key" : "librato:displayName",
+            "Value" : {
+              "Fn::Join" : [
+                ".",
+                [
+                  { "Ref" : "EnvironmentName" },
+                  { "Ref" : "ServiceName" },
+                  "logstash"
+                ]
+              ]
+            },
+            "PropagateAtLaunch" : "true"
+          }
+        ]
+      }
+    },
+    "WaitConditionHandle": {
+      "Type": "AWS::CloudFormation::WaitConditionHandle"
+    },
+    "WaitCondition": {
+      "Type": "AWS::CloudFormation::WaitCondition",
+      "DependsOn": "AutoScalingGroup",
+      "Properties": {
+        "Count" : { "Ref" : "GroupMinSize" },
+        "Handle": {
+          "Ref": "WaitConditionHandle"
+        },
+        "Timeout": "900"
+      }
     }
+  },
+  "Outputs" : {
+    "AutoScalingGroupId" : {
+      "Description" : "The physical ID of the created auto scaling group.",
+      "Value" : {
+        "Ref" : "AutoScalingGroup"
+      }
+    }
+  }
 }

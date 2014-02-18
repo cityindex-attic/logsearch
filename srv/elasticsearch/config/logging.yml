@@ -1,25 +1,25 @@
 rootLogger: INFO, console, file
 logger:
-    # log action execution errors for easier debugging
-    action: DEBUG
-    gateway: DEBUG
-    cluster: DEBUG
-    indices: DEBUG
-    request: INFO, request_log_file
+  # log action execution errors for easier debugging
+  action: DEBUG
+  gateway: DEBUG
+  cluster: DEBUG
+  indices: DEBUG
+  request: INFO, request_log_file
 
 additivity:
-    request: false
+  request: false
 
 appender:
-    console:
-        type: console
-        layout:
-            type: consolePattern
-            conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
+  console:
+    type: console
+    layout:
+      type: consolePattern
+      conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
 
-    request_log_file:
-        type: file
-        file: "${path.logs}/requests.log"
-        layout:
-            type: pattern
-            conversionPattern: "%m%n"
+  request_log_file:
+    type: file
+    file: "${path.logs}/requests.log"
+    layout:
+      type: pattern
+      conversionPattern: "%m%n"

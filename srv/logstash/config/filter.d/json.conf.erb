@@ -1,17 +1,17 @@
 if [@type] == "json" {
 
-	json {
-	  source => "@message"
-	}
+  json {
+    source => "@message"
+  }
 
-    if [timestamp] {
-        date {
-            match => [ "timestamp", "ISO8601" ]
-        }
+  if [timestamp] {
+    date {
+      match => [ "timestamp", "ISO8601" ]
     }
-	
-    ruby {
-        code => "event['message_data'] = event.remove('message') if event.include?('message') and event['message'].is_a? Hash"
-    }
+  }
+
+  ruby {
+    code => "event['message_data'] = event.remove('message') if event.include?('message') and event['message'].is_a? Hash"
+  }
 
 }

@@ -16,57 +16,57 @@ JSON_PREFIX_L0=''
 echo '{'
 
 for METRIC_NAME in CPUUtilization DiskReadBytes DiskReadOps DiskWriteBytes DiskWriteOps NetworkIn NetworkOut ; do
-    echo $JSON_PREFIX_L0 "\"aws-ec2/$METRIC_NAME\":"
+  echo $JSON_PREFIX_L0 "\"aws-ec2/$METRIC_NAME\":"
 
-    aws cloudwatch get-metric-statistics --namespace "AWS/EC2"  --dimensions "{\"Name\":\"InstanceId\",\"Value\":\"$INSTANCE_ID\"}" --metric-name $METRIC_NAME --start-time $SESSION_START --end-time $SESSION_END --period 60 --statistics "[\"Average\",\"Sum\",\"SampleCount\",\"Maximum\",\"Minimum\"]"
-    JSON_PREFIX_L0=','
+  aws cloudwatch get-metric-statistics --namespace "AWS/EC2"  --dimensions "{\"Name\":\"InstanceId\",\"Value\":\"$INSTANCE_ID\"}" --metric-name $METRIC_NAME --start-time $SESSION_START --end-time $SESSION_END --period 60 --statistics "[\"Average\",\"Sum\",\"SampleCount\",\"Maximum\",\"Minimum\"]"
+  JSON_PREFIX_L0=','
 done
 
 (aws ec2 describe-volumes --filter Name="attachment.instance-id",Values=$INSTANCE_ID | grep 'VolumeId' | sed -r 's/^.*"(vol-[^"]+)".*$/\1/' | uniq) | while read VOLUME_ID ; do
-    for METRIC_NAME in VolumeIdleTime VolumeQueueLength VolumeReadBytes VolumeReadOps VolumeTotalReadTime VolumeTotalWriteTime VolumeWriteBytes VolumeWriteOps ; do
-        echo $JSON_PREFIX_L0 "\"aws-ebs/$VOLUME_ID/$METRIC_NAME\":"
+  for METRIC_NAME in VolumeIdleTime VolumeQueueLength VolumeReadBytes VolumeReadOps VolumeTotalReadTime VolumeTotalWriteTime VolumeWriteBytes VolumeWriteOps ; do
+    echo $JSON_PREFIX_L0 "\"aws-ebs/$VOLUME_ID/$METRIC_NAME\":"
 
-        aws cloudwatch get-metric-statistics --namespace "AWS/EBS"  --dimensions "{\"Name\":\"VolumeId\",\"Value\":\"$VOLUME_ID\"}" --metric-name $METRIC_NAME --start-time $SESSION_START --end-time $SESSION_END --period 60 --statistics "[\"Average\",\"Sum\",\"SampleCount\",\"Maximum\",\"Minimum\"]"
-        JSON_PREFIX_L0=','
-    done
+    aws cloudwatch get-metric-statistics --namespace "AWS/EBS"  --dimensions "{\"Name\":\"VolumeId\",\"Value\":\"$VOLUME_ID\"}" --metric-name $METRIC_NAME --start-time $SESSION_START --end-time $SESSION_END --period 60 --statistics "[\"Average\",\"Sum\",\"SampleCount\",\"Maximum\",\"Minimum\"]"
+    JSON_PREFIX_L0=','
+  done
 done
 
 for RRD_FILE in $(find /var/lib/collectd/rrd -name *.rrd) ; do
-    RRD_NAME=$(echo $RRD_FILE | sed -r 's#^/var/lib/collectd/rrd/[^/]+/([^/]+)/(.*)\.rrd$#\1/\2#')
-    RRD_VALUE_MATCH=': '
+  RRD_NAME=$(echo $RRD_FILE | sed -r 's#^/var/lib/collectd/rrd/[^/]+/([^/]+)/(.*)\.rrd$#\1/\2#')
+  RRD_VALUE_MATCH=': '
 
-    for RRD_INDEX in $(rrdtool info $RRD_FILE | grep '.index = ' | sed -r 's/^ds\[([^\]+)].*/\1/') ; do
-        echo $JSON_PREFIX_L0 "\"collectd/$RRD_NAME/$RRD_INDEX\":{"
+  for RRD_INDEX in $(rrdtool info $RRD_FILE | grep '.index = ' | sed -r 's/^ds\[([^\]+)].*/\1/') ; do
+    echo $JSON_PREFIX_L0 "\"collectd/$RRD_NAME/$RRD_INDEX\":{"
 
-        JSON_PREFIX_L1=''
-        RRD_HEADER=''
-    
-        rrdtool fetch $RRD_FILE AVERAGE -r 60 -s $(date --date="$SESSION_START" +%s) -e $(date --date="$SESSION_END" +%s) | while read RRD_LINE ; do
-            if [ "" != "$RRD_LINE" ] && [ "found" == "$RRD_HEADER" ]; then
-                echo $JSON_PREFIX_L1
-    
-                RRD_DATE=`echo $RRD_LINE | awk -F ':' '{ system("date --date=\"@" $1 "\" +%Y-%m-%dT%H:%M:%SZ") }'`
-    
-                echo -n "    \"$RRD_DATE\": "
-    
-                if [[ `echo $RRD_LINE | grep -E "$RRD_VALUE_MATCH-nan(\$| )"` ]] ; then
-                    echo -n "null"
-                else
-                    (echo -n "print eval " ; echo $RRD_LINE | sed -r "s/.*$RRD_VALUE_MATCH([^ ]+)(\$| ).*/\1/" ) | perl
-                fi
+    JSON_PREFIX_L1=''
+    RRD_HEADER=''
+  
+    rrdtool fetch $RRD_FILE AVERAGE -r 60 -s $(date --date="$SESSION_START" +%s) -e $(date --date="$SESSION_END" +%s) | while read RRD_LINE ; do
+      if [ "" != "$RRD_LINE" ] && [ "found" == "$RRD_HEADER" ]; then
+        echo $JSON_PREFIX_L1
+  
+        RRD_DATE=`echo $RRD_LINE | awk -F ':' '{ system("date --date=\"@" $1 "\" +%Y-%m-%dT%H:%M:%SZ") }'`
+  
+        echo -n "  \"$RRD_DATE\": "
+  
+        if [[ `echo $RRD_LINE | grep -E "$RRD_VALUE_MATCH-nan(\$| )"` ]] ; then
+          echo -n "null"
+        else
+          (echo -n "print eval " ; echo $RRD_LINE | sed -r "s/.*$RRD_VALUE_MATCH([^ ]+)(\$| ).*/\1/" ) | perl
+        fi
 
-                JSON_PREFIX_L1=','
-            fi
+        JSON_PREFIX_L1=','
+      fi
 
-            RRD_HEADER=found
-        done
-
-        RRD_VALUE_MATCH="$RRD_VALUE_MATCH[^ ]+ "
-    
-        echo "}"
+      RRD_HEADER=found
     done
 
-    JSON_PREFIX_L0=','
+    RRD_VALUE_MATCH="$RRD_VALUE_MATCH[^ ]+ "
+  
+    echo "}"
+  done
+
+  JSON_PREFIX_L0=','
 done
 
 echo '}'

@@ -16,28 +16,28 @@ INSTANCE_ID=$(ec2metadata --instance-id)
 RRD_LINE=$(rrdtool lastupdate $RRD_FILE | tail -n1)
 
 if [[ ! `echo $RRD_LINE | grep -E ": -nan(\$| )"` ]] ; then
-    RRD_DATE=`echo $RRD_LINE | awk -F ':' '{ system("date --date=\"@" $1 "\" +%Y-%m-%dT%H:%M:%SZ") }'`
-    RRD_STAT=$((echo -n 'print eval ' ; echo $RRD_LINE | sed -r "s/.*: ([^ ]+)(\$| ).*/\1/") | perl)
+  RRD_DATE=`echo $RRD_LINE | awk -F ':' '{ system("date --date=\"@" $1 "\" +%Y-%m-%dT%H:%M:%SZ") }'`
+  RRD_STAT=$((echo -n 'print eval ' ; echo $RRD_LINE | sed -r "s/.*: ([^ ]+)(\$| ).*/\1/") | perl)
 
-    if [[ ! `echo $RRD_STAT | grep \\\\.` ]] ; then
-        RRD_STAT="$RRD_STAT.0"
-    fi
+  if [[ ! `echo $RRD_STAT | grep \\\\.` ]] ; then
+    RRD_STAT="$RRD_STAT.0"
+  fi
 
-    ARG1=$(cat <<EOF
-    {
-        "Dimensions" : [
-            {
-                "Name" : "ServiceName",
-                "Value" : "$SERVICE_NAME"
-            }
-        ],
-        "MetricName" : "$ROLE_NAME",
-        "Timestamp" : "$RRD_DATE",
-        "Unit" : "Count",
-        "Value" : $RRD_STAT
-    }
+  ARG1=$(cat <<EOF
+  {
+    "Dimensions" : [
+      {
+        "Name" : "ServiceName",
+        "Value" : "$SERVICE_NAME"
+      }
+    ],
+    "MetricName" : "$ROLE_NAME",
+    "Timestamp" : "$RRD_DATE",
+    "Unit" : "Count",
+    "Value" : $RRD_STAT
+  }
 EOF
-    )
+  )
 
-    /usr/local/bin/aws cloudwatch put-metric-data --namespace "$ENVIRONMENT_NAME" --metric-data "$ARG1" > /dev/null
+  /usr/local/bin/aws cloudwatch put-metric-data --namespace "$ENVIRONMENT_NAME" --metric-data "$ARG1" > /dev/null
 fi

@@ -5,22 +5,22 @@
 set -e
 
 if [ ! -e /etc/collectd/collectd.d/librato.conf ] ; then
-    if [ ! -d /etc/collectd/collectd.d ] ; then
-        mkdir /etc/collectd/collectd.d
-        echo 'Include "/etc/collectd/collectd.d/*.conf"' >> /etc/collectd/collectd.conf
-    fi
+  if [ ! -d /etc/collectd/collectd.d ] ; then
+    mkdir /etc/collectd/collectd.d
+    echo 'Include "/etc/collectd/collectd.d/*.conf"' >> /etc/collectd/collectd.conf
+  fi
 
-    if [ "" == "$3" ]; then
-        export SOURCE_NAME="$APP_ENVIRONMENT_NAME.$APP_SERVICE_NAME.$APP_ROLE_NAME.`hostname`"
-    else
-        export SOURCE_NAME="$3"
-    fi
+  if [ "" == "$3" ]; then
+    export SOURCE_NAME="$APP_ENVIRONMENT_NAME.$APP_SERVICE_NAME.$APP_ROLE_NAME.`hostname`"
+  else
+    export SOURCE_NAME="$3"
+  fi
 
-    wget -qO /opt/collectd/lib/collectd/plugins/python/collectd-librato.py 'https://raw.github.com/librato/collectd-librato/master/lib/collectd-librato.py'
+  wget -qO /opt/collectd/lib/collectd/plugins/python/collectd-librato.py 'https://raw.github.com/librato/collectd-librato/master/lib/collectd-librato.py'
 
-    . /app/.env
+  . /app/.env
 
-    cat <<EOF > /etc/collectd/collectd.d/librato.conf
+  cat <<EOF > /etc/collectd/collectd.d/librato.conf
 <Plugin python>
     ModulePath "/opt/collectd/lib/collectd/plugins/python/"
     Import "collectd-librato"
@@ -32,5 +32,5 @@ if [ ! -e /etc/collectd/collectd.d/librato.conf ] ; then
     </Module>
 </Plugin>
 EOF
-    service collectd restart
+  service collectd restart
 fi

@@ -11,15 +11,15 @@ sudo mkdir -p /app/
 sudo chown -R `whoami`:`whoami` /app/
 
 if ! (which git 1>/dev/null 2>&1) ; then
-    sudo apt-get install -y git
+  sudo apt-get install -y git
 fi
 
 if [ ! -d /app/app ]; then
-    git clone https://github.com/cityindex/logsearch.git /app/app
+  git clone https://github.com/cityindex/logsearch.git /app/app
 
-    if [[ "$3" != "" ]]; then
-        (cd /app/app ; git checkout "$3")
-    fi
+  if [[ "$3" != "" ]]; then
+    (cd /app/app ; git checkout "$3")
+  fi
 fi
 
 cd /app/app/
@@ -42,13 +42,13 @@ mkdir -p $APP_TMP_DIR
 mkdir -p $APP_DATA_DIR
 
 if [ ! -d $APP_TMP_DIR/heap-dump ] ; then
-    if [ -d /mnt ] ; then
-        sudo mkdir -p /mnt/app-tmp-heap-dump
-        sudo chown $APP_USER:$APP_USER /mnt/app-tmp-heap-dump
-        [ -e $APP_TMP_DIR/heap-dump ] || ln -s /mnt/app-tmp-heap-dump $APP_TMP_DIR/heap-dump
-    else
-        mkdir -p $APP_TMP_DIR/heap-dump
-    fi
+  if [ -d /mnt ] ; then
+    sudo mkdir -p /mnt/app-tmp-heap-dump
+    sudo chown $APP_USER:$APP_USER /mnt/app-tmp-heap-dump
+    [ -e $APP_TMP_DIR/heap-dump ] || ln -s /mnt/app-tmp-heap-dump $APP_TMP_DIR/heap-dump
+  else
+    mkdir -p $APP_TMP_DIR/heap-dump
+  fi
 fi
 
 bundle install
@@ -56,19 +56,19 @@ bundle install
 sudo rake install_system_services
 
 for SRV in $(echo $2 | sed 's/,/\n/g') ; do
-    if [ -d "srv/$SRV" ] ; then
-        if [ -e "srv/$SRV/provision.sh" ] ; then
-            ./srv/$SRV/provision.sh
-        fi
+  if [ -d "srv/$SRV" ] ; then
+    if [ -e "srv/$SRV/provision.sh" ] ; then
+      ./srv/$SRV/provision.sh
     fi
+  fi
 
-    if [ -e "/etc/init/app-$SRV.conf" ] ; then
-        sudo start app-$SRV || true # true in case it's already running
-    fi
+  if [ -e "/etc/init/app-$SRV.conf" ] ; then
+    sudo start app-$SRV || true # true in case it's already running
+  fi
 done
 
 for SRV in $(ls -l /etc/init/app-* | sed 's/.*app-\(.*\).conf/\1/' | grep -ve '-[0-9]\+$') ; do
-    if ! echo ",$2," | grep ",$SRV," > /dev/null ; then
-        sudo rm /etc/init/app-$SRV*
-    fi
+  if ! echo ",$2," | grep ",$SRV," > /dev/null ; then
+    sudo rm /etc/init/app-$SRV*
+  fi
 done

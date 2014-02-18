@@ -12,8 +12,8 @@ echo '====> ARG3:' $3
 echo '====> Preparing environment...'
 
 if [ -f /etc/init/app-elasticsearch-1.conf ]; then
-    sudo stop app-elasticsearch || true
-    sleep 10
+  sudo stop app-elasticsearch || true
+  sleep 10
 fi
 
 (cd /app/app/ && rake erase)
@@ -41,12 +41,12 @@ ls -al *
 echo '====> Expanding data...'
 
 if [ `echo $3 | grep -E '\.zip$'` ] ; then
-    unzip *.zip
-    rm *.zip
+  unzip *.zip
+  rm *.zip
 else
-    echo '====> Unknown file type'
+  echo '====> Unknown file type'
 
-    exit 1
+  exit 1
 fi
 
 ls -al *
@@ -87,5 +87,5 @@ du -sh /app/data/*
 /app/app/bin/gather-stats > ~/gather-stats.log
 
 if [ -f ~/run-file-solo-complete.sh ] ; then
-    ~/run-file-solo-complete.sh
+  ~/run-file-solo-complete.sh
 fi

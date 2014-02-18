@@ -1,585 +1,585 @@
 {
-    "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Create a basic elasticsearch/kibana cluster environment.",
-    "Parameters": {
-        "EnvironmentName" : {
-            "Type" : "String",
-            "Description" : "The environment the service should run under (e.g. dev, live, test).",
-            "Default" : "dev",
-            "AllowedPattern" : "[0-9a-z]+"
-        },
-        "ServiceName" : {
-            "Type" : "String",
-            "Description" : "The name the service should run under (e.g. logsearch, logsearch-labs).",
-            "Default" : "logsearch-repodev",
-            "AllowedPattern" : "[0-9a-z\\-]+"
-        },
-        "AlarmTopicArn" : {
-            "Type" : "String",
-            "Description" : "An SNS Topic ARN to publish stability alarms to."
-        },
-        "AutoScalingTopicArn": {
-            "Type": "String",
-            "Description": "ARN of SNS topic for Auto Scaling notifications.",
-            "Default": ""
-        },
-        "AvailabilityZone1": {
-            "Type": "String",
-            "Description": "Availability Zone (AZ) for cluster operations (primary).",
-            "Default": "eu-east-1a"
-        },
-        "AvailabilityZone2": {
-            "Type": "String",
-            "Description": "Availability Zone (AZ) for cluster operations (secondary).",
-            "Default": "eu-east-1c"
-        },
-        "ElasticsearchClusterName": {
-            "Type": "String",
-            "Description": "A unique name for the cluster (leave blank for \"{EnvironmentName}-{ServiceName}\").",
-            "Default" : "default"
-        },
-        "CostCentre": {
-            "Type": "String",
-            "Description": "A specific cost center to affiliate with resources.",
-            "Default": "logsearch-dev"
-        },
-        "DisableApiTermination": {
-            "Type": "String",
-            "Description": "Prevent EC2 instance termination (if true, requires to actively enable it to successfully delete the stack).",
-            "Default": "false",
-            "AllowedValues": [
-                "false",
-                "true"
-            ]
-        },
-        "ElasticsearchFrontend0InstanceType": {
-            "Type": "String",
-            "Description": "Instance for frontend elasticsearch access.",
-            "Default" : "t1.micro"
-        },
-        "ElasticsearchSnapshotId": {
-            "Type": "String",
-            "Description": "Conditional: Snapshot to use for the EBS-based elasticsearch node (use snap-00000000 to request a new volume instead).",
-            "AllowedPattern": "snap-([0-9a-f]{8})",
-            "Default": "snap-00000000"
-        },
-        "ElasticsearchFulltimeVolumeSize": {
-            "Type": "Number",
-            "Description": "Conditional: Size (GiBs) of a new volume to use for the EBS-based elasticsearch node (only used when requested via snapshot id snap-00000000).",
-            "MinValue": "10",
-            "MaxValue": "1024",
-            "Default": "64"
-        },
-        "ElasticsearchDaytimeVolumeSize": {
-            "Type": "Number",
-            "Description": "Conditional: Size (GiBs) of a new volume to use for the EBS-based elasticsearch node (only used when requested via snapshot id snap-00000000).",
-            "MinValue": "10",
-            "MaxValue": "1024",
-            "Default": "64"
-        },
-        "ElasticsearchInstanceType": {
-            "Type": "String",
-            "Description": "Instance type for the EBS-based elasticsearch node.",
-            "Default" : "m1.xlarge"
-        },
-        "ElasticsearchFulltimeZone1Nodes": {
-            "Type": "Number",
-            "Description": "Number of elasticsearch nodes for the first availability zone.",
-            "Default": "1"
-        },
-        "ElasticsearchFulltimeZone2Nodes": {
-            "Type": "Number",
-            "Description": "Number of elasticsearch nodes for the second availability zone.",
-            "Default": "1"
-        },
-        "ElasticsearchDaytimeNodes": {
-            "Type": "Number",
-            "Description": "Number of active, additional elasticsearch nodes during daytime operations.",
-            "Default": "0"
-        },
-        "Redis0InstanceType": {
-            "Type": "String",
-            "Description": "Instance type for the redis node.",
-            "Default" : "m1.medium"
-        },
-        "LogstashGroupDesiredCapacity": {
-            "Type": "Number",
-            "Description": "Desired capacity of logstash auto scaling group within the cluster.",
-            "Default": "2"
-        },
-        "LogstashGroupMaxSize": {
-            "Type": "Number",
-            "Description": "Maximum size of logstash auto scaling group within the cluster.",
-            "Default": "8"
-        },
-        "LogstashInstanceType": {
-            "Type": "String",
-            "Description": "Instance type for the logstash nodes.",
-            "Default" : "c1.medium"
-        },
-        "LogstashSpotPrice": {
-            "Type": "Number",
-            "Description": "The spot price for instances to create the logstash nodes on (use 0 to request on demand instances).",
-            "Default": "0.21"
-        },
-        "InstancePostScript": {
-            "Type": "String",
-            "Description": "A final command to run when provisioning instances.",
-            "Default": "/bin/true"
-        },
-        "InstanceProfile": {
-            "Type": "String",
-            "Description": "IAM instance profile to use within the cluster.",
-            "Default": ""
-        },
-        "KeyName": {
-            "Description": "Name of an existing EC2 key pair to enable remote access to the EC2 instance.",
-            "Type": "String",
-            "Default": "default"
-        },
-        "R53ZoneName": {
-            "Type": "String",
-            "Description": "Route 53 Hosted Zone for domain registration.",
-            "Default": "example.com.",
-            "AllowedPattern": "(.*)\\.",
-            "ConstraintDescription": "must be a FQDN ending in a period."
-        },
-        "RepositoryCommit": {
-            "Description": "Repository branch to bootstrap from.",
-            "Type": "String",
-            "Default": "master"
-        },
-        "S3StackBase": {
-            "Description": "S3 base URL to compose template source from.",
-            "Type": "String",
-            "Default": "https://s3.amazonaws.com/ci-logsearch/aws-cloudformation/master"
-        }
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Create a basic elasticsearch/kibana cluster environment.",
+  "Parameters": {
+    "EnvironmentName" : {
+      "Type" : "String",
+      "Description" : "The environment the service should run under (e.g. dev, live, test).",
+      "Default" : "dev",
+      "AllowedPattern" : "[0-9a-z]+"
     },
-    "Resources": {
-        "SecurityGroup0": {
-            "Type": "AWS::CloudFormation::Stack",
-            "Properties": {
-                "TemplateURL" : {
-                    "Fn::Join": [
-                        "/",
-                        [
-                            { "Ref": "S3StackBase" },
-                            "secgrp-core.template"
-                        ]
-                    ]
-                },
-                "Parameters" : {
-                    "EnvironmentName"       : { "Ref" : "EnvironmentName" },
-                    "ServiceName"           : { "Ref" : "ServiceName" }
-                }
-            }
-        },
-        "ElasticsearchFulltimeZone1Group" : {
-            "Type" : "AWS::CloudFormation::Stack",
-            "Properties" : {
-                "TemplateURL" : {
-                    "Fn::Join": [
-                    "/",
-                    [
-                        { "Ref": "S3StackBase" },
-                        "group-elasticsearch-default.template"
-                    ]
-                    ]
-                },
-                "Parameters" : {
-                    "EnvironmentName"       : { "Ref" : "EnvironmentName" },
-                    "ServiceName"           : { "Ref" : "ServiceName" },
-                    "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
-                    "AvailabilityZones"      : { "Ref" : "AvailabilityZone1" },
-                    "ElasticsearchClusterName"           : { "Ref" : "ElasticsearchClusterName" },
-                    "CostCentre"            : { "Ref" : "CostCentre" },
-                    "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
-                    "GroupDesiredCapacity" : { "Ref" : "ElasticsearchFulltimeZone1Nodes" },
-                    "GroupMinSize" : "0",
-                    "ElasticsearchNodeMode" : "data",
-                    "InstancePostScript"    : { "Ref" : "InstancePostScript" },
-                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-                    "InstanceType"          : { "Ref" : "ElasticsearchInstanceType" },
-                    "KeyName"               : { "Ref" : "KeyName" },
-                    "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
-                    "SnapshotId"            : { "Ref" : "ElasticsearchSnapshotId" },
-                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                    "ElasticsearchAllocAttrLogsearch" : "fulltime_zone1",
-                    "VolumeSize"            : { "Ref" : "ElasticsearchFulltimeVolumeSize" }
-                }
-            }
-        },
-        "ElasticsearchFulltimeZone2Group" : {
-            "Type" : "AWS::CloudFormation::Stack",
-            "Properties" : {
-                "TemplateURL" : {
-                    "Fn::Join": [
-                    "/",
-                    [
-                        { "Ref": "S3StackBase" },
-                        "group-elasticsearch-default.template"
-                    ]
-                    ]
-                },
-                "Parameters" : {
-                    "EnvironmentName"       : { "Ref" : "EnvironmentName" },
-                    "ServiceName"           : { "Ref" : "ServiceName" },
-                    "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
-                    "AvailabilityZones"      : { "Ref" : "AvailabilityZone2" },
-                    "ElasticsearchClusterName"           : { "Ref" : "ElasticsearchClusterName" },
-                    "CostCentre"            : { "Ref" : "CostCentre" },
-                    "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
-                    "GroupDesiredCapacity" : { "Ref" : "ElasticsearchFulltimeZone2Nodes" },
-                    "GroupMinSize" : "0",
-                    "ElasticsearchNodeMode" : "data",
-                    "InstancePostScript"    : { "Ref" : "InstancePostScript" },
-                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-                    "InstanceType"          : { "Ref" : "ElasticsearchInstanceType" },
-                    "KeyName"               : { "Ref" : "KeyName" },
-                    "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
-                    "SnapshotId"            : { "Ref" : "ElasticsearchSnapshotId" },
-                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                    "ElasticsearchAllocAttrLogsearch" : "fulltime_zone2",
-                    "VolumeSize"            : { "Ref" : "ElasticsearchFulltimeVolumeSize" }
-                }
-            }
-        },
-        "ElasticsearchDaytimeGroup" : {
-            "Type" : "AWS::CloudFormation::Stack",
-            "Properties" : {
-                "TemplateURL" : {
-                    "Fn::Join": [
-                    "/",
-                    [
-                        { "Ref": "S3StackBase" },
-                        "group-elasticsearch-default.template"
-                    ]
-                    ]
-                },
-                "Parameters" : {
-                    "EnvironmentName"       : { "Ref" : "EnvironmentName" },
-                    "ServiceName"           : { "Ref" : "ServiceName" },
-                    "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
-                    "AvailabilityZones"      : {
-                        "Fn::Join" : [
-                            ",",
-                            [
-                                { "Ref" : "AvailabilityZone1" },
-                                { "Ref" : "AvailabilityZone2" }
-                            ]
-                        ]
-                    },
-                    "ElasticsearchClusterName"           : { "Ref" : "ElasticsearchClusterName" },
-                    "CostCentre"            : { "Ref" : "CostCentre" },
-                    "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
-                    "GroupDesiredCapacity" : { "Ref" : "ElasticsearchDaytimeNodes" },
-                    "GroupMinSize" : "0",
-                    "ElasticsearchNodeMode" : "data",
-                    "InstancePostScript"    : { "Ref" : "InstancePostScript" },
-                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-                    "InstanceType"          : { "Ref" : "ElasticsearchInstanceType" },
-                    "KeyName"               : { "Ref" : "KeyName" },
-                    "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
-                    "SnapshotId"            : { "Ref" : "ElasticsearchSnapshotId" },
-                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
-                    "ElasticsearchAllocAttrLogsearch" : "daytime_elastic",
-                    "VolumeSize"            : { "Ref" : "ElasticsearchDaytimeVolumeSize" }
-                }
-            }
-        },
-        "Redis0" : {
-            "Type" : "AWS::CloudFormation::Stack",
-            "Properties" : {
-                "TemplateURL" : {
-                    "Fn::Join": [
-                    "/",
-                    [
-                        { "Ref": "S3StackBase" },
-                        "node-redis-default.template"
-                    ]
-                    ]
-                },
-                "Parameters" : {
-                    "EnvironmentName"       : { "Ref" : "EnvironmentName" },
-                    "ServiceName"           : { "Ref" : "ServiceName" },
-                    "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
-                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone1" },
-                    "CostCentre"            : { "Ref" : "CostCentre" },
-                    "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
-                    "InstancePostScript"    : { "Ref" : "InstancePostScript" },
-                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-                    "InstanceType"          : { "Ref" : "Redis0InstanceType" },
-                    "KeyName"               : { "Ref" : "KeyName" },
-                    "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
-                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
-                }
-            }
-        },
-        "ElasticsearchFrontend0" : {
-            "Type" : "AWS::CloudFormation::Stack",
-            "Properties" : {
-                "TemplateURL" : {
-                    "Fn::Join": [
-                    "/",
-                    [
-                        { "Ref": "S3StackBase" },
-                        "node-kibana-default.template"
-                    ]
-                    ]
-                },
-                "Parameters" : {
-                    "EnvironmentName"       : { "Ref" : "EnvironmentName" },
-                    "ServiceName"           : { "Ref" : "ServiceName" },
-                    "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
-                    "AvailabilityZone"      : { "Ref" : "AvailabilityZone1" },
-                    "ElasticsearchClusterName"           : { "Ref" : "ElasticsearchClusterName" },
-                    "ElasticsearchNodeMode" : "master",
-                    "CostCentre"            : { "Ref" : "CostCentre" },
-                    "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
-                    "InstancePostScript"    : { "Ref" : "InstancePostScript" },
-                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-                    "InstanceType"          : { "Ref" : "ElasticsearchFrontend0InstanceType" },
-                    "KeyName"               : { "Ref" : "KeyName" },
-                    "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
-                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
-                }
-            }
-        },
-        "LogstashGroup" : {
-            "Type" : "AWS::CloudFormation::Stack",
-            "Properties" : {
-                "TemplateURL" : {
-                    "Fn::Join": [
-                    "/",
-                    [
-                        { "Ref": "S3StackBase" },
-                        "group-logstash-default.template"
-                    ]
-                    ]
-                },
-                "Parameters" : {
-                    "EnvironmentName"       : { "Ref" : "EnvironmentName" },
-                    "ServiceName"           : { "Ref" : "ServiceName" },
-                    "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
-                    "CostCentre"            : { "Ref" : "CostCentre" },
-                    "ElasticsearchHost"     : { "Ref" : "DnsSrvPrivateElasticsearch" },
-                    "GroupMinSize"          : { "Ref" : "LogstashGroupDesiredCapacity" },
-                    "GroupDesiredCapacity"  : { "Ref" : "LogstashGroupDesiredCapacity" },
-                    "GroupMaxSize"          : { "Ref" : "LogstashGroupMaxSize" },
-                    "InstancePostScript"    : { "Ref" : "InstancePostScript" },
-                    "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-                    "InstanceType"          : { "Ref" : "LogstashInstanceType" },
-                    "SpotPrice"             : { "Ref" : "LogstashSpotPrice" },
-                    "KeyName"               : { "Ref" : "KeyName" },
-                    "RedisHost"             : { "Ref" : "DnsSrvPrivateRedis" },
-                    "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
-                    "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
-                }
-            }
-        },
-        "DnsRefPublicPrimary": {
-            "Type": "AWS::Route53::RecordSet",
-            "Properties": {
-                "HostedZoneName" : { "Ref" : "R53ZoneName" },
-                "Name": {
-                    "Fn::Join" : [
-                        "",
-                        [
-                            { "Ref": "AWS::StackName" }, ".", { "Ref" : "R53ZoneName" }
-                        ]
-                    ]
-                },
-                "Type" : "A",
-                "TTL" : "90",
-                "ResourceRecords" : [
-                    {
-                        "Fn::GetAtt" : [ "ElasticsearchFrontend0", "Outputs.Instance0PublicIp" ]
-                    }
-                ]
-            }
-        },
-        "DnsRefPublicRedis": {
-            "Type": "AWS::Route53::RecordSet",
-            "Properties": {
-                "HostedZoneName" : { "Ref" : "R53ZoneName" },
-                "Name": {
-                    "Fn::Join" : [
-                        "",
-                        [
-                            "redis.",
-                            { "Ref": "AWS::StackName" }, ".", { "Ref" : "R53ZoneName" }
-                        ]
-                    ]
-                },
-                "Type" : "A",
-                "TTL" : "60",
-                "ResourceRecords" : [
-                    {
-                        "Fn::GetAtt" : [ "Redis0", "Outputs.Instance0PublicIp" ]
-                    }
-                ]
-            }
-        },
-        "DnsSrvPrivateRedis": {
-            "Type": "AWS::Route53::RecordSet",
-            "Properties": {
-                "HostedZoneName" : { "Ref" : "R53ZoneName" },
-                "Name": {
-                    "Fn::Join" : [
-                        "",
-                        [
-                            "redis.srv-int.",
-                            { "Ref": "AWS::StackName" }, ".", { "Ref" : "R53ZoneName" }
-                        ]
-                    ]
-                },
-                "Type" : "A",
-                "TTL" : "60",
-                "ResourceRecords" : [
-                    {
-                        "Fn::GetAtt" : [ "Redis0", "Outputs.Instance0PrivateIp" ]
-                    }
-                ]
-            }
-        },
-        "DnsSrvPrivateElasticsearch": {
-            "Type": "AWS::Route53::RecordSet",
-            "Properties": {
-                "HostedZoneName" : { "Ref" : "R53ZoneName" },
-                "Name": {
-                    "Fn::Join" : [
-                        "",
-                        [
-                            "elasticsearch.srv-int.",
-                            { "Ref": "AWS::StackName" }, ".", { "Ref" : "R53ZoneName" }
-                        ]
-                    ]
-                },
-                "Type" : "A",
-                "TTL" : "60",
-                "ResourceRecords" : [
-                    {
-                        "Fn::GetAtt" : [ "ElasticsearchFrontend0", "Outputs.Instance0PrivateIp" ]
-                    }
-                ]
-            }
-        },
-        "QueueSizeScaleDownAlarm": {
-            "Type": "AWS::CloudWatch::Alarm",
-            "Properties": {
-                "AlarmDescription": "Alarm if average queue size is less than 1,000 messages for 50 minutes (scale down).",
-                "Namespace": { "Ref" : "EnvironmentName" },
-                "MetricName": "QueueSize",
-                "Dimensions": [
-                    {
-                        "Name": "ServiceName",
-                        "Value" : { "Ref" : "ServiceName" }
-                    }
-                ],
-                "Statistic": "Average",
-                "Period": "300",
-                "EvaluationPeriods": "10",
-                "Threshold": "1000",
-                "ComparisonOperator": "LessThanThreshold",
-                "AlarmActions": [
-                    {
-                        "Ref": "QueueSizeScaleDownPolicy"
-                    }
-                ]
-            }
-        },
-        "QueueSizeScaleDownPolicy" : {
-           "Type" : "AWS::AutoScaling::ScalingPolicy",
-           "Properties" : {
-              "AdjustmentType" : "ExactCapacity",
-              "AutoScalingGroupName" : {
-                  "Fn::GetAtt" : [ "LogstashGroup", "Outputs.AutoScalingGroupId" ]
-              },
-              "Cooldown" : "3000",
-              "ScalingAdjustment" : { "Ref" : "LogstashGroupDesiredCapacity" }
-           }
-        },
-        "QueueSizeScaleUpAlarm": {
-            "Type": "AWS::CloudWatch::Alarm",
-            "Properties": {
-                "AlarmDescription": "Alarm if average queue size is greater than 120,000 messages for 5 minutes (scale up).",
-                "Namespace": { "Ref" : "EnvironmentName" },
-                "MetricName": "QueueSize",
-                "Dimensions": [
-                    {
-                        "Name": "ServiceName",
-                        "Value" : { "Ref" : "ServiceName" }
-                    }
-                ],
-                "Statistic": "Average",
-                "Period": "300",
-                "EvaluationPeriods": "1",
-                "Threshold": "120000",
-                "ComparisonOperator": "GreaterThanThreshold",
-                "AlarmActions": [
-                    {
-                        "Ref": "AlarmTopicArn"
-                    },
-                    {
-                        "Ref": "QueueSizeScaleUpPolicy"
-                    }
-                ],
-                "InsufficientDataActions": [
-                    {
-                        "Ref": "AlarmTopicArn"
-                    }
-                ],
-                "OKActions": [
-                    {
-                        "Ref": "AlarmTopicArn"
-                    }
-                ]
-            }
-        },
-        "QueueSizeScaleUpPolicy" : {
-           "Type" : "AWS::AutoScaling::ScalingPolicy",
-           "Properties" : {
-              "AdjustmentType" : "ChangeInCapacity",
-              "AutoScalingGroupName" : {
-                  "Fn::GetAtt" : [ "LogstashGroup", "Outputs.AutoScalingGroupId" ]
-              },
-              "Cooldown" : "300",
-              "ScalingAdjustment" : "2"
-           }
-        },
-        "IndexLagAlarm": {
-            "Type": "AWS::CloudWatch::Alarm",
-            "Properties": {
-                "AlarmDescription": "Alarm if the index is consistently lagging more than 5 minutes.",
-                "Namespace": { "Ref" : "EnvironmentName" },
-                "MetricName": "IndexLag",
-                "Dimensions": [
-                    {
-                        "Name": "ServiceName",
-                        "Value" : { "Ref" : "ServiceName" }
-                    }
-                ],
-                "Statistic": "Average",
-                "Period": "300",
-                "EvaluationPeriods": "1",
-                "Threshold": "300",
-                "ComparisonOperator": "GreaterThanThreshold",
-                "AlarmActions": [
-                    {
-                        "Ref": "AlarmTopicArn"
-                    }
-                ],
-                "InsufficientDataActions": [
-                    {
-                        "Ref": "AlarmTopicArn"
-                    }
-                ],
-                "OKActions": [
-                    {
-                        "Ref": "AlarmTopicArn"
-                    }
-                ]
-            }
-        }
+    "ServiceName" : {
+      "Type" : "String",
+      "Description" : "The name the service should run under (e.g. logsearch, logsearch-labs).",
+      "Default" : "logsearch-repodev",
+      "AllowedPattern" : "[0-9a-z\\-]+"
+    },
+    "AlarmTopicArn" : {
+      "Type" : "String",
+      "Description" : "An SNS Topic ARN to publish stability alarms to."
+    },
+    "AutoScalingTopicArn": {
+      "Type": "String",
+      "Description": "ARN of SNS topic for Auto Scaling notifications.",
+      "Default": ""
+    },
+    "AvailabilityZone1": {
+      "Type": "String",
+      "Description": "Availability Zone (AZ) for cluster operations (primary).",
+      "Default": "eu-east-1a"
+    },
+    "AvailabilityZone2": {
+      "Type": "String",
+      "Description": "Availability Zone (AZ) for cluster operations (secondary).",
+      "Default": "eu-east-1c"
+    },
+    "ElasticsearchClusterName": {
+      "Type": "String",
+      "Description": "A unique name for the cluster (leave blank for \"{EnvironmentName}-{ServiceName}\").",
+      "Default" : "default"
+    },
+    "CostCentre": {
+      "Type": "String",
+      "Description": "A specific cost center to affiliate with resources.",
+      "Default": "logsearch-dev"
+    },
+    "DisableApiTermination": {
+      "Type": "String",
+      "Description": "Prevent EC2 instance termination (if true, requires to actively enable it to successfully delete the stack).",
+      "Default": "false",
+      "AllowedValues": [
+        "false",
+        "true"
+      ]
+    },
+    "ElasticsearchFrontend0InstanceType": {
+      "Type": "String",
+      "Description": "Instance for frontend elasticsearch access.",
+      "Default" : "t1.micro"
+    },
+    "ElasticsearchSnapshotId": {
+      "Type": "String",
+      "Description": "Conditional: Snapshot to use for the EBS-based elasticsearch node (use snap-00000000 to request a new volume instead).",
+      "AllowedPattern": "snap-([0-9a-f]{8})",
+      "Default": "snap-00000000"
+    },
+    "ElasticsearchFulltimeVolumeSize": {
+      "Type": "Number",
+      "Description": "Conditional: Size (GiBs) of a new volume to use for the EBS-based elasticsearch node (only used when requested via snapshot id snap-00000000).",
+      "MinValue": "10",
+      "MaxValue": "1024",
+      "Default": "64"
+    },
+    "ElasticsearchDaytimeVolumeSize": {
+      "Type": "Number",
+      "Description": "Conditional: Size (GiBs) of a new volume to use for the EBS-based elasticsearch node (only used when requested via snapshot id snap-00000000).",
+      "MinValue": "10",
+      "MaxValue": "1024",
+      "Default": "64"
+    },
+    "ElasticsearchInstanceType": {
+      "Type": "String",
+      "Description": "Instance type for the EBS-based elasticsearch node.",
+      "Default" : "m1.xlarge"
+    },
+    "ElasticsearchFulltimeZone1Nodes": {
+      "Type": "Number",
+      "Description": "Number of elasticsearch nodes for the first availability zone.",
+      "Default": "1"
+    },
+    "ElasticsearchFulltimeZone2Nodes": {
+      "Type": "Number",
+      "Description": "Number of elasticsearch nodes for the second availability zone.",
+      "Default": "1"
+    },
+    "ElasticsearchDaytimeNodes": {
+      "Type": "Number",
+      "Description": "Number of active, additional elasticsearch nodes during daytime operations.",
+      "Default": "0"
+    },
+    "Redis0InstanceType": {
+      "Type": "String",
+      "Description": "Instance type for the redis node.",
+      "Default" : "m1.medium"
+    },
+    "LogstashGroupDesiredCapacity": {
+      "Type": "Number",
+      "Description": "Desired capacity of logstash auto scaling group within the cluster.",
+      "Default": "2"
+    },
+    "LogstashGroupMaxSize": {
+      "Type": "Number",
+      "Description": "Maximum size of logstash auto scaling group within the cluster.",
+      "Default": "8"
+    },
+    "LogstashInstanceType": {
+      "Type": "String",
+      "Description": "Instance type for the logstash nodes.",
+      "Default" : "c1.medium"
+    },
+    "LogstashSpotPrice": {
+      "Type": "Number",
+      "Description": "The spot price for instances to create the logstash nodes on (use 0 to request on demand instances).",
+      "Default": "0.21"
+    },
+    "InstancePostScript": {
+      "Type": "String",
+      "Description": "A final command to run when provisioning instances.",
+      "Default": "/bin/true"
+    },
+    "InstanceProfile": {
+      "Type": "String",
+      "Description": "IAM instance profile to use within the cluster.",
+      "Default": ""
+    },
+    "KeyName": {
+      "Description": "Name of an existing EC2 key pair to enable remote access to the EC2 instance.",
+      "Type": "String",
+      "Default": "default"
+    },
+    "R53ZoneName": {
+      "Type": "String",
+      "Description": "Route 53 Hosted Zone for domain registration.",
+      "Default": "example.com.",
+      "AllowedPattern": "(.*)\\.",
+      "ConstraintDescription": "must be a FQDN ending in a period."
+    },
+    "RepositoryCommit": {
+      "Description": "Repository branch to bootstrap from.",
+      "Type": "String",
+      "Default": "master"
+    },
+    "S3StackBase": {
+      "Description": "S3 base URL to compose template source from.",
+      "Type": "String",
+      "Default": "https://s3.amazonaws.com/ci-logsearch/aws-cloudformation/master"
     }
+  },
+  "Resources": {
+    "SecurityGroup0": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL" : {
+          "Fn::Join": [
+            "/",
+            [
+              { "Ref": "S3StackBase" },
+              "secgrp-core.template"
+            ]
+          ]
+        },
+        "Parameters" : {
+          "EnvironmentName"       : { "Ref" : "EnvironmentName" },
+          "ServiceName"           : { "Ref" : "ServiceName" }
+        }
+      }
+    },
+    "ElasticsearchFulltimeZone1Group" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "Properties" : {
+        "TemplateURL" : {
+          "Fn::Join": [
+          "/",
+          [
+            { "Ref": "S3StackBase" },
+            "group-elasticsearch-default.template"
+          ]
+          ]
+        },
+        "Parameters" : {
+          "EnvironmentName"       : { "Ref" : "EnvironmentName" },
+          "ServiceName"           : { "Ref" : "ServiceName" },
+          "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
+          "AvailabilityZones"      : { "Ref" : "AvailabilityZone1" },
+          "ElasticsearchClusterName"           : { "Ref" : "ElasticsearchClusterName" },
+          "CostCentre"            : { "Ref" : "CostCentre" },
+          "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
+          "GroupDesiredCapacity" : { "Ref" : "ElasticsearchFulltimeZone1Nodes" },
+          "GroupMinSize" : "0",
+          "ElasticsearchNodeMode" : "data",
+          "InstancePostScript"    : { "Ref" : "InstancePostScript" },
+          "InstanceProfile"       : { "Ref" : "InstanceProfile" },
+          "InstanceType"          : { "Ref" : "ElasticsearchInstanceType" },
+          "KeyName"             : { "Ref" : "KeyName" },
+          "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
+          "SnapshotId"            : { "Ref" : "ElasticsearchSnapshotId" },
+          "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
+          "ElasticsearchAllocAttrLogsearch" : "fulltime_zone1",
+          "VolumeSize"            : { "Ref" : "ElasticsearchFulltimeVolumeSize" }
+        }
+      }
+    },
+    "ElasticsearchFulltimeZone2Group" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "Properties" : {
+        "TemplateURL" : {
+          "Fn::Join": [
+          "/",
+          [
+            { "Ref": "S3StackBase" },
+            "group-elasticsearch-default.template"
+          ]
+          ]
+        },
+        "Parameters" : {
+          "EnvironmentName"       : { "Ref" : "EnvironmentName" },
+          "ServiceName"           : { "Ref" : "ServiceName" },
+          "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
+          "AvailabilityZones"      : { "Ref" : "AvailabilityZone2" },
+          "ElasticsearchClusterName"           : { "Ref" : "ElasticsearchClusterName" },
+          "CostCentre"            : { "Ref" : "CostCentre" },
+          "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
+          "GroupDesiredCapacity" : { "Ref" : "ElasticsearchFulltimeZone2Nodes" },
+          "GroupMinSize" : "0",
+          "ElasticsearchNodeMode" : "data",
+          "InstancePostScript"    : { "Ref" : "InstancePostScript" },
+          "InstanceProfile"       : { "Ref" : "InstanceProfile" },
+          "InstanceType"          : { "Ref" : "ElasticsearchInstanceType" },
+          "KeyName"             : { "Ref" : "KeyName" },
+          "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
+          "SnapshotId"            : { "Ref" : "ElasticsearchSnapshotId" },
+          "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
+          "ElasticsearchAllocAttrLogsearch" : "fulltime_zone2",
+          "VolumeSize"            : { "Ref" : "ElasticsearchFulltimeVolumeSize" }
+        }
+      }
+    },
+    "ElasticsearchDaytimeGroup" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "Properties" : {
+        "TemplateURL" : {
+          "Fn::Join": [
+          "/",
+          [
+            { "Ref": "S3StackBase" },
+            "group-elasticsearch-default.template"
+          ]
+          ]
+        },
+        "Parameters" : {
+          "EnvironmentName"       : { "Ref" : "EnvironmentName" },
+          "ServiceName"           : { "Ref" : "ServiceName" },
+          "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
+          "AvailabilityZones"      : {
+            "Fn::Join" : [
+              ",",
+              [
+                { "Ref" : "AvailabilityZone1" },
+                { "Ref" : "AvailabilityZone2" }
+              ]
+            ]
+          },
+          "ElasticsearchClusterName"           : { "Ref" : "ElasticsearchClusterName" },
+          "CostCentre"            : { "Ref" : "CostCentre" },
+          "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
+          "GroupDesiredCapacity" : { "Ref" : "ElasticsearchDaytimeNodes" },
+          "GroupMinSize" : "0",
+          "ElasticsearchNodeMode" : "data",
+          "InstancePostScript"    : { "Ref" : "InstancePostScript" },
+          "InstanceProfile"       : { "Ref" : "InstanceProfile" },
+          "InstanceType"          : { "Ref" : "ElasticsearchInstanceType" },
+          "KeyName"             : { "Ref" : "KeyName" },
+          "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
+          "SnapshotId"            : { "Ref" : "ElasticsearchSnapshotId" },
+          "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] },
+          "ElasticsearchAllocAttrLogsearch" : "daytime_elastic",
+          "VolumeSize"            : { "Ref" : "ElasticsearchDaytimeVolumeSize" }
+        }
+      }
+    },
+    "Redis0" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "Properties" : {
+        "TemplateURL" : {
+          "Fn::Join": [
+          "/",
+          [
+            { "Ref": "S3StackBase" },
+            "node-redis-default.template"
+          ]
+          ]
+        },
+        "Parameters" : {
+          "EnvironmentName"       : { "Ref" : "EnvironmentName" },
+          "ServiceName"           : { "Ref" : "ServiceName" },
+          "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
+          "AvailabilityZone"      : { "Ref" : "AvailabilityZone1" },
+          "CostCentre"            : { "Ref" : "CostCentre" },
+          "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
+          "InstancePostScript"    : { "Ref" : "InstancePostScript" },
+          "InstanceProfile"       : { "Ref" : "InstanceProfile" },
+          "InstanceType"          : { "Ref" : "Redis0InstanceType" },
+          "KeyName"             : { "Ref" : "KeyName" },
+          "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
+          "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
+        }
+      }
+    },
+    "ElasticsearchFrontend0" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "Properties" : {
+        "TemplateURL" : {
+          "Fn::Join": [
+          "/",
+          [
+            { "Ref": "S3StackBase" },
+            "node-kibana-default.template"
+          ]
+          ]
+        },
+        "Parameters" : {
+          "EnvironmentName"       : { "Ref" : "EnvironmentName" },
+          "ServiceName"           : { "Ref" : "ServiceName" },
+          "AlarmTopicArn"         : { "Ref" : "AlarmTopicArn" },
+          "AvailabilityZone"      : { "Ref" : "AvailabilityZone1" },
+          "ElasticsearchClusterName"           : { "Ref" : "ElasticsearchClusterName" },
+          "ElasticsearchNodeMode" : "master",
+          "CostCentre"            : { "Ref" : "CostCentre" },
+          "DisableApiTermination" : { "Ref" : "DisableApiTermination" },
+          "InstancePostScript"    : { "Ref" : "InstancePostScript" },
+          "InstanceProfile"       : { "Ref" : "InstanceProfile" },
+          "InstanceType"          : { "Ref" : "ElasticsearchFrontend0InstanceType" },
+          "KeyName"             : { "Ref" : "KeyName" },
+          "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
+          "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
+        }
+      }
+    },
+    "LogstashGroup" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "Properties" : {
+        "TemplateURL" : {
+          "Fn::Join": [
+          "/",
+          [
+            { "Ref": "S3StackBase" },
+            "group-logstash-default.template"
+          ]
+          ]
+        },
+        "Parameters" : {
+          "EnvironmentName"       : { "Ref" : "EnvironmentName" },
+          "ServiceName"           : { "Ref" : "ServiceName" },
+          "AutoScalingTopicArn"   : { "Ref" : "AutoScalingTopicArn" },
+          "CostCentre"            : { "Ref" : "CostCentre" },
+          "ElasticsearchHost"     : { "Ref" : "DnsSrvPrivateElasticsearch" },
+          "GroupMinSize"          : { "Ref" : "LogstashGroupDesiredCapacity" },
+          "GroupDesiredCapacity"  : { "Ref" : "LogstashGroupDesiredCapacity" },
+          "GroupMaxSize"          : { "Ref" : "LogstashGroupMaxSize" },
+          "InstancePostScript"    : { "Ref" : "InstancePostScript" },
+          "InstanceProfile"       : { "Ref" : "InstanceProfile" },
+          "InstanceType"          : { "Ref" : "LogstashInstanceType" },
+          "SpotPrice"             : { "Ref" : "LogstashSpotPrice" },
+          "KeyName"             : { "Ref" : "KeyName" },
+          "RedisHost"             : { "Ref" : "DnsSrvPrivateRedis" },
+          "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
+          "SecurityGroup"         : { "Fn::GetAtt" : [ "SecurityGroup0", "Outputs.SecurityGroup0" ] }
+        }
+      }
+    },
+    "DnsRefPublicPrimary": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "HostedZoneName" : { "Ref" : "R53ZoneName" },
+        "Name": {
+          "Fn::Join" : [
+            "",
+            [
+              { "Ref": "AWS::StackName" }, ".", { "Ref" : "R53ZoneName" }
+            ]
+          ]
+        },
+        "Type" : "A",
+        "TTL" : "90",
+        "ResourceRecords" : [
+          {
+            "Fn::GetAtt" : [ "ElasticsearchFrontend0", "Outputs.Instance0PublicIp" ]
+          }
+        ]
+      }
+    },
+    "DnsRefPublicRedis": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "HostedZoneName" : { "Ref" : "R53ZoneName" },
+        "Name": {
+          "Fn::Join" : [
+            "",
+            [
+              "redis.",
+              { "Ref": "AWS::StackName" }, ".", { "Ref" : "R53ZoneName" }
+            ]
+          ]
+        },
+        "Type" : "A",
+        "TTL" : "60",
+        "ResourceRecords" : [
+          {
+            "Fn::GetAtt" : [ "Redis0", "Outputs.Instance0PublicIp" ]
+          }
+        ]
+      }
+    },
+    "DnsSrvPrivateRedis": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "HostedZoneName" : { "Ref" : "R53ZoneName" },
+        "Name": {
+          "Fn::Join" : [
+            "",
+            [
+              "redis.srv-int.",
+              { "Ref": "AWS::StackName" }, ".", { "Ref" : "R53ZoneName" }
+            ]
+          ]
+        },
+        "Type" : "A",
+        "TTL" : "60",
+        "ResourceRecords" : [
+          {
+            "Fn::GetAtt" : [ "Redis0", "Outputs.Instance0PrivateIp" ]
+          }
+        ]
+      }
+    },
+    "DnsSrvPrivateElasticsearch": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "HostedZoneName" : { "Ref" : "R53ZoneName" },
+        "Name": {
+          "Fn::Join" : [
+            "",
+            [
+              "elasticsearch.srv-int.",
+              { "Ref": "AWS::StackName" }, ".", { "Ref" : "R53ZoneName" }
+            ]
+          ]
+        },
+        "Type" : "A",
+        "TTL" : "60",
+        "ResourceRecords" : [
+          {
+            "Fn::GetAtt" : [ "ElasticsearchFrontend0", "Outputs.Instance0PrivateIp" ]
+          }
+        ]
+      }
+    },
+    "QueueSizeScaleDownAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Alarm if average queue size is less than 1,000 messages for 50 minutes (scale down).",
+        "Namespace": { "Ref" : "EnvironmentName" },
+        "MetricName": "QueueSize",
+        "Dimensions": [
+          {
+            "Name": "ServiceName",
+            "Value" : { "Ref" : "ServiceName" }
+          }
+        ],
+        "Statistic": "Average",
+        "Period": "300",
+        "EvaluationPeriods": "10",
+        "Threshold": "1000",
+        "ComparisonOperator": "LessThanThreshold",
+        "AlarmActions": [
+          {
+            "Ref": "QueueSizeScaleDownPolicy"
+          }
+        ]
+      }
+    },
+    "QueueSizeScaleDownPolicy" : {
+       "Type" : "AWS::AutoScaling::ScalingPolicy",
+       "Properties" : {
+        "AdjustmentType" : "ExactCapacity",
+        "AutoScalingGroupName" : {
+          "Fn::GetAtt" : [ "LogstashGroup", "Outputs.AutoScalingGroupId" ]
+        },
+        "Cooldown" : "3000",
+        "ScalingAdjustment" : { "Ref" : "LogstashGroupDesiredCapacity" }
+       }
+    },
+    "QueueSizeScaleUpAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Alarm if average queue size is greater than 120,000 messages for 5 minutes (scale up).",
+        "Namespace": { "Ref" : "EnvironmentName" },
+        "MetricName": "QueueSize",
+        "Dimensions": [
+          {
+            "Name": "ServiceName",
+            "Value" : { "Ref" : "ServiceName" }
+          }
+        ],
+        "Statistic": "Average",
+        "Period": "300",
+        "EvaluationPeriods": "1",
+        "Threshold": "120000",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopicArn"
+          },
+          {
+            "Ref": "QueueSizeScaleUpPolicy"
+          }
+        ],
+        "InsufficientDataActions": [
+          {
+            "Ref": "AlarmTopicArn"
+          }
+        ],
+        "OKActions": [
+          {
+            "Ref": "AlarmTopicArn"
+          }
+        ]
+      }
+    },
+    "QueueSizeScaleUpPolicy" : {
+       "Type" : "AWS::AutoScaling::ScalingPolicy",
+       "Properties" : {
+        "AdjustmentType" : "ChangeInCapacity",
+        "AutoScalingGroupName" : {
+          "Fn::GetAtt" : [ "LogstashGroup", "Outputs.AutoScalingGroupId" ]
+        },
+        "Cooldown" : "300",
+        "ScalingAdjustment" : "2"
+       }
+    },
+    "IndexLagAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Alarm if the index is consistently lagging more than 5 minutes.",
+        "Namespace": { "Ref" : "EnvironmentName" },
+        "MetricName": "IndexLag",
+        "Dimensions": [
+          {
+            "Name": "ServiceName",
+            "Value" : { "Ref" : "ServiceName" }
+          }
+        ],
+        "Statistic": "Average",
+        "Period": "300",
+        "EvaluationPeriods": "1",
+        "Threshold": "300",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopicArn"
+          }
+        ],
+        "InsufficientDataActions": [
+          {
+            "Ref": "AlarmTopicArn"
+          }
+        ],
+        "OKActions": [
+          {
+            "Ref": "AlarmTopicArn"
+          }
+        ]
+      }
+    }
+  }
 }

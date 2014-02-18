@@ -1,34 +1,34 @@
 if [@type] == "iis_tradingapi" {
-    grok {
-        match => [ "@message", "%{TIMESTAMP_ISO8601:datetime} %{HOST:s_sitename} %{HOST:s_computername} %{IP:s_ip} %{WORD:cs_method} %{URIPATHPARAM:cs_uri_stem} (?:%{NOTSPACE:cs_uri_query}|-) %{POSINT:s_port} (?:%{USER:cs_username}|-) %{IP:c_ip} (?:HTTP/%{NUMBER:cs_version}|-) (?:%{NOTSPACE:cs_user_agent}|-) (?:%{NOTSPACE:cs_cookie}|-) (?:%{URI:cs_referer}|-) (?:%{URIHOST:cs_host}|-) %{POSINT:sc_status} %{INT:sc_substatus} %{INT:win32_status} %{NONNEGINT:sc_bytes} %{NONNEGINT:cs_bytes} %{NONNEGINT:time_taken}" ]
-        add_tag => "iis"
-        add_tag => "iis_tradingapi"
+  grok {
+    match => [ "@message", "%{TIMESTAMP_ISO8601:datetime} %{HOST:s_sitename} %{HOST:s_computername} %{IP:s_ip} %{WORD:cs_method} %{URIPATHPARAM:cs_uri_stem} (?:%{NOTSPACE:cs_uri_query}|-) %{POSINT:s_port} (?:%{USER:cs_username}|-) %{IP:c_ip} (?:HTTP/%{NUMBER:cs_version}|-) (?:%{NOTSPACE:cs_user_agent}|-) (?:%{NOTSPACE:cs_cookie}|-) (?:%{URI:cs_referer}|-) (?:%{URIHOST:cs_host}|-) %{POSINT:sc_status} %{INT:sc_substatus} %{INT:win32_status} %{NONNEGINT:sc_bytes} %{NONNEGINT:cs_bytes} %{NONNEGINT:time_taken}" ]
+    add_tag => "iis"
+    add_tag => "iis_tradingapi"
+  }
+
+  <%
+  [
+    { :group => "Authentication", :name => "LogOn", :method => "POST", :uri => '^/TradingApi/session$'},
+    { :group => "Authentication", :name => "DeleteSession", :method => "POST", :uri => '^/TradingApi/session/deleteSession$'},
+    { :group => "AccountInformation", :name => "GetClientAndTradingAccount", :method => "GET", :uri => '^/TradingApi/useraccount/ClientAndTradingAccount$'},
+    { :group => "Market", :name => "GetMarketInformation", :method => "GET", :uri => '^/TradingApi/market/\d+/information$' },
+    { :group => "SpreadMarkets", :name => "ListSpreadMarkets", :method => "GET", :uri => '^/TradingApi/spread/markets$'},
+    { :group => "News", :name => "ListNewsHeadlinesWithSource", :method => "GET", :uri => '^/TradingApi/news/\w+/\w+$' },
+    { :group => "PriceHistory", :name => "GetPriceBars", :method => "GET", :uri => '^/TradingApi/market/\d+/barhistory$' }, 
+    { :group => "TradesAndOrders", :name => "ListTradeHistory", :method => "GET", :uri => '^/TradingApi/(order/)*order/tradehistory$'},
+    { :group => "TradesAndOrders", :name => "ListOpenPositions", :method => "GET", :uri => '^/TradingApi/order/openpositions$'},
+    { :group => "TradesAndOrders", :name => "Trade", :method => "POST", :uri => '^/TradingApi/order/newtradeorder$'}    
+  ].each do |service| %>
+
+    if [cs_method] == "<%= service[:method] %>" and [cs_uri_stem] =~ <%= Regexp.new(service[:uri]).inspect %> {
+      mutate {
+        add_field => [ "ci_tradingapi_servicegroup", "<%=service[:group]%>" ]
+        add_field => [ "ci_tradingapi_servicename", "<%=service[:name]%>" ]
+      }
     }
 
-    <%
-    [
-        { :group => "Authentication", :name => "LogOn", :method => "POST", :uri => '^/TradingApi/session$'},
-        { :group => "Authentication", :name => "DeleteSession", :method => "POST", :uri => '^/TradingApi/session/deleteSession$'},
-        { :group => "AccountInformation", :name => "GetClientAndTradingAccount", :method => "GET", :uri => '^/TradingApi/useraccount/ClientAndTradingAccount$'},
-        { :group => "Market", :name => "GetMarketInformation", :method => "GET", :uri => '^/TradingApi/market/\d+/information$' },
-        { :group => "SpreadMarkets", :name => "ListSpreadMarkets", :method => "GET", :uri => '^/TradingApi/spread/markets$'},
-        { :group => "News", :name => "ListNewsHeadlinesWithSource", :method => "GET", :uri => '^/TradingApi/news/\w+/\w+$' },
-        { :group => "PriceHistory", :name => "GetPriceBars", :method => "GET", :uri => '^/TradingApi/market/\d+/barhistory$' }, 
-        { :group => "TradesAndOrders", :name => "ListTradeHistory", :method => "GET", :uri => '^/TradingApi/(order/)*order/tradehistory$'},
-        { :group => "TradesAndOrders", :name => "ListOpenPositions", :method => "GET", :uri => '^/TradingApi/order/openpositions$'},
-        { :group => "TradesAndOrders", :name => "Trade", :method => "POST", :uri => '^/TradingApi/order/newtradeorder$'}    
-    ].each do |service| %>
+  <% end %>
 
-        if [cs_method] == "<%= service[:method] %>" and [cs_uri_stem] =~ <%= Regexp.new(service[:uri]).inspect %> {
-            mutate {
-                add_field => [ "ci_tradingapi_servicegroup", "<%=service[:group]%>" ]
-                add_field => [ "ci_tradingapi_servicename", "<%=service[:name]%>" ]
-            }
-        }
-
-    <% end %>
-
-    date {
-        match => [ "datetime", "yyyy-MM-dd HH:mm:ss" ]
-    }
+  date {
+    match => [ "datetime", "yyyy-MM-dd HH:mm:ss" ]
+  }
 }
