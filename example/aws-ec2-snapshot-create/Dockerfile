@@ -1,6 +1,6 @@
 FROM ubuntu:precise
 ADD . /docker
 WORKDIR /docker
-#RUN echo "Acquire::http { Proxy \"http://10.0.3.1:3142\"; };" | tee -a /etc/apt/apt.conf.d/01proxy > /dev/null
+RUN nc -zw 8 172.17.42.1 3142 && echo 'Acquire::http { Proxy "http://172.17.42.1:3142"; };' > /etc/apt/apt.conf.d/01proxy
 RUN ./bin/provision
 ENTRYPOINT [ "./bin/run" ]
