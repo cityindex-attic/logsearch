@@ -215,7 +215,7 @@ def discover_nodes(elasticsearch, replica_attribute_name, replica_attribute_valu
 end
 
 main do | vresource, vparameter, vnewsize, replica_attribute_value, vreplicas |
-  replica_attribute_name = 'logsearch'
+  replica_attribute_name = 'replica_role'
 
   essplit = options['elasticsearch'].split(':')
   elasticsearch = Net::HTTP.new essplit[0], essplit[1]
