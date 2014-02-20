@@ -413,7 +413,15 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "elasticsearch",
+            "Value": {
+              "Fn::Join" : [
+                "/",
+                [
+                  "elasticsearch",
+                  { "Ref" : "ElasticsearchReplicaRole" }
+                ]
+              ]
+            },
             "PropagateAtLaunch": "true"
           },
           {
