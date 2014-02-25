@@ -69,7 +69,7 @@ if (which collectd 1>/dev/null 2>&1) ; then
     fi
 
     if ! grep 'Import elasticsearch' /etc/collectd/collectd.conf ; then
-      wget -qO /opt/collectd/lib/collectd/plugins/python/elasticsearch.py 'https://raw.github.com/phobos182/collectd-elasticsearch/master/elasticsearch.py'
+      wget -qO /opt/collectd/lib/collectd/plugins/python/elasticsearch.py 'https://raw.github.com/phobos182/collectd-elasticsearch/7691797dd0e4bb59212648489066dc9a0abab21d/elasticsearch.py'
       sed -ri 's@(^  # python-placeholder)@\1\n\
   Import "elasticsearch"\n\
   <Module elasticsearch>\n\
