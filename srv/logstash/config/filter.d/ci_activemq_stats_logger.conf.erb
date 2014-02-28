@@ -1,0 +1,168 @@
+# Filter type => "ci_activemq_stats_logger"
+
+if [@type] == "ci_activemq_stats_logger" {
+  if [@message] !~ "^Active" {  # Only parse non CSV header lines (which start with the text Active rather than true)
+    csv {
+    source => "@message"
+    separator => "^"
+    columns => [
+      "Active",
+      "AverageEnqueueTime",
+      "Blocked",
+      "BlockedProducerWarningInterval",
+      "BlockedProducerWarningstringerval",
+      "BrokerId",
+      "BrokerName",
+      "BrokerVersion",
+      "ClientId",
+      "Connected",
+      "Connection",
+      "ConnectionId",
+      "ConnectorName",
+      "ConsumerCount",
+      "ConsumerId",
+      "CursorFull",
+      "CursorMemoryUsage",
+      "CursorPercentUsage",
+      "DataDirectory",
+      "DateTimeCaptured",
+      "DequeueCount",
+      "DequeueCounter",
+      "Destination",
+      "DestinationName",
+      "DestinationQueue",
+      "DestinationTemporary",
+      "DestinationTopic",
+      "DestinationType",
+      "DiscardedCount",
+      "DispachedCounter",
+      "DispatchCount",
+      "DispatchedQueueSize",
+      "Durable",
+      "DurableTopicSubscribers",
+      "EnqueueCount",
+      "EnqueueCounter",
+      "Exclusive",
+      "ExpiredCount",
+      "InFlightCount",
+      "InactiveDurableTopicSubscribers",
+      "MaxAuditDepth",
+      "MaxEnqueueTime",
+      "MaxPageSize",
+      "MaxProducersToAudit",
+      "MaximumPendingMessageLimit",
+      "MaximumPendingQueueSize",
+      "MemoryLimit",
+      "MemoryPercentUsage",
+      "MemoryUsagePortion",
+      "MessageCountAwaitingAcknowledge",
+      "MinEnqueueTime",
+      "Name",
+      "NoLocal",
+      "OpenWireURL",
+      "PendingQueueSize",
+      "Persistent",
+      "PersistentMode",
+      "PrefetchSize",
+      "PrioritizedMessages",
+      "Priority",
+      "ProducerCount",
+      "ProducerFlowControl",
+      "QueueSize",
+      "QueueSubscribers",
+      "Queues",
+      "RemoteAddress",
+      "Retroactive",
+      "SessionId",
+      "Slave",
+      "Slow",
+      "SslURL",
+      "StatisticsEnabled",
+      "StompSslURL",
+      "StompURL",
+      "StoreLimit",
+      "StorePercentUsage",
+      "SubcriptionId",
+      "Subscriptions",
+      "TempLimit",
+      "TempPercentUsage",
+      "TemporaryQueueSubscribers",
+      "TemporaryQueues",
+      "TemporaryTopicSubscribers",
+      "TemporaryTopics",
+      "TopicSubscribers",
+      "Topics",
+      "TotalConsumerCount",
+      "TotalDequeueCount",
+      "TotalEnqueueCount",
+      "TotalMessageCount",
+      "Type",
+      "UseCache",
+      "VMURL",
+      "ViewType",
+      "clientId",
+      "consumerId",
+      "destinationName",
+      "destinationType",
+      "persistentMode"
+    ]
+  }
+  
+  mutate {
+    convert => [ "AverageEnqueueTime", "integer" ]
+    convert => [ "BlockedProducerWarningInterval", "integer" ]
+    convert => [ "BlockedProducerWarningstringerval", "integer" ]
+    convert => [ "ConsumerCount", "integer" ]
+    convert => [ "CursorMemoryUsage", "float" ]
+	  convert => [ "CursorPercentUsage", "float" ]
+	  convert => [ "DequeueCount", "integer" ]
+	  convert => [ "DequeueCounter", "integer" ]
+	  convert => [ "DiscardedCount", "integer" ]
+	  convert => [ "DiscardedCounter", "integer" ]
+	  convert => [ "DispatchCount", "integer" ]
+	  convert => [ "DispatchedQueueSize", "integer" ]
+	  convert => [ "DurableTopicSubscribers", "integer" ]
+	  convert => [ "EnqueueCount", "integer" ]
+	  convert => [ "EnqueueCounter", "integer" ]
+	  convert => [ "ExpiredCount", "integer" ]
+	  convert => [ "InFlightCount", "integer" ]
+	  convert => [ "InactiveDurableTopicSubscribers", "integer" ]
+	  convert => [ "MaxAuditDepth", "integer" ]
+	  convert => [ "MaxEnqueueTime", "float" ]
+	  convert => [ "MaxPageSize", "integer" ]
+	  convert => [ "MaxProducersToAudit", "integer" ]
+	  convert => [ "MaximumPendingMessageLimit", "integer" ]
+	  convert => [ "MaximumPendingQueueSize", "integer" ]
+	  convert => [ "MemoryLimit", "integer" ]
+	  convert => [ "MemoryPercentUsage", "float" ]
+	  convert => [ "MemoryUsagePortion", "float" ]
+	  convert => [ "MessageCountAwaitingAcknowledge", "integer" ]
+	  convert => [ "MinEnqueueTime", "float" ]
+	  convert => [ "PendingQueueSize", "integer" ]
+	  convert => [ "PrefetchSize", "integer" ]
+	  convert => [ "ProducerCount", "integer" ]
+	  convert => [ "QueueSize", "integer" ]
+	  convert => [ "QueueSubscribers", "integer" ]
+	  convert => [ "Queues", "integer" ]
+	  convert => [ "StoreLimit", "integer" ]
+	  convert => [ "SubscriptionsStorePercentUsage", "float" ]
+	  convert => [ "TempLimit", "integer" ]
+	  convert => [ "TempPercentUsage", "float" ]
+	  convert => [ "TemporaryQueueSubscribers", "integer" ]
+	  convert => [ "TemporaryQueues", "integer" ]
+	  convert => [ "TemporaryTopicSubscribers", "integer" ]
+	  convert => [ "TemporaryTopics", "integer" ]
+	  convert => [ "Topics", "integer" ]
+	  convert => [ "TotalConsumerCount", "integer" ]
+	  convert => [ "TotalDequeueCount", "integer" ]
+	  convert => [ "TotalEnqueueCount", "integer" ]
+	  convert => [ "TotalMessageCount", "integer" ]
+  }
+
+  date {
+    match => [ "DateTimeCaptured", "ISO8601" ]
+  }
+
+}
+  
+}
