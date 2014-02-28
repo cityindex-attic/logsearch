@@ -1,2 +1,11 @@
-INFO  2013-06-20 08:59:59,996 Margin_4 MarginCalculation Order: 483553318 filtered
-ERROR 2013-06-21 09:00:00,012 Margin_3 MarginRealTime MC - CA:400220534 MI:15.181891073288527743228387400\r\n  Ind:False MCP:True MCATP:False
+INFO  2014-01-27 22:59:18,322 164 CityIndex.TradingApi.Common.Logging.MethodTimeLogger Request 36376151: Action: IMarketPriceHistoryService.GetPriceBars Duration 13ms
+DEBUG 2014-01-28 02:00:18,385 ActiveMQ Task UTPMessaging.ActiveMQ.MessageSlot Stats for CorrelationId '92a7f17a-c0e8-420f-98d8-bb1b5a2475fc': Created: t=2014-02-28T00:00:18.3695939Z, Dequeued: t=2014-02-28T00:00:18.3695939Z, d=0.0000ms, Dispatched: t=2014-02-28T00:00:18.3695939Z, d=0.0000ms, Completed: t=2014-02-28T00:00:18.3852189Z, d=15.6250ms, Error: N/A
+INFO  2014-01-28 02:01:18,385 Margin_3 MarginRealTime MC - CA:400220534 MI:15.181891073288527743228387400\r\n  Ind:False MCP:True MCATP:False
+ERROR 2014-01-28 02:02:18,385 125 CityIndex.TradingApi.Common.ErrorHandling.TradingApiExceptionFilterAttribute Request 28094335: Uri: http://ciapi.cityindex.com/TradingApi/session Username: anonymous Exception: Request throttled
+   at CityIndex.TradingApi.Session.SessionService.LogOn(ApiLogOnRequestDTO apiLogOnRequest)
+   at lambda_method(Closure , Object , Object[] )
+   at System.Web.Http.Controllers.ReflectedHttpActionDescriptor.ActionExecutor.<>c__DisplayClass17.<GetExecutor>b__10(Object instance, Object[] methodParameters)
+   at System.Web.Http.Controllers.ReflectedHttpActionDescriptor.ActionExecutor.Execute(Object instance, Object[] arguments)
+   at System.Threading.Tasks.TaskHelpers.RunSynchronously[TResult](Func`1 func, CancellationToken cancellationToken)
+INFO  2014-01-28 02:04:18,932 97 CityIndex.TradingApi.MarketPriceHistory.MarketPriceHistoryService Price history bar request market 400494246
+
