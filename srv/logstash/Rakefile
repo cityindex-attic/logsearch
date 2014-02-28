@@ -101,6 +101,7 @@ namespace :logstash do
       Rake::Task["logstash:test:type:ci_log4net"].invoke
       Rake::Task["logstash:test:type:ci_ip_diagnostics"].invoke
       Rake::Task["logstash:test:type:ci_ip_diagnostics_kv"].invoke
+      Rake::Task["logstash:test:type:ci_activemq_stats_logger"].invoke
 
       puts "==> All tests completed successfully :)"
     end
@@ -155,7 +156,7 @@ namespace :logstash do
       desc "Run ci_latency_monitor_bot tests"
       task :ci_latency_monitor_bot do
         system "cd #{ENV['APP_APP_DIR']} && rake elasticsearch:delete_all_data_by_query"
-        run_integration_test("ci_latency_monitor_bot", :lumberjack, 6)
+        run_integration_test("ci_latency_monitor_bot", :lumberjack, 6, {:type => "json"})
       end
 
       desc "Run ci_log4net tests"
@@ -173,13 +174,20 @@ namespace :logstash do
         run_integration_test("ci_ip_diagnostics_kv", :redis, 31)
       end
 
+      desc "Run ci_activemq_stats_logger tests"
+      task :ci_activemq_stats_logger => "elasticsearch:delete_all_data_by_query" do
+        run_integration_test("ci_activemq_stats_logger", :lumberjack, 4)
+      end
+
     end
   end
 end
 
 class ElasticsearchNotRunning < RuntimeError; end
 
-def run_integration_test(type, method, expected_messages)
+def run_integration_test(test, method, expected_messages, options={})
+  options[:type] ||= test
+
   pid = false
 
   if File.exists?("/etc/init/app-elasticsearch-1.conf")
@@ -203,7 +211,7 @@ def run_integration_test(type, method, expected_messages)
     case method
       when :redis
         Rake::Task['logstash:load_file_to_redis'].reenable
-        Rake::Task['logstash:load_file_to_redis'].invoke type, "#{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log"
+        Rake::Task['logstash:load_file_to_redis'].invoke test, "#{ENV['APP_APP_DIR']}/srv/logstash/test/#{options[:type]}.log"
       when :lumberjack
         puts "---> Ensuring lumberjack and lumberjack keys are installed"
 
@@ -220,7 +228,7 @@ def run_integration_test(type, method, expected_messages)
 
         puts "---> Shipping the test log file via lumberjack shipper -> lumberjack endpoint -> redis"
         Rake::Task['lumberjack:ship_to_lumberjack_endpoint'].reenable
-        Rake::Task['lumberjack:ship_to_lumberjack_endpoint'].invoke "#{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.log", type
+        Rake::Task['lumberjack:ship_to_lumberjack_endpoint'].invoke "#{ENV['APP_APP_DIR']}/srv/logstash/test/#{test}.log", options[:type]
       else
         raise "Unrecognised importer: #{method}"
     end
@@ -233,7 +241,7 @@ def run_integration_test(type, method, expected_messages)
     sh "curl -sXPOST 'http://#{ENV['APP_CONFIG_ES_IPADDRESS']}:9200/_all/_flush' > /dev/null"
   
     puts "==> Running our test queries ..."
-    sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/#{type}.rb"
+    sh "ruby #{ENV['APP_APP_DIR']}/srv/logstash/test/#{test}.rb"
   ensure
     if pid
       Process.kill("TERM", File.read("#{ENV['APP_RUN_DIR']}/elasticsearch.pid").to_i)

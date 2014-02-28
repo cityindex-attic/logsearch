@@ -94,7 +94,12 @@ class SimpleCiIPDiagnosticsTest < Test::Unit::TestCase
     assert_equal type, value.class, "field is: #{value} \n===========Full query result============= #{JSON.pretty_generate(res)}"
   end
 
-  def test_Host_accepts_wildcard
+  # This is trying to test that when your hostname has a hyphen in it, then a wildcard search for part of the hostname
+  # before the hyphen works.
+  # There are 2 problems with this test that need to be fixed
+  #  a) It only works when you have a hostname starting with ip-10- (ie, and AWS machine)
+  #  b) It is actually a test for elasticsearch config, so should live in the elasticsearch tests.
+  def FIXME_test_Host_accepts_wildcard
     res = eslog_simple_search(
       nil,
       'host:ip-10-*'
