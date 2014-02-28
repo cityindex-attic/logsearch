@@ -1,0 +1,2 @@
+{"level":"WARN","timestamp":"2014-02-04T23:45:12.000Z","logger":"I.am.a.JSON.logger","method":"testMe","message":"plain message accepted here."}
+{"level":"INFO","timestamp":"2014-02-05T12:34:56.000Z","logger":"I.am.a.JSON.logger","method":"testMe","line":"17","thread":"Loop 1","message":{"Message":"Quote has been accepted.","Items":{"FirstArg":{"Inner value":null,"Secondary value":null},"TypeId":1,"ClientUserId":234,"InternalUserId":56789,"MarketId":123,"Reference":null,"SessionId":"01234567-89ab-cdef-abcd-ef0123456789","SourceId":9,"TradingAccountId":12345}}}
