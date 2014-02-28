@@ -89,7 +89,7 @@ end #run_until
 def wait_for_message_count (expected_count, timeout_after = 180)
   timeout_after = 180 / 2
 
-  print '==> Waiting for data to be ready...'
+  puts "==> Waiting up to #{timeout_after*2} sec for at least #{expected_count} log events to be available for searching..."
 
   done = false
 
@@ -101,9 +101,9 @@ def wait_for_message_count (expected_count, timeout_after = 180)
     begin
       res = eslog_search "_search", { "query" => { "match_all" => { } } }
 
-#      puts "#{expected_count} vs #{res['hits']['total']}"
+      print "#{res['hits']['total']}/#{expected_count}.."
 
-      if expected_count == res['hits']['total']
+      if res['hits']['total'] >= expected_count
         done = true
         break
       end
