@@ -89,7 +89,7 @@ end #run_until
 def wait_for_message_count (expected_count, timeout_after = 180)
   timeout_after = 180 / 2
 
-  puts "==> Waiting up to #{timeout_after*2} sec for at least #{expected_count} log events to be available for searching..."
+  puts "==> Waiting up to #{timeout_after*2} sec for #{expected_count} log events to be available for searching..."
 
   done = false
 
@@ -103,7 +103,7 @@ def wait_for_message_count (expected_count, timeout_after = 180)
 
       print "#{res['hits']['total']}/#{expected_count}.."
 
-      if res['hits']['total'] >= expected_count
+      if res['hits']['total'] == expected_count
         done = true
         break
       end
