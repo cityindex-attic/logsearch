@@ -10,8 +10,14 @@ input {
 
 filter {
   if [_logstash_input] == "lumberjack" {
+
+    if [@shipper.host] !~ /.+/ {  # if @shipper.host doesn't exist
+      mutate {
+        add_field => [ '@shipper.host', "%{host}" ]
+      }
+    }
+
     mutate {
-      add_field => [ "@source.host", "%{host}" ]
       add_field => [ "@source.path", "%{file}" ]
       add_field => [ "@source.offset", "%{offset}" ]
       remove_field => [ "host", "file", "offset", "_logstash_input" ]
