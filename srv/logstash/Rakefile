@@ -211,7 +211,7 @@ def run_integration_test(test, method, expected_messages, options={})
     case method
       when :redis
         Rake::Task['logstash:load_file_to_redis'].reenable
-        Rake::Task['logstash:load_file_to_redis'].invoke type, "#{ENV['APP_APP_DIR']}/srv/logstash/test/#{options[:type]}.log"
+        Rake::Task['logstash:load_file_to_redis'].invoke test, "#{ENV['APP_APP_DIR']}/srv/logstash/test/#{options[:type]}.log"
       when :lumberjack
         puts "---> Ensuring lumberjack and lumberjack keys are installed"
 
