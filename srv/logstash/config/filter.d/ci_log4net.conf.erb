@@ -12,6 +12,13 @@ if [@type] == "ci_log4net" {
     ]
   }
 
+  kv {
+    source => "message"
+    field_split => ", "
+    value_split => "=:"
+    trim => "\\r\\n"
+  }
+
   mutate {
     add_field => [ "datetime_tz", "%{datetime}%{@source_tz}" ]
   }

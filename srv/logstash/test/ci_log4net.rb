@@ -3,23 +3,23 @@ require "test/unit"
 
 class SimpleCiLog4netTest < Test::Unit::TestCase
   def test_respect_for_timestamp
-    res = eslog_simple_search('logstash-2013.06.20')
+    res = eslog_simple_search('logstash-2014.01.27')
 
     assert_equal 1, res['hits']['total']
 
-    res = eslog_simple_search('logstash-2013.06.21')
+    res = eslog_simple_search('logstash-2014.01.28')
 
-    assert_equal 1, res['hits']['total']
+    assert_equal 4, res['hits']['total']
   end
 
   def test_timestamps_are_converted_from_localtime_to_utc
     res = eslog_simple_search(
       nil,
-      'level:ERROR'
+      'level:DEBUG'
     )
 
-    assert_equal '2013-06-21T08:00:00.012+00:00', res['hits']['hits'][0]['_source']['@timestamp']
-    assert_equal '2013-06-21 09:00:00,012', res['hits']['hits'][0]['_source']['datetime']
+    assert_equal '2014-01-28T01:00:18.385+00:00', res['hits']['hits'][0]['_source']['@timestamp']
+    assert_equal '2014-01-28 02:00:18,385', res['hits']['hits'][0]['_source']['datetime']
   end
 
   def test_no_events_inferred_today
@@ -31,10 +31,17 @@ class SimpleCiLog4netTest < Test::Unit::TestCase
   def test_search_by_level
     res = eslog_simple_search(
       nil,
-      'level:INFO'
+      'level:DEBUG'
     )
 
     assert_equal 1, res['hits']['total']
+
+    res = eslog_simple_search(
+      nil,
+      'level:INFO'
+    )
+
+    assert_equal 3, res['hits']['total']
 
     res = eslog_simple_search(
       nil,
@@ -47,7 +54,7 @@ class SimpleCiLog4netTest < Test::Unit::TestCase
   def test_search_by_thread
     res = eslog_simple_search(
       nil,
-      'thread:Margin_4'
+      'thread:164'
     )
 
     assert_equal 1, res['hits']['total']
@@ -56,7 +63,7 @@ class SimpleCiLog4netTest < Test::Unit::TestCase
   def test_search_by_logger
     res = eslog_simple_search(
       nil,
-      'logger:MarginCalculation'
+      'logger:CityIndex.TradingApi.Common.Logging.MethodTimeLogger'
     )
 
     assert_equal 1, res['hits']['total']
@@ -65,7 +72,7 @@ class SimpleCiLog4netTest < Test::Unit::TestCase
   def test_search_by_message
     res = eslog_simple_search(
       nil,
-      'message:"Order: 483553318 filtered"'
+      'message:"Request 36376151: Action: IMarketPriceHistoryService.GetPriceBars Duration 13ms"'
     )
 
     assert_equal 1, res['hits']['total']
@@ -88,4 +95,22 @@ class SimpleCiLog4netTest < Test::Unit::TestCase
 
     assert_equal 1, res['hits']['total']
   end
+
+
+  def test_kv_extraction
+    res = eslog_simple_search(
+      nil,
+      'logger:"MarginRealTime"'
+    )
+
+    assert_equal 1, res['hits']['total']
+
+    assert_equal '400220534', res['hits']['hits'][0]['_source']['CA']
+    assert_equal '15.181891073288527743228387400', res['hits']['hits'][0]['_source']['MI']
+    assert_equal 'False', res['hits']['hits'][0]['_source']['Ind']
+    assert_equal 'Tue', res['hits']['hits'][0]['_source']['MCP']
+    assert_equal 'False', res['hits']['hits'][0]['_source']['MCATP']
+  end
+
+  
 end
