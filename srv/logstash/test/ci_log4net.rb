@@ -95,4 +95,22 @@ class SimpleCiLog4netTest < Test::Unit::TestCase
 
     assert_equal 1, res['hits']['total']
   end
+
+
+  def test_kv_extraction
+    res = eslog_simple_search(
+      nil,
+      'logger:"MarginRealTime"'
+    )
+
+    assert_equal 1, res['hits']['total']
+
+    assert_equal '400220534', res['hits']['hits'][0]['_source']['CA']
+    assert_equal '15.181891073288527743228387400', res['hits']['hits'][0]['_source']['MI']
+    assert_equal 'False', res['hits']['hits'][0]['_source']['Ind']
+    assert_equal 'Tue', res['hits']['hits'][0]['_source']['MCP']
+    assert_equal 'False', res['hits']['hits'][0]['_source']['MCATP']
+  end
+
+  
 end
