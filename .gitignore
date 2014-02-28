@@ -8,9 +8,14 @@
 
 /config/
 
-/srv/*/config/*
+#Exclude the "compiled" templates (ending in .conf), but not the templates themselves (ending in .conf.erb)
+/srv/*/config/*.conf
+/srv/*/config/*.json
 !/srv/*/config/*.erb
-!/srv/*/config/filter.d/*.erb
+
+/srv/shippers/*/config/*.conf
+/srv/shippers/*/config/*.json
+!/srv/shippers/*/config/*.erb
 
 /Vagrantfile.local
 /packages/
