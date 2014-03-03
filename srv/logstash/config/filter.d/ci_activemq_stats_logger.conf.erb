@@ -109,7 +109,7 @@ if [@type] == "ci_activemq_stats_logger" {
   }
   
   mutate {
-    convert => [ "AverageEnqueueTime", "integer" ]
+    convert => [ "AverageEnqueueTime", "float" ]
     convert => [ "BlockedProducerWarningInterval", "integer" ]
     convert => [ "BlockedProducerWarningstringerval", "integer" ]
     convert => [ "ConsumerCount", "integer" ]
