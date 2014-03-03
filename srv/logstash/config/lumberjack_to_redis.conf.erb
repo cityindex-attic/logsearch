@@ -5,17 +5,18 @@ input {
     port => "<%= ENV['APP_CONFIG_LUMBERJACK_PORT'] || '5043'  %>"
     ssl_certificate => "<%= ENV['APP_DATA_DIR'] %>/lumberjack.crt"
     ssl_key => "<%= ENV['APP_DATA_DIR'] %>/lumberjack.key"
-
-    #Support multiline stack traces
-    codec => multiline {
-      pattern => "^\s"
-      what => "previous"
-    }
   }
 }
 
 filter {
   if [_logstash_input] == "lumberjack" {
+
+    #Support multiline stack traces
+    multiline {
+      pattern => "^\s"
+      what => "previous"
+      stream_identity => "%{host}.%{file}"
+    }
 
     if [@shipper.host] !~ /.+/ {  # if @shipper.host doesn't exist
       mutate {
@@ -24,6 +25,7 @@ filter {
     }
 
     mutate {
+      add_field => [ "@ingestor.stream_identity", "%{host}.%{file}" ]
       add_field => [ "@source.path", "%{file}" ]
       add_field => [ "@source.offset", "%{offset}" ]
       remove_field => [ "host", "file", "offset", "_logstash_input" ]
