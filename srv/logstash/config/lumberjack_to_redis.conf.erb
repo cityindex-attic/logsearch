@@ -1,6 +1,6 @@
 input {
   lumberjack {
-    add_field => [ "@ingestor.type", "lumberjack" ]
+    add_field => [ "_logstash_input", "lumberjack" ]
     host => "<%= ENV['APP_CONFIG_LUMBERJACK_HOST'] || '0.0.0.0'  %>"
     port => "<%= ENV['APP_CONFIG_LUMBERJACK_PORT'] || '5043'  %>"
     ssl_certificate => "<%= ENV['APP_DATA_DIR'] %>/lumberjack.crt"
@@ -9,7 +9,7 @@ input {
 }
 
 filter {
-  if [@ingestor.type] == "lumberjack" {
+  if [_logstash_input] == "lumberjack" {
 
     #Support multiline stack traces
     multiline {
@@ -28,7 +28,7 @@ filter {
       add_field => [ "@ingestor.stream_identity", "%{host}.%{file}" ]
       add_field => [ "@source.path", "%{file}" ]
       add_field => [ "@source.offset", "%{offset}" ]
-      remove_field => [ "host", "file", "offset" ]
+      remove_field => [ "host", "file", "offset", "_logstash_input" ]
     }
   }
 }
