@@ -9,7 +9,7 @@ set -e
 #
 
 if [ ! -e $APP_VENDOR_DIR/kibana ] ; then
-  KIBANA_VERSION="9395d5c736fff3fdf90f9e433e100b9531bfeae4"
+  KIBANA_VERSION="4918c89e03992e869b70d51881e9965312319a7e"
   echo "Download cityindex/kibana#$KIBANA_VERSION..."
 
   pushd $APP_VENDOR_DIR/
