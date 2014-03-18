@@ -9,14 +9,14 @@ set -e
 #
 
 if [ ! -e $APP_VENDOR_DIR/elasticsearch ] ; then
-  echo "Downloading elasticsearch-0.90.5..."
+  echo "Downloading elasticsearch-1.0.1..."
 
   pushd $APP_VENDOR_DIR/
   echo $PWD
-  curl --location -o elasticsearch-0.90.5.tar.gz https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.5.tar.gz
-  tar -xzf elasticsearch-0.90.5.tar.gz
-  mv elasticsearch-0.90.5 elasticsearch
-  rm elasticsearch-0.90.5.tar.gz
+  curl --location -o elasticsearch-1.0.1.tar.gz https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.0.1.tar.gz
+  tar -xzf elasticsearch-1.0.1.tar.gz
+  mv elasticsearch-1.0.1 elasticsearch
+  rm elasticsearch-1.0.1.tar.gz
   popd
 fi
 
@@ -26,10 +26,10 @@ fi
 #
 
 if [ ! -e $APP_VENDOR_DIR/elasticsearch/plugins/cloud-aws ] ; then
-  echo "Downloading elasticsearch/cloud-aws-1.14.0..."
+  echo "Downloading elasticsearch/cloud-aws-2.0.0.RC1..."
 
   pushd $APP_VENDOR_DIR/elasticsearch/
-  ./bin/plugin -install elasticsearch/elasticsearch-cloud-aws/1.14.0
+  ./bin/plugin -install elasticsearch/elasticsearch-cloud-aws/2.0.0.RC1
   popd
 fi
 
@@ -38,11 +38,11 @@ fi
 # elasticsearch-jetty
 #
 
-if [ ! -e $APP_VENDOR_DIR/elasticsearch/plugins/jetty-0.90.0 ] ; then
-  echo "Downloading elasticsearch-jetty-0.90.0..."
+if [ ! -e $APP_VENDOR_DIR/elasticsearch/plugins/jetty-1.0.1-beta ] ; then
+  echo "Downloading elasticsearch-jetty-1.0.1-beta..."
 
   pushd $APP_VENDOR_DIR/elasticsearch/
-  ./bin/plugin -url https://oss-es-plugins.s3.amazonaws.com/elasticsearch-jetty/elasticsearch-jetty-0.90.0.zip -install jetty-0.90.0
+  ./bin/plugin -url https://ci-logsearch.s3.amazonaws.com/elasticsearch-jetty-1.0.1-beta.zip -install jetty-1.0.1-beta
   popd
 fi
 
