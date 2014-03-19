@@ -77,7 +77,12 @@
       "MaxValue": "1024",
       "Default": "64"
     },
-    "ElasticsearchInstanceType": {
+    "ElasticsearchFulltimeInstanceType": {
+      "Type": "String",
+      "Description": "Instance type for the EBS-based elasticsearch node.",
+      "Default" : "m1.xlarge"
+    },
+    "ElasticsearchDaytimeInstanceType": {
       "Type": "String",
       "Description": "Instance type for the EBS-based elasticsearch node.",
       "Default" : "m1.xlarge"
@@ -199,7 +204,7 @@
           "ElasticsearchNodeMode" : "data",
           "InstancePostScript"    : { "Ref" : "InstancePostScript" },
           "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-          "InstanceType"          : { "Ref" : "ElasticsearchInstanceType" },
+          "InstanceType"          : { "Ref" : "ElasticsearchFulltimeInstanceType" },
           "KeyName"             : { "Ref" : "KeyName" },
           "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
           "SnapshotId"            : { "Ref" : "ElasticsearchSnapshotId" },
@@ -234,7 +239,7 @@
           "ElasticsearchNodeMode" : "data",
           "InstancePostScript"    : { "Ref" : "InstancePostScript" },
           "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-          "InstanceType"          : { "Ref" : "ElasticsearchInstanceType" },
+          "InstanceType"          : { "Ref" : "ElasticsearchFulltimeInstanceType" },
           "KeyName"             : { "Ref" : "KeyName" },
           "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
           "SnapshotId"            : { "Ref" : "ElasticsearchSnapshotId" },
@@ -277,7 +282,7 @@
           "ElasticsearchNodeMode" : "data",
           "InstancePostScript"    : { "Ref" : "InstancePostScript" },
           "InstanceProfile"       : { "Ref" : "InstanceProfile" },
-          "InstanceType"          : { "Ref" : "ElasticsearchInstanceType" },
+          "InstanceType"          : { "Ref" : "ElasticsearchDaytimeInstanceType" },
           "KeyName"             : { "Ref" : "KeyName" },
           "RepositoryCommit"      : { "Ref" : "RepositoryCommit" },
           "SnapshotId"            : { "Ref" : "ElasticsearchSnapshotId" },
