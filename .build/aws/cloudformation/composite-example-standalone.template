@@ -31,7 +31,39 @@
     "InstanceType": {
       "Type": "String",
       "Description": "Instance type for the multi-purpose node.",
-      "Default" : "m1.large"
+      "Default" : "m1.large",
+      "AllowedValues": [
+        "t1.micro",
+        "m1.small",
+        "m1.medium",
+        "m1.large",
+        "m1.xlarge",
+        "m2.xlarge",
+        "m2.2xlarge",
+        "m2.4xlarge",
+        "m3.medium",
+        "m3.large",
+        "m3.xlarge",
+        "m3.2xlarge",
+        "c1.medium",
+        "c1.xlarge",
+        "c3.large",
+        "c3.xlarge",
+        "c3.2xlarge",
+        "c3.4xlarge",
+        "c3.8xlarge",
+        "cc2.8xlarge",
+        "cr1.8xlarge",
+        "cg1.4xlarge",
+        "g2.2xlarge",
+        "hi1.4xlarge",
+        "hs1.8xlarge",
+        "i2.xlarge",
+        "i2.2xlarge",
+        "i2.4xlarge",
+        "i2.8xlarge"
+      ],
+      "ConstraintDescription": "must be a valid EC2 instance type."
     },
     "KeyName": {
       "Description": "Name of an existing EC2 key pair for remote access to the EC2 instance.",
@@ -119,6 +151,18 @@
       },
       "hs1.8xlarge" : {
         "ElasticsearchHeapSize" : "59G"
+      },
+      "i2.xlarge" : {
+        "ElasticsearchHeapSize" : "16G"
+      },
+      "i2.2xlarge" : {
+        "ElasticsearchHeapSize" : "32G"
+      },
+      "i2.4xlarge" : {
+        "ElasticsearchHeapSize" : "64G"
+      },
+      "i2.8xlarge" : {
+        "ElasticsearchHeapSize" : "128G"
       }
     },
     "RegionMap": {

@@ -75,7 +75,11 @@
         "cg1.4xlarge",
         "g2.2xlarge",
         "hi1.4xlarge",
-        "hs1.8xlarge"
+        "hs1.8xlarge",
+        "i2.xlarge",
+        "i2.2xlarge",
+        "i2.4xlarge",
+        "i2.8xlarge"
       ],
       "ConstraintDescription": "must be a valid EC2 instance type."
     },
