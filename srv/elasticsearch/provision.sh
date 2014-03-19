@@ -35,6 +35,19 @@ fi
 
 
 #
+# royrusso/elasticsearch-HQ
+#
+
+if [ ! -e $APP_VENDOR_DIR/elasticsearch/plugins/HQ ] ; then
+  echo "Downloading royrusso/elasticsearch-HQ..."
+
+  pushd $APP_VENDOR_DIR/elasticsearch/
+  ./bin/plugin -install royrusso/elasticsearch-HQ
+  popd
+fi
+
+
+#
 # elasticsearch-jetty
 #
 
