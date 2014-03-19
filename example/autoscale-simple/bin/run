@@ -136,7 +136,7 @@ def wait_for_nodes(elasticsearch, node_list, replica_attribute_name, expected_ch
     sleep 2
 
     req_nodes = elasticsearch.start do | http |
-      http.get '/_cluster/nodes', { 'Content-Type' => 'application/json' }
+      http.get '/_nodes', { 'Content-Type' => 'application/json' }
     end
 
     nodes = JSON.parse(req_nodes.body)
@@ -182,7 +182,7 @@ end
 
 def discover_nodes(elasticsearch, replica_attribute_name, replica_attribute_value)
   req_nodes = elasticsearch.start do | http |
-    http.get "/_cluster/nodes", { 'Content-Type' => 'application/json' }
+    http.get "/_nodes", { 'Content-Type' => 'application/json' }
   end
 
   nodes = JSON.parse(req_nodes.body)
