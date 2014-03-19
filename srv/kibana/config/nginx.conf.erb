@@ -25,92 +25,92 @@ http {
     proxy_read_timeout 90;
     proxy_temp_path <%= ENV['APP_TMP_DIR'] %>/nginx-proxy-temp;
 
+    upstream elasticsearch {
+        server <%= ENV['APP_CONFIG_ES_IPADDRESS'] %>:9200;
+    }
+
     server {
         listen *:80;
-        server_name logsearch;
+        server_name kibana.vagrant;
+
+        location ~ ^/_all/_search {
+            deny all;
+        }
+
+        location ~ ^/[^\/\*]+/_search$ {
+            rewrite ^(.*)$ $1?timeout=15s break;
+            proxy_pass http://elasticsearch;
+        }
+
+        location ~ ^/kibana-int/dashboard/.*$ {
+            proxy_pass http://elasticsearch;
+        }
+
+        location ~ ^/kibana-int/temp.*$ {
+            proxy_pass http://elasticsearch;
+        }
+
+        location ~ ^/_search/scroll$ {
+            limit_except GET {
+                deny all;
+            }
+
+            proxy_pass http://elasticsearch;
+        }
+
+        location ~ ^/_cluster/(state|health) {
+            limit_except GET {
+                deny all;
+            }
+
+            proxy_pass http://elasticsearch;
+        }
+
+        location ~ ^/_cluster/nodes {
+            limit_except GET {
+                deny all;
+            }
+
+            proxy_pass http://elasticsearch;
+        }
+
+        location ~ ^/_nodes/stats {
+            limit_except GET {
+                deny all;
+            }
+
+            proxy_pass http://elasticsearch;
+        }
+
+        location ~ ^/_(aliases|mapping|nodes|stats|status)$ {
+            limit_except GET {
+                deny all;
+            }
+
+            proxy_pass http://elasticsearch;
+        }
+
+        location ~ ^/.*/(_aliases|_mapping|_stats|_status)$ {
+            limit_except GET {
+                deny all;
+            }
+
+            proxy_pass http://elasticsearch;
+        }
 
         location / {
-
-            # Deny Nodes Shutdown API
-            if ($request_filename ~ "_shutdown") {
-              return 403;
-              break;
+            if ($args ~ ^callback=) {
+                proxy_pass http://elasticsearch;
             }
 
-            # Deny All searches
-            if ($request_filename ~ ^/_all/_search ) {
-              return 403;
-              break;
+            root <%= ENV['APP_VENDOR_DIR'] %>/kibana;
+            index index.html;
+
+            location ~ \.(css|js|html)$ {
+                add_header Cache-Control "private";
+                add_header Pragma "no-cache";
+                expires off;
             }
-
-            # Set a search timeout on all searchs
-            if ($request_filename ~ ^/[^\/\*]+/_m?search$ ) {
-                rewrite ^(.*)$ $1?timeout=15s break;
-            }
-
-# TODO add these restrictions
-#            location ~ ^/_search/scroll$ {
-#                limit_except GET {
-#                    deny all;
-#                }
-#
-#                proxy_pass http://elasticsearch;
-#            }
-#
-#            location ~ ^/_cluster/(state|health) {
-#                limit_except GET {
-#                    deny all;
-#                }
-#
-#                proxy_pass http://elasticsearch;
-#            }
-#
-#            location ~ ^/_cluster/nodes {
-#                limit_except GET {
-#                    deny all;
-#                }
-#
-#                proxy_pass http://elasticsearch;
-#            }
-#
-#            location ~ ^/_nodes/stats {
-#                limit_except GET {
-#                    deny all;
-#                }
-#
-#                proxy_pass http://elasticsearch;
-#            }
-#
-#            location ~ ^/_(aliases|mapping|nodes|stats|status)$ {
-#                limit_except GET {
-#                    deny all;
-#                }
-#
-#                proxy_pass http://elasticsearch;
-#            }
-#
-#            location ~ ^/.*/(_aliases|_mapping|_stats|_status)$ {
-#                limit_except GET {
-#                    deny all;
-#                }
-#
-#                proxy_pass http://elasticsearch;
-#            }
-
-            # Pass requests to ElasticSearch
-            proxy_pass http://<%= ENV['APP_CONFIG_ES_IPADDRESS'] %>:9200;
-            proxy_redirect off;
-
-            proxy_set_header  X-Real-IP  $remote_addr;
-            proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header  Host $http_host;
-
-            # For CORS Ajax
-            proxy_pass_header Access-Control-Allow-Origin;
-            proxy_pass_header Access-Control-Allow-Methods;
-            proxy_hide_header Access-Control-Allow-Headers;
-            add_header Access-Control-Allow-Headers 'X-Requested-With, Content-Type';
-            add_header Access-Control-Allow-Credentials true;
         }
     }
 }
