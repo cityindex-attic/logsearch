@@ -390,6 +390,7 @@
           "Fn::Join" : [
             "",
             [
+              "api.",
               { "Ref": "AWS::StackName" }, ".", { "Ref" : "R53ZoneName" }
             ]
           ]
