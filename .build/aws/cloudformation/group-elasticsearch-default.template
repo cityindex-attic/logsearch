@@ -111,7 +111,9 @@
         "cg1.4xlarge",
         "g2.2xlarge",
         "hi1.4xlarge",
-        "hs1.8xlarge"
+        "hs1.8xlarge",
+        "i2.xlarge",
+        "i2.2xlarge"
       ],
       "ConstraintDescription": "must be a valid EC2 instance type."
     },
@@ -179,7 +181,7 @@
         "AMI": "ami-fe002cbb"
       },
       "eu-west-1": {
-        "AMI": "ami-ce7b6fba"
+        "AMI": "ami-8c8675fb"
       },
       "ap-southeast-1": {
         "AMI": "ami-64084736"
