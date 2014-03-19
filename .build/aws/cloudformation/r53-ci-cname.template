@@ -29,6 +29,7 @@
           "Fn::Join" : [
             "",
             [
+              "api.",
               { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
             ]
           ]
@@ -36,7 +37,15 @@
         "Type" : "CNAME",
         "TTL" : "60",
         "ResourceRecords" : [
-          { "Ref" : "TargetHostName" }
+          {
+            "Fn::Join" : [
+              "",
+              [
+                "api.",
+                { "Ref" : "TargetHostName" }
+              ]
+            ]
+          }
         ]
       }
     },
