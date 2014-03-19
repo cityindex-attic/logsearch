@@ -85,7 +85,7 @@ def disable_allocations(elasticsearch)
   elasticsearch.start do | http |
     http.post '/_cluster/settings', JSON.generate({
         'transient' => {
-          'cluster.routing.allocation.disable_allocation' => true,
+          'cluster.routing.allocation.enable' => 'none',
         },
       }), { 'Accept' => 'application/json' }
   end
@@ -99,7 +99,7 @@ def enable_allocations(elasticsearch)
   elasticsearch.start do | http |
     http.post '/_cluster/settings', JSON.generate({
         'transient' => {
-          'cluster.routing.allocation.disable_allocation' => false,
+          'cluster.routing.allocation.enable' => 'all',
         },
       }), { 'Accept' => 'application/json' }
   end
