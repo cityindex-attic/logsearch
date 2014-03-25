@@ -21,62 +21,6 @@
     }
   },
   "Resources": {
-    "DnsMain": {
-      "Type": "AWS::Route53::RecordSet",
-      "Properties": {
-        "HostedZoneName" : { "Ref" : "R53ZoneName" },
-        "Name": {
-          "Fn::Join" : [
-            "",
-            [
-              "api.",
-              { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
-            ]
-          ]
-        },
-        "Type" : "CNAME",
-        "TTL" : "60",
-        "ResourceRecords" : [
-          {
-            "Fn::Join" : [
-              "",
-              [
-                "api.",
-                { "Ref" : "TargetHostName" }
-              ]
-            ]
-          }
-        ]
-      }
-    },
-    "DnsRedis": {
-      "Type": "AWS::Route53::RecordSet",
-      "Properties": {
-        "HostedZoneName" : { "Ref" : "R53ZoneName" },
-        "Name": {
-          "Fn::Join" : [
-            "",
-            [
-              "redis.",
-              { "Ref": "R53HostName" }, ".", { "Ref" : "R53ZoneName" }
-            ]
-          ]
-        },
-        "Type" : "CNAME",
-        "TTL" : "60",
-        "ResourceRecords" : [
-          {
-            "Fn::Join" : [
-              "",
-              [
-                "redis.",
-                { "Ref" : "TargetHostName" }
-              ]
-            ]
-          }
-        ]
-      }
-    },
     "DnsElasticsearchInternal": {
       "Type": "AWS::Route53::RecordSet",
       "Properties": {
