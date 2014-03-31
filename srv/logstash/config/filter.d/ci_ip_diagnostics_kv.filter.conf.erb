@@ -6,14 +6,14 @@ if [@type] == "ci_ip_diagnostics_kv" {
   }
 
   kv {
-    source => "@message"
+    source => "@messagetmp"
     field_split => ","
   }
 
   mutate {
     rename => [ "ProcessDesc", "ProcessDescRaw" ]
   }
-  
+
   csv {
     source => "ProcessDescRaw"
     target => "ProcessDesc"
@@ -24,7 +24,18 @@ if [@type] == "ci_ip_diagnostics_kv" {
       "Source"
     ]
   }
-  
+
+  # Temporary fix for invalid source data, see http://status.labs.cityindex.com/incidents/14k5zkgs1jcf
+  # If this still exists after the source data (ETA end April 2014) then it is a BUG!
+  if [DateTime] =~ "\+01:00" {
+    mutate {
+      gsub => [ 
+       "DateTime", "\+01:00", "+00:00"
+      ]
+    }
+  }
+  # End Temporary fix
+
   if [StartDateTime] {
     date {
       match => [ "StartDateTime", "ISO8601" ]
@@ -38,11 +49,16 @@ if [@type] == "ci_ip_diagnostics_kv" {
       match => [ "DateTimeLogged", "ISO8601" ]
     }
   }
-  
+
   mutate {
     convert => [ "Percentage", "float" ]
     convert => [ "TotalMs", "float" ]
     convert => [ "Value", "float" ]
     convert => [ "NoOfOrders", "integer" ]
+  }
+
+  #Drop tmp fields
+  mutate {
+    remove_field => [ "@messagetmp" ]
   }
 }
