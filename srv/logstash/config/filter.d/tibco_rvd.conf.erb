@@ -1,0 +1,28 @@
+if [@type] == "tibco_rvd" {
+  grok {
+    match => [ "@message", "%{TIMESTAMP_ISO8601:datetime} (?<rvd_path>[A-Z]:[^:]+): (?<message>[^:]+): {%{GREEDYDATA:dataraw}}" ]
+  }
+
+  date {
+    match => [ "datetime", "YYYY-MM-dd HH:mm:ss" ]
+    timezone => "Europe/London"
+  }
+
+  kv {
+    source => "dataraw"
+    field_split => ", "
+    target => "data"
+    add_tag => [ "kv_data" ]
+  }
+
+  if "kv_data" in [tags] {
+    mutate {
+      remove_field => [ "dataraw" ]
+      remove_tag => [ "kv_data" ]
+    }
+  }
+
+  mutate {
+    convert => [ "[data][lost]", "integer" ]
+  }
+}
