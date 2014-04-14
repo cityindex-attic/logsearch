@@ -1,4 +1,6 @@
-## logsearch
+## logsearch using AWS CloudFormation
+
+*We've switched to deploying logsearch using Cloud Foundry BOSH.  Please see http://www.logsearch.io for the latest*
 
 A development environment with [logstash](http://logstash.net/) + [Elasticsearch](http://www.elasticsearch.org/) + [Kibana 3](http://three.kibana.org/).
 
