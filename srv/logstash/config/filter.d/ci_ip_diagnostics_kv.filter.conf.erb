@@ -25,17 +25,6 @@ if [@type] == "ci_ip_diagnostics_kv" {
     ]
   }
 
-  # Temporary fix for invalid source data, see http://status.labs.cityindex.com/incidents/14k5zkgs1jcf
-  # If this still exists after the source data (ETA end April 2014) then it is a BUG!
-  if [DateTime] =~ "\+01:00" {
-    mutate {
-      gsub => [ 
-       "DateTime", "\+01:00", "+00:00"
-      ]
-    }
-  }
-  # End Temporary fix
-
   if [StartDateTime] {
     date {
       match => [ "StartDateTime", "ISO8601" ]
