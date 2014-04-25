@@ -19,7 +19,7 @@ def review_allocations(elasticsearch, node_list, replica_attribute_name)
   putlog ' + reviewing allocations...'
 
   req_state = elasticsearch.start do | http |
-    http.get '/_cluster/state?filter_nodes&filter_metadata&filter_blocks&filter_indices', { 'Content-Type' => 'application/json' }
+    http.get '/_cluster/state/routing_table', { 'Content-Type' => 'application/json' }
   end
 
   state = JSON.parse(req_state.body)
