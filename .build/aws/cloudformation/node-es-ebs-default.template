@@ -62,7 +62,7 @@
       "Description": "An IAM role for the node."
     },
     "InstanceType": {
-      "Default": "m1.large",
+      "Default": "r3.large",
       "Type": "String",
       "Description": "The instance type to create the node on.",
       "AllowedValues": [
@@ -78,6 +78,11 @@
         "m3.large",
         "m3.xlarge",
         "m3.2xlarge",
+        "r3.large",
+        "r3.xlarge",
+        "r3.2xlarge",
+        "r3.4xlarge",
+        "r3.8xlarge",
         "c1.medium",
         "c1.xlarge",
         "c3.large",
@@ -175,6 +180,21 @@
       },
       "m3.2xlarge": {
         "VirtualizationType": "PV"
+      },
+      "r3.large": {
+        "VirtualizationType": "HVM"
+      },
+      "r3.xlarge": {
+        "VirtualizationType": "HVM"
+      },
+      "r3.2xlarge": {
+        "VirtualizationType": "HVM"
+      },
+      "r3.4xlarge": {
+        "VirtualizationType": "HVM"
+      },
+      "r3.8xlarge": {
+        "VirtualizationType": "HVM"
       },
       "c1.medium": {
         "VirtualizationType": "PV"
