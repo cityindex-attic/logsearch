@@ -12,7 +12,7 @@ if ! (which easy_install 1>/dev/null 2>&1) ; then
 fi
 
 if ! (which pip 1>/dev/null 2>&1) ; then
-  curl -O https://raw.github.com/pypa/pip/1.4.1/contrib/get-pip.py
+  curl -O https://raw.githubusercontent.com/pypa/pip/1.4.1/contrib/get-pip.py
   sudo python get-pip.py
 fi
 
