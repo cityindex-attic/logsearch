@@ -1,8 +1,15 @@
-## logsearch using AWS CloudFormation
+## Logsearch (AWS CloudFormation edition)
 
-*We've switched to deploying logsearch using Cloud Foundry BOSH.  Please see http://www.logsearch.io for the latest*
+A development environment with [logstash](http://logstash.net/) + [Elasticsearch](http://www.elasticsearch.org/) + [Kibana 3](http://three.kibana.org/), deployed with [AWS CloudFormation](http://aws.amazon.com/cloudformation/).
+* *We've switched to deploying Logsearch using [Cloud Foundry BOSH](https://github.com/cloudfoundry/bosh). Please see http://www.logsearch.io/ for the latest information.*
 
-A development environment with [logstash](http://logstash.net/) + [Elasticsearch](http://www.elasticsearch.org/) + [Kibana 3](http://three.kibana.org/).
+## Status
+
+![Unsupported](http://labs.cityindex.com/wp-content/uploads/2012/01/lbl-unsupported.png)
+
+This project has been retired and is no longer being supported by City Index Ltd.
+
+* if you should choose to fork it outside of City Index, please let us know so we can link to your project
 
 ### Documentation
 
