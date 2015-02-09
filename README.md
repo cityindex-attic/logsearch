@@ -5,7 +5,7 @@ A development environment with [logstash](http://logstash.net/) + [Elasticsearch
 
 ## Status
 
-![Unsupported](http://labs.cityindex.com/wp-content/uploads/2012/01/lbl-unsupported.png)
+![Lifecycle: retired](https://img.shields.io/badge/lifecycle-retired-blue.svg) ![Support: unsupported](https://img.shields.io/badge/support-unsupported-yellow.svg)
 
 This project has been retired and is no longer being supported by City Index Ltd.
 
